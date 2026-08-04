@@ -15,15 +15,15 @@ export default defineConfig({
         name: 'Revoir',
         short_name: 'Revoir',
         description:
-          'Planifier ses révisions grace a la répétition espacée, sans stocker le contenu a apprendre.',
+          'Planifier ses révisions grâce à la répétition espacée, sans stocker le contenu à apprendre.',
         lang: 'fr',
         dir: 'ltr',
         start_url: '/',
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#faf7f2',
-        theme_color: '#faf7f2',
+        background_color: '#FAF9F6',
+        theme_color: '#FAF9F6',
         categories: ['education', 'productivity'],
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },

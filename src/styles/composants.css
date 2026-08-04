@@ -170,31 +170,38 @@
   border-radius: var(--r-carte);
 }
 
+/*
+ * Les couleurs de la case passent par des variables plutôt que par des
+ * sélecteurs contextuels : sur la cellule héros, un survol tracé en --accent
+ * disparaîtrait dans le fond, et il faut pouvoir tout réassigner d'un bloc
+ * sans imbriquer trois niveaux de sélecteurs.
+ */
 .item-revision__cercle {
   display: flex;
   width: var(--e-5);
   height: var(--e-5);
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--trait);
+  border: 1.5px solid var(--cercle-trait, var(--trait));
   border-radius: var(--r-pilule);
   transition: background-color var(--duree-court) var(--courbe),
     border-color var(--duree-court) var(--courbe);
 }
 
 .item-revision__case:hover .item-revision__cercle {
-  border-color: var(--accent);
+  border-color: var(--cercle-survol, var(--accent));
 }
 
-.item-revision--faite .item-revision__cercle {
-  border-color: var(--fait);
-  background-color: var(--fait);
+.item-revision--faite .item-revision__cercle,
+.echeance--faite .item-revision__cercle {
+  border-color: var(--cercle-fait, var(--fait));
+  background-color: var(--cercle-fait, var(--fait));
 }
 
 .item-revision__coche {
   width: var(--e-3);
   height: var(--e-3);
-  color: var(--surface);
+  color: var(--coche-couleur, var(--surface));
   /* Animation autorisée n°1 (section 6). */
   animation: coche var(--duree-court) var(--courbe);
 }
@@ -377,6 +384,8 @@
   font-weight: 500;
   line-height: var(--l-base);
   text-align: center;
+  /* Un libellé de bouton ne se coupe pas en deux : « Désarchive / r ». */
+  white-space: nowrap;
   transition: background-color var(--duree-court) var(--courbe),
     border-color var(--duree-court) var(--courbe),
     color var(--duree-court) var(--courbe);

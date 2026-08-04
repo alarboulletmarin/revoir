@@ -2,8 +2,9 @@
  * Génère les icônes PNG de la PWA sans dépendance : on rasterise quelques
  * formes simples puis on encode le PNG à la main via zlib.
  *
- * Motif : trois disques dont l'espacement croît, métaphore de la répétition
- * espacée. Palette identique à celle de l'application.
+ * Motif : la frise, signature de l'application. Les graduations sont placées
+ * comme dans l'app — écart proportionnel à √jours pour le programme Simple
+ * (J+1, J+3, J+7, J+14, J+30). Palette : --accent sur --papier.
  *
  * Usage : npm run icons
  */
@@ -14,8 +15,24 @@ import { fileURLToPath } from 'node:url'
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public')
 
-const BG = [91, 127, 120] // --accent
-const FG = [250, 247, 242] // --bg
+const BG = [0x52, 0x79, 0x6f] // --accent #52796F
+const FG = [0xfa, 0xf9, 0xf6] // --papier #FAF9F6
+
+/** Programme « Simple » : J+1, J+3, J+7, J+14, J+30. */
+const DECALAGES = [1, 3, 7, 14, 30]
+
+/**
+ * Positions des graduations le long de la frise, de 0 (origine) à 1.
+ * Même compression qu'en production : poids du segment = √jours écoulés.
+ */
+function graduations() {
+  const poids = DECALAGES.map((decalage, index) =>
+    Math.sqrt(decalage - (index === 0 ? 0 : DECALAGES[index - 1])),
+  )
+  const total = poids.reduce((somme, valeur) => somme + valeur, 0)
+  let cumul = 0
+  return [0, ...poids.map((valeur) => (cumul += valeur) / total)]
+}
 
 /** Canvas RGBA minimal, avec anticrénelage par sur-échantillonnage 3x3. */
 function createCanvas(size) {
@@ -134,13 +151,31 @@ function drawIcon(size, inset = 0) {
     canvas.paint(BG, roundedRect(0, 0, size - 1, size - 1, size * 0.22))
   }
 
-  // Trois disques d'espacement croissant : J+1, J+3, J+7.
-  const radius = box * 0.085
-  const positions = [0.2, 0.42, 0.8]
-  const y = margin + box * 0.5
-  for (const [index, position] of positions.entries()) {
-    const cx = margin + box * position
-    canvas.paint(FG, circle(cx, y, radius * (1 - index * 0.12)))
+  // La frise : une piste horizontale et ses graduations.
+  const piste = box * 0.72
+  const gauche = margin + (box - piste) / 2
+  const milieu = margin + box * 0.5
+  const epaisseur = Math.max(1, box * 0.022)
+  const hauteurGraduation = box * 0.2
+
+  canvas.paint(
+    FG,
+    roundedRect(gauche, milieu - epaisseur / 2, piste, epaisseur, epaisseur / 2),
+  )
+
+  for (const position of graduations()) {
+    // La dernière graduation doit rester entièrement dans la piste.
+    const x = gauche + piste * position - epaisseur * position
+    canvas.paint(
+      FG,
+      roundedRect(
+        x,
+        milieu - hauteurGraduation / 2,
+        epaisseur,
+        hauteurGraduation,
+        epaisseur / 2,
+      ),
+    )
   }
 
   return encodePNG(canvas)

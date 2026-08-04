@@ -15,6 +15,10 @@ export function Layout() {
 
   return (
     <div className="appli">
+      <a className="saut" href="#contenu">
+        Aller au contenu
+      </a>
+
       <header className="appli__entete">
         <div className="appli__barre">
           <Link to="/" className="appli__marque">

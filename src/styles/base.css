@@ -12,6 +12,30 @@
   flex-direction: column;
 }
 
+/*
+ * Lien d'évitement : hors écran tant qu'il n'a pas le focus. Sans lui, la
+ * navigation au clavier retraverse l'en-tête à chaque changement de page.
+ */
+.saut {
+  position: absolute;
+  top: var(--e-2);
+  left: var(--e-2);
+  z-index: 6;
+  display: inline-flex;
+  min-height: var(--cible);
+  align-items: center;
+  border-radius: var(--r-carte);
+  background-color: var(--encre);
+  padding-inline: var(--e-3);
+  color: var(--papier);
+  font-size: var(--t-sm);
+  transform: translateY(-200%);
+}
+
+.saut:focus-visible {
+  transform: translateY(0);
+}
+
 /* -------------------------------------------------------------- en-tête -- */
 
 .appli__entete {
@@ -42,8 +66,11 @@
 }
 
 .appli__marque {
+  display: inline-flex;
+  min-height: var(--cible);
   min-width: 0;
   flex-shrink: 0;
+  align-items: center;
   color: var(--encre);
   font-family: var(--police-titre);
   font-size: var(--t-md);
@@ -66,8 +93,10 @@
   gap: var(--e-1);
 }
 
+/* À 320px, trois libellés tiennent — à condition qu'aucun ne se coupe. */
 .nav__element {
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .nav__lien {
@@ -81,6 +110,7 @@
   font-size: var(--t-sm);
   font-weight: 500;
   letter-spacing: 0.02em;
+  white-space: nowrap;
   transition: color var(--duree-court) var(--courbe),
     background-color var(--duree-court) var(--courbe);
 }

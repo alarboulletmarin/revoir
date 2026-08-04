@@ -30,6 +30,7 @@ export function Dashboard() {
   const { items, loading } = useItems()
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
+  const tablette = useMediaQuery('(min-width: 768px)')
   const aujourdhui = todayKey()
 
   const vue = useMemo(
@@ -160,10 +161,17 @@ export function Dashboard() {
           )}
         </Cellule>
 
-        {/* ≥ 768px uniquement, masqué en CSS (section 7.2). */}
-        <Cellule zone="calendrier" vers="/calendrier" label="ce mois-ci">
-          <MiniMois items={items} aujourdhui={aujourdhui} />
-        </Cellule>
+        {/*
+          ≥ 768px uniquement (section 7.2). La cellule n'est pas seulement
+          masquée : « calendrier » n'existe pas dans les zones de la grille
+          sous 768px, et une cellule qui vise une zone inconnue fait créer à
+          la grille des colonnes implicites qui écrasent tout le bento.
+        */}
+        {tablette && (
+          <Cellule zone="calendrier" vers="/calendrier" label="ce mois-ci">
+            <MiniMois items={items} aujourdhui={aujourdhui} />
+          </Cellule>
+        )}
       </div>
     </>
   )
