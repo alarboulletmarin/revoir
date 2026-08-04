@@ -2,26 +2,37 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useItems } from '../state/useItems'
 import { useTitrePage } from '../state/useTitrePage'
-import { BackupError, backupFileName, parseBackup, serializeBackup } from '../lib/backup'
-import { archivedItems } from '../lib/stats'
+import {
+  BackupError,
+  backupFileName,
+  parseBackup,
+  serializeBackup,
+  type ContenuSauvegarde,
+} from '../lib/backup'
+import { archivedItems, usedCategories } from '../lib/stats'
+import { teinteDe } from '../lib/categories'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton } from '../components/Bouton'
-import type { Item } from '../types'
+import { SelecteurTeinte } from '../components/SelecteurTeinte'
+import { ChipCategorie, PastilleCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
 export function Settings() {
   useTitrePage('Réglages')
-  const { items, importItems, setArchived } = useItems()
+  const { items, teintes, definirTeinte, importItems, setArchived } = useItems()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
-  const [enAttente, setEnAttente] = useState<Item[] | null>(null)
+  const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
 
   const archives = archivedItems(items)
+  const matieres = usedCategories(items)
 
   const exporter = () => {
     // Les éléments archivés font partie de l'export (règle métier n°5).
-    const blob = new Blob([serializeBackup(items)], { type: 'application/json' })
+    const blob = new Blob([serializeBackup(items, teintes)], {
+      type: 'application/json',
+    })
     const url = URL.createObjectURL(blob)
     const lien = document.createElement('a')
     lien.href = url
@@ -60,8 +71,8 @@ export function Settings() {
 
   const confirmerImport = () => {
     if (!enAttente) return
-    const nombre = enAttente.length
-    void importItems(enAttente).then(() => {
+    const nombre = enAttente.items.length
+    void importItems(enAttente.items, enAttente.teintes).then(() => {
       setRetour({
         ton: 'ok',
         message: `${nombre} élément${nombre > 1 ? 's' : ''} importé${nombre > 1 ? 's' : ''}.`,
@@ -111,6 +122,34 @@ export function Settings() {
       </section>
 
       <section className="reglages__bloc">
+        <h2 className="section__titre">Matières</h2>
+        {matieres.length === 0 ? (
+          <p className="discret">Aucune matière pour le moment.</p>
+        ) : (
+          <ul className="matieres-reglage">
+            {matieres.map((matiere) => (
+              <li key={matiere} className="matiere-reglage">
+                <span className="matiere-reglage__nom">
+                  <PastilleCategorie categorie={matiere} teintes={teintes} />
+                  {matiere}
+                </span>
+                <SelecteurTeinte
+                  groupe="matiere"
+                  legende={`Couleur de ${matiere}`}
+                  legendeMasquee
+                  valeur={teinteDe(matiere, teintes)}
+                  onChange={(teinte) => definirTeinte(matiere, teinte)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="discret discret--petit">
+          Une matière sans couleur choisie en reçoit une, dérivée de son nom.
+        </p>
+      </section>
+
+      <section className="reglages__bloc">
         <h2 className="section__titre">Éléments archivés</h2>
         {archives.length === 0 ? (
           <p className="discret">Aucun élément archivé.</p>
@@ -120,7 +159,7 @@ export function Settings() {
               <li key={item.id} className="archive">
                 <Link to={`/element/${item.id}`} className="archive__corps">
                   <span className="archive__titre">{item.title}</span>
-                  {item.category && <span className="chip">{item.category}</span>}
+                  <ChipCategorie categorie={item.category} teintes={teintes} />
                 </Link>
                 <Bouton variante="discret" onClick={() => setArchived(item.id, false)}>
                   Désarchiver
@@ -149,7 +188,7 @@ export function Settings() {
         title="Remplacer les données actuelles ?"
         message={
           enAttente
-            ? `L'import de ${enAttente.length} élément${enAttente.length > 1 ? 's' : ''} remplacera vos ${items.length} élément${items.length > 1 ? 's' : ''} actuel${items.length > 1 ? 's' : ''}.`
+            ? `L'import de ${enAttente.items.length} élément${enAttente.items.length > 1 ? 's' : ''} remplacera vos ${items.length} élément${items.length > 1 ? 's' : ''} actuel${items.length > 1 ? 's' : ''}.`
             : ''
         }
         confirmLabel="Importer"

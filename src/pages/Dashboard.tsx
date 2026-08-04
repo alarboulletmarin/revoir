@@ -18,7 +18,9 @@ import { ItemRevision } from '../components/ItemRevision'
 import { BarresCharge } from '../components/BarresCharge'
 import { AnneauProgression } from '../components/AnneauProgression'
 import { MiniMois } from '../components/MiniMois'
+import { GroupesMatiere } from '../components/GroupesMatiere'
 import { LienBouton } from '../components/Bouton'
+import { grouperParMatiere } from '../lib/matieres'
 
 /** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
 const ITEMS_HERO_ETROIT = 3
@@ -27,7 +29,7 @@ const LIGNES_PROCHAINES = 3
 
 export function Dashboard() {
   useTitrePage("Aujourd'hui")
-  const { items, loading } = useItems()
+  const { items, teintes, loading } = useItems()
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
   const tablette = useMediaQuery('(min-width: 768px)')
@@ -41,6 +43,7 @@ export function Dashboard() {
       stats: computeStats(items, aujourdhui),
       charge: loadForDays(items, 14, aujourdhui),
       prochainJour: nextReviewDay(items, aujourdhui),
+      matieres: grouperParMatiere(items),
     }),
     [items, aujourdhui],
   )
@@ -173,6 +176,21 @@ export function Dashboard() {
           </Cellule>
         )}
       </div>
+
+      {/*
+        Sous le bento, jamais dedans : le tableau de bord reste une réponse,
+        et cette liste-ci est une consultation. Chaque matière se replie.
+      */}
+      {vue.matieres.length > 0 && (
+        <section className="pile pile--serree">
+          <h2 className="section__titre">Par matière</h2>
+          <GroupesMatiere
+            matieres={vue.matieres}
+            teintes={teintes}
+            aujourdhui={aujourdhui}
+          />
+        </section>
+      )}
     </>
   )
 }

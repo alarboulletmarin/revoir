@@ -754,6 +754,8 @@ body[data-panneau='ouvert'] {
   min-width: 0;
   flex: 1 1 auto;
   flex-direction: column;
+  /* Sans quoi la chip de matière s'étire sur toute la largeur de la carte. */
+  align-items: flex-start;
   gap: var(--e-1);
 }
 
@@ -778,4 +780,156 @@ body[data-panneau='ouvert'] {
   flex-direction: column;
   gap: var(--e-3);
   align-items: flex-start;
+}
+
+/* ================================ éléments regroupés par matière ======== */
+
+.matieres {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.matiere {
+  min-width: 0;
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+}
+
+/*
+ * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
+ * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
+ */
+.matiere__entete {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  padding: var(--e-2) var(--e-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.matiere__entete::-webkit-details-marker {
+  display: none;
+}
+
+.matiere__entete:hover {
+  background-color: var(--surface-survol);
+  border-radius: var(--r-carte);
+}
+
+/*
+ * Le chevron bascule sans transition : la section 6 n'autorise que trois
+ * animations, et celle-ci n'en fait pas partie.
+ */
+.matiere__chevron {
+  flex-shrink: 0;
+  color: var(--encre-2);
+}
+
+/* Replié : le chevron pointe à droite. Déplié : vers le bas. */
+.matiere[open] .matiere__chevron {
+  transform: rotate(90deg);
+}
+
+.matiere__nom {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: var(--t-base);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matiere__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.matiere__elements {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .matiere__elements {
+    display: inline;
+  }
+}
+
+.matiere__liste {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+  border-top: var(--bordure);
+  padding: var(--e-2) var(--e-4) var(--e-3);
+}
+
+.matiere__element {
+  min-width: 0;
+}
+
+.matiere__lien {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-1) var(--e-3);
+  border-radius: var(--r-carte);
+  padding-block: var(--e-1);
+}
+
+.matiere__titre {
+  min-width: 0;
+  flex: 1 1 100%;
+  overflow: hidden;
+  font-size: var(--t-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matiere__etat {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.matiere__lien .frise {
+  flex: 1 1 var(--e-7);
+  min-width: 0;
+}
+
+/* ------------------------------------------- matières dans les réglages - */
+
+.matieres-reglage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.matiere-reglage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.matiere-reglage__nom {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  font-size: var(--t-base);
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }

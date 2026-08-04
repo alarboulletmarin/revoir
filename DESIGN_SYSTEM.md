@@ -84,6 +84,30 @@ Sur fond `--accent` plein, le texte est `--surface` (4,6:1) : réservé au poids
 
 **Une seule surface pleine `--accent` par écran.** C'est elle qui porte la hiérarchie. Si deux cellules sont pleines, la hiérarchie est morte.
 
+### 3 bis. Teintes de matière
+
+> Extension ajoutée après coup, pour distinguer les matières. Elle déroge à la règle des huit valeurs ci-dessus, et c'est la seule dérogation admise.
+
+Huit teintes, dans le même registre que la palette : désaturées, aucun rouge. `--retard` et `--fait` restent réservés à leurs états et n'entrent pas dans ce jeu.
+
+```css
+--cat-ardoise: #4A6572;   --cat-prune: #6B5B7B;
+--cat-olive:   #5A6B3C;   --cat-terre: #7A5B45;
+--cat-bleu:    #3F6389;   --cat-teal:  #3E6B68;
+--cat-mauve:   #7A5470;   --cat-ocre:  #75632A;
+```
+
+| Contraste sur `--papier` | de 5,54:1 (olive) à 5,99:1 (mauve) — toutes utilisables en texte |
+|---|---|
+
+Trois règles, sans exception :
+
+1. **Jamais en surface pleine.** Trait, texte et pastille uniquement. Une matière qui remplirait une carte concurrencerait l'unique cellule `--accent` de l'écran, et la hiérarchie retomberait.
+2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la matière est donc toujours écrit à côté de sa pastille.
+3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de matière y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
+
+Une matière sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable.
+
 ---
 
 ## 4. Typographie
@@ -397,6 +421,8 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 
 Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 6 nécessaires (plus, calendrier, coche, chevron, archive, corbeille — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
 
+Seule dérogation à la palette : les huit teintes de matière de la section 3 bis, et sous les trois conditions qui y sont posées.
+
 ---
 
 ## 12. `tokens.css`
@@ -465,5 +491,17 @@ Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules fo
 
 @media (min-width: 768px) {
   :root { --t-display: 64px; }
+}
+
+/* Teintes de matière — section 3 bis. */
+:root {
+  --cat-ardoise: #4A6572;
+  --cat-prune: #6B5B7B;
+  --cat-olive: #5A6B3C;
+  --cat-terre: #7A5B45;
+  --cat-bleu: #3F6389;
+  --cat-teal: #3E6B68;
+  --cat-mauve: #7A5470;
+  --cat-ocre: #75632A;
 }
 ```

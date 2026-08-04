@@ -11,6 +11,8 @@ import type { ReviewEntry } from '../types'
 import { formatRelative, formatShort, type DateKey } from '../lib/dates'
 import { IconeCoche } from './Icons'
 import { Frise } from './Frise'
+import { ChipCategorie } from './ChipCategorie'
+import { useItems } from '../state/useItems'
 
 /**
  * Durée de la ligne barrée avant retrait de la liste (section 8.2).
@@ -39,6 +41,9 @@ export function ItemRevision({
   frise = true,
 }: ItemRevisionProps) {
   const { item, review } = entry
+  // Les teintes viennent du contexte plutôt que d'une prop : le composant est
+  // appelé depuis trois écrans, et c'est une donnée d'affichage, pas d'entrée.
+  const { teintes } = useItems()
   const [partante, setPartante] = useState(false)
   const minuteur = useRef<number | undefined>(undefined)
 
@@ -88,7 +93,7 @@ export function ItemRevision({
         <span className="item-revision__titre">{item.title}</span>
 
         <span className="item-revision__meta">
-          {item.category && <span className="chip">{item.category}</span>}
+          <ChipCategorie categorie={item.category} teintes={teintes} />
           {!masquerDate && (
             <time className="item-revision__date" dateTime={review.date}>
               {formatShort(review.date)}

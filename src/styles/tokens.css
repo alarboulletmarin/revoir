@@ -102,6 +102,47 @@
   --charge-plancher: 3px;
 }
 
+/*
+ * Teintes de matière — extension de la palette (section 3 bis).
+ *
+ * La section 3 fixe huit valeurs « pas une de plus ». Ces huit teintes-ci
+ * s'ajoutent pour une fonction que la palette d'origine ne couvre pas :
+ * distinguer les matières. Elles en respectent le registre — désaturées,
+ * aucun rouge, --retard et --fait restent réservés à leurs états — et ne
+ * servent jamais de surface pleine : uniquement trait, texte et pastille,
+ * pour ne pas concurrencer l'unique cellule --accent de l'écran.
+ *
+ * Contrastes mesurés sur --papier : de 5,54:1 (olive) à 5,99:1 (mauve).
+ * Toutes dépassent 4,5:1, donc toutes sont utilisables en texte.
+ *
+ * Leurs luminances sont proches : deux teintes ne se distinguent pas en
+ * niveaux de gris. La couleur ne porte donc jamais l'information seule — le
+ * nom de la matière est toujours écrit à côté de sa pastille.
+ */
+:root {
+  --cat-ardoise: #4A6572;
+  --cat-prune: #6B5B7B;
+  --cat-olive: #5A6B3C;
+  --cat-terre: #7A5B45;
+  --cat-bleu: #3F6389;
+  --cat-teal: #3E6B68;
+  --cat-mauve: #7A5470;
+  --cat-ocre: #75632A;
+}
+
+/*
+ * Un seul point d'entrée pour les composants : ils lisent `--teinte`, sans
+ * savoir laquelle. Le repli sur --encre-2 couvre les éléments sans matière.
+ */
+[data-teinte='ardoise'] { --teinte: var(--cat-ardoise); }
+[data-teinte='prune'] { --teinte: var(--cat-prune); }
+[data-teinte='olive'] { --teinte: var(--cat-olive); }
+[data-teinte='terre'] { --teinte: var(--cat-terre); }
+[data-teinte='bleu'] { --teinte: var(--cat-bleu); }
+[data-teinte='teal'] { --teinte: var(--cat-teal); }
+[data-teinte='mauve'] { --teinte: var(--cat-mauve); }
+[data-teinte='ocre'] { --teinte: var(--cat-ocre); }
+
 @media (min-width: 1024px) {
   :root { --marge-page: var(--e-6); }
 }

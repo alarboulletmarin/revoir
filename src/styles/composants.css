@@ -613,3 +613,83 @@
   justify-content: flex-end;
   gap: var(--e-2);
 }
+
+/* ================================================ teintes de matière ==== */
+
+/*
+ * La teinte n'est jamais une surface pleine : trait, texte et pastille
+ * seulement, pour ne pas concurrencer l'unique cellule --accent de l'écran.
+ */
+.chip--matiere {
+  border-color: var(--teinte, var(--trait));
+  color: var(--teinte, var(--encre-2));
+}
+
+.pastille {
+  display: inline-block;
+  width: var(--e-2);
+  height: var(--e-2);
+  flex-shrink: 0;
+  border-radius: var(--r-pilule);
+  background-color: var(--teinte, var(--encre-2));
+}
+
+/* --------------------------------------------- sélecteur de teinte ----- */
+
+.teintes {
+  display: flex;
+  min-width: 0;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 0;
+  padding: 0;
+}
+
+.teintes__liste {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-1);
+}
+
+/* Cible de 44px, pastille de 24px au centre. */
+.teintes__choix {
+  position: relative;
+  display: flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pilule);
+  cursor: pointer;
+}
+
+.teintes__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.teintes__pastille {
+  width: var(--e-5);
+  height: var(--e-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pilule);
+  background-color: var(--teinte);
+  transition: transform var(--duree-court) var(--courbe);
+}
+
+/* La sélection se lit à l'anneau, pas seulement à la couleur. */
+.teintes__choix--actif .teintes__pastille {
+  border-color: var(--papier);
+  outline: 2px solid var(--teinte);
+  outline-offset: 1px;
+}
+
+.teintes__choix:has(.teintes__radio:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}

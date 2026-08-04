@@ -19,15 +19,55 @@ const ITEM: Item = {
 
 describe('aller-retour export / import', () => {
   it('restitue les éléments à l’identique', () => {
-    expect(parseBackup(serializeBackup([ITEM]))).toEqual([ITEM])
+    expect(parseBackup(serializeBackup([ITEM])).items).toEqual([ITEM])
   })
 
   it('accepte une sauvegarde vide', () => {
-    expect(parseBackup(serializeBackup([]))).toEqual([])
+    expect(parseBackup(serializeBackup([])).items).toEqual([])
   })
 
   it('nomme le fichier avec la date du jour', () => {
     expect(backupFileName(new Date(2026, 2, 14))).toBe('revoir-2026-03-14.json')
+  })
+})
+
+describe('teintes de matière', () => {
+  it('fait l’aller-retour avec les éléments', () => {
+    const teintes = { développement: 'bleu', langues: 'ocre' } as const
+    expect(parseBackup(serializeBackup([ITEM], teintes)).teintes).toEqual(teintes)
+  })
+
+  it('importe une sauvegarde v1, qui n’a pas de teintes', () => {
+    // Les anciens fichiers restent lisibles : les matières retomberont sur
+    // leur teinte dérivée du nom.
+    const v1 = JSON.stringify({ app: 'revoir', version: 1, items: [ITEM] })
+    expect(parseBackup(v1).teintes).toEqual({})
+    expect(parseBackup(v1).items).toHaveLength(1)
+  })
+
+  it('normalise la casse des noms de matière', () => {
+    const raw = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      teintes: { 'Développement': 'bleu' },
+    })
+    expect(parseBackup(raw).teintes).toEqual({ développement: 'bleu' })
+  })
+
+  it('ignore une teinte inconnue sans faire échouer l’import', () => {
+    const raw = JSON.stringify({
+      app: 'revoir',
+      items: [ITEM],
+      teintes: { maths: 'fuchsia', langues: 'olive' },
+    })
+    const contenu = parseBackup(raw)
+    expect(contenu.teintes).toEqual({ langues: 'olive' })
+    expect(contenu.items).toHaveLength(1)
+  })
+
+  it('tolère un champ teintes qui n’est pas un objet', () => {
+    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: 'bleu' })
+    expect(parseBackup(raw).teintes).toEqual({})
   })
 })
 
@@ -115,7 +155,7 @@ describe('normalisation', () => {
         },
       ],
     })
-    const [item] = parseBackup(raw)
+    const [item] = parseBackup(raw).items
 
     expect(item.title).toBe('Chapitre 5')
     expect(item.category).toBe('')

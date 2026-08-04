@@ -11,9 +11,11 @@ import {
 import { formatShort, todayKey } from '../lib/dates'
 import { chargeParDate, usedCategories } from '../lib/stats'
 import type { ScheduleId } from '../types'
+import { teinteDe } from '../lib/categories'
 import { Champ, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
+import { SelecteurTeinte } from '../components/SelecteurTeinte'
 
 const CATEGORIES_SUGGEREES = [
   'Études',
@@ -28,7 +30,7 @@ const CATEGORIES_SUGGEREES = [
 export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, loading, createItem, editItem } = useItems()
+  const { items, teintes, definirTeinte, loading, createItem, editItem } = useItems()
   const listeCategories = useId()
 
   useTitrePage(mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément')
@@ -136,6 +138,19 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
             <option key={nom} value={nom} />
           ))}
         </datalist>
+
+        {/*
+          La couleur appartient à la matière, pas à l'élément : la choisir ici
+          la change partout où cette matière apparaît.
+        */}
+        {categorie.trim() !== '' && (
+          <SelecteurTeinte
+            groupe="teinte-matiere"
+            legende={`Couleur de « ${categorie.trim()} »`}
+            valeur={teinteDe(categorie, teintes)}
+            onChange={(teinte) => definirTeinte(categorie, teinte)}
+          />
+        )}
 
         <Champ
           label="Date de départ"

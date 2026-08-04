@@ -11,11 +11,12 @@ import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { IconeArchive, IconeCoche, IconeCorbeille } from '../components/Icons'
+import { ChipCategorie } from '../components/ChipCategorie'
 
 export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, loading, valider, devalider, restaurer, setArchived, removeItem } =
+  const { items, teintes, loading, valider, devalider, restaurer, setArchived, removeItem } =
     useItems()
   const { afficherToast } = useToast()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
@@ -72,7 +73,7 @@ export function ItemDetail() {
       <div className="fiche__entete">
         <h1 className="page__titre">{item.title}</h1>
         <div className="fiche__badges">
-          {item.category && <span className="chip">{item.category}</span>}
+          <ChipCategorie categorie={item.category} teintes={teintes} />
           <span className="chip chip--accent">{programme.label}</span>
           {item.archived && <span className="chip chip--retard">Archivé</span>}
         </div>

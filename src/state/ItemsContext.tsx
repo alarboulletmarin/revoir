@@ -7,7 +7,16 @@ import {
   type ReactNode,
 } from 'react'
 import type { Item, ScheduleId } from '../types'
-import { deleteItem, getAllItems, putItem, replaceAllItems } from '../db/database'
+import {
+  deleteItem,
+  getAllItems,
+  getAllTeintes,
+  putItem,
+  putTeinte,
+  replaceAllItems,
+  replaceAllTeintes,
+} from '../db/database'
+import { cleCategorie, type Teinte, type Teintes } from '../lib/categories'
 import { buildReviews, rebuildReviews } from '../lib/schedules'
 import { devaliderRevision, validerRevision } from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
@@ -34,6 +43,9 @@ export interface ItemsContextValue {
   loading: boolean
   /** Message d'erreur si IndexedDB est indisponible (navigation privée, quota). */
   error: string | null
+  /** Choix explicites de teinte par matière. Le reste dérive du nom. */
+  teintes: Teintes
+  definirTeinte: (categorie: string, teinte: Teinte) => void
   createItem: (draft: ItemDraft) => Promise<Item>
   editItem: (id: string, draft: ItemDraft) => Promise<void>
   removeItem: (id: string) => Promise<void>
@@ -43,7 +55,7 @@ export interface ItemsContextValue {
   devalider: (id: string, offset: number) => void
   /** Remet un élément dans l'état exact fourni. Sert au bouton « Annuler ». */
   restaurer: (item: Item) => void
-  importItems: (items: Item[]) => Promise<void>
+  importItems: (items: Item[], teintes: Teintes) => Promise<void>
 }
 
 export const ItemsContext = createContext<ItemsContextValue | null>(null)
@@ -57,14 +69,17 @@ function newId(): string {
 
 export function ItemsProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([])
+  const [teintes, setTeintes] = useState<Teintes>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    getAllItems()
-      .then((stored) => {
-        if (!cancelled) setItems(stored)
+    Promise.all([getAllItems(), getAllTeintes()])
+      .then(([stored, couleurs]) => {
+        if (cancelled) return
+        setItems(stored)
+        setTeintes(couleurs)
       })
       .catch(() => {
         if (!cancelled) {
@@ -192,10 +207,18 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
     [persist],
   )
 
-  const importItems = useCallback(async (imported: Item[]) => {
+  const definirTeinte = useCallback((categorie: string, teinte: Teinte) => {
+    const cle = cleCategorie(categorie)
+    if (cle === '') return
+    setTeintes((actuelles) => ({ ...actuelles, [cle]: teinte }))
+    putTeinte(cle, teinte).catch(() => setError("L'enregistrement local a échoué."))
+  }, [])
+
+  const importItems = useCallback(async (imported: Item[], couleurs: Teintes) => {
     setItems(imported)
+    setTeintes(couleurs)
     try {
-      await replaceAllItems(imported)
+      await Promise.all([replaceAllItems(imported), replaceAllTeintes(couleurs)])
       setError(null)
     } catch {
       setError("L'import n'a pas pu être enregistré localement.")
@@ -205,6 +228,8 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ItemsContextValue>(
     () => ({
       items,
+      teintes,
+      definirTeinte,
       loading,
       error,
       createItem,
@@ -218,6 +243,8 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
     }),
     [
       items,
+      teintes,
+      definirTeinte,
       loading,
       error,
       createItem,
