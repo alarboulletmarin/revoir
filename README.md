@@ -10,9 +10,9 @@ Aucun compte, aucun serveur, aucune synchronisation, aucune publicité, aucun tr
 
 ## Fonctionnalités
 
-- **Tableau de bord** : révisions du jour, retards, prochaines échéances, statistiques et charge des sept prochains jours.
+- **Tableau de bord** en grille bento : révisions du jour cochables sur place, retards, progression, charge des quatorze prochains jours, prochaines échéances.
 - **Calendrier mensuel** : nombre de révisions par jour, détail au clic sur une date.
-- **Fiche d'élément** : programme utilisé, liste complète des révisions, progression, modification, archivage, suppression.
+- **Fiche d'élément** : la frise en grand, liste complète des échéances, progression, modification, archivage, suppression.
 - **Trois programmes** de répétition espacée :
   - Simple — J+1, J+3, J+7, J+14, J+30
   - Poussé — J+1, J+2, J+4, J+7, J+14, J+30, J+60
@@ -20,7 +20,19 @@ Aucun compte, aucun serveur, aucune synchronisation, aucune publicité, aucun tr
 - **Sauvegarde locale** : export et import de la totalité des données au format JSON.
 - **PWA** : installable, fonctionne hors ligne, se met à jour via Service Worker avec un toast de confirmation.
 
-Les dates sont figées à la création d'un élément : cocher une révision en retard ne décale jamais les suivantes. Il n'y a volontairement aucun algorithme adaptatif, aucune notification et aucun thème sombre.
+### La frise
+
+Une frise graduée représente le programme d'un élément : chaque graduation est une échéance, et l'écart entre deux graduations est proportionnel à l'écart réel entre les dates, compressé en racine carrée. L'espacement de la répétition espacée devient visible. Elle apparaît à trois endroits — fiche d'un élément, item de liste, aperçu du formulaire — et nulle part ailleurs.
+
+### Recalage après retard
+
+Valider une révision en retard recale les échéances suivantes sur la date réelle de validation, en conservant les écarts du programme : une J+7 validée avec trois jours de retard place la J+14 sept jours après la validation, pas quatre. Sans ce recalage, rattraper une semaine de retard ferait tomber toutes les échéances suivantes le même jour.
+
+### Valider, puis annuler
+
+Marquer une révision comme revue se fait en un tap depuis n'importe quelle liste, sans ouvrir de fiche et sans confirmation : l'affichage change tout de suite, l'écriture suit, et un toast propose « Annuler » pendant cinq secondes. La suppression est la seule action qui demande une confirmation.
+
+Il n'y a volontairement aucun algorithme adaptatif, aucune notification, aucun thème sombre et aucune gamification.
 
 ## Démarrage
 
@@ -53,15 +65,18 @@ npm run preview
 src/
 ├── components/   composants d'interface partagés
 ├── db/           accès IndexedDB (idb)
-├── lib/          logique métier pure : programmes, dates, statistiques, sauvegarde
+├── lib/          logique métier pure : programmes, dates, recalage, frise,
+│                 calendrier, statistiques, sauvegarde
 ├── pages/        une page par route
-├── state/        contexte React des éléments
-└── styles/       CSS natif : reset, thème, feuille principale
+├── state/        contextes React (éléments, toast) et hooks partagés
+└── styles/       tokens.css, reset.css, base.css, composants.css, ecrans.css
 scripts/
 └── generate-icons.mjs   génération des icônes PNG, sans dépendance
 ```
 
-La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, les statistiques, le formatage et la validation des sauvegardes.
+La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, les statistiques, le formatage et la validation des sauvegardes.
+
+Toute décision visuelle vient de [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), et toute valeur de couleur, taille ou espacement passe par une variable de `src/styles/tokens.css`.
 
 ## Format d'export
 
@@ -71,7 +86,7 @@ L'export produit un fichier `revoir-AAAA-MM-JJ.json` :
 {
   "app": "revoir",
   "version": 1,
-  "exportedAt": "2026-03-14T10:00:00.000Z",
+  "exporteLe": "2026-03-14T10:00:00.000Z",
   "items": [
     {
       "id": "…",
@@ -98,7 +113,7 @@ Il n'y a pas de serveur : rien ne quitte l'appareil. Les données vivent dans l'
 
 ## Technologies
 
-React 19, TypeScript, Vite, vite-plugin-pwa, React Router, IndexedDB via `idb`, date-fns, CSS natif. Aucune bibliothèque d'interface : les quelques icônes sont des composants SVG écrits à la main.
+React 19, TypeScript, Vite, vite-plugin-pwa, React Router, IndexedDB via `idb`, date-fns, CSS natif. Aucune bibliothèque d'interface ni de graphiques : les six icônes du projet sont des composants SVG écrits à la main.
 
 > Note sur les dépendances : `react-router-dom` est maintenu en dernière version. `npm audit` y signale un avis concernant le mode RSC, que cette application n'utilise pas — c'est une SPA statique, sans action serveur. Les versions antérieures cumulent bien plus d'avis réellement applicables.
 
