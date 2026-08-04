@@ -1,9 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
+// tokens.css d'abord : tout le reste s'y réfère.
+import './styles/tokens.css'
 import './styles/reset.css'
-import './styles/theme.css'
-import './styles/app.css'
+import './styles/base.css'
 
 const container = document.getElementById('root')
 if (!container) {

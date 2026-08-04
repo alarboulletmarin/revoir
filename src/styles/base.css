@@ -1,0 +1,302 @@
+/*
+ * Coque de l'application : en-tête, navigation, conteneur de page, bouton
+ * flottant, et les quelques utilitaires typographiques partagés.
+ * Aucune valeur en dur : tout vient de tokens.css.
+ */
+
+/* ---------------------------------------------------------------- coque -- */
+
+.appli {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+/* -------------------------------------------------------------- en-tête -- */
+
+.appli__entete {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border-bottom: var(--bordure);
+  background-color: var(--papier);
+  padding:
+    calc(var(--e-3) + var(--haut-securise))
+    var(--marge-page)
+    var(--e-3);
+}
+
+.appli__barre {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--largeur-page);
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: auto;
+  gap: var(--e-3);
+}
+
+.appli__marque {
+  min-width: 0;
+  flex-shrink: 0;
+  color: var(--encre);
+  font-family: var(--police-titre);
+  font-size: var(--t-md);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------- navigation --- */
+
+.nav {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--largeur-page);
+  margin-inline: auto;
+}
+
+.nav__liste {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-1);
+}
+
+.nav__element {
+  min-width: 0;
+}
+
+.nav__lien {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  border-radius: var(--r-pilule);
+  padding-inline: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe);
+}
+
+.nav__lien:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+.nav__lien--actif {
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
+
+/*
+ * L'en-tête tient sur une seule ligne dès qu'il y a la place : sous 480px,
+ * « Revoir » et trois libellés ne cohabitent pas sans troncature.
+ */
+@media (min-width: 480px) {
+  .appli__entete {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--e-4);
+  }
+
+  .appli__barre {
+    width: auto;
+    flex: 0 0 auto;
+    margin-inline: 0;
+  }
+
+  .nav {
+    margin-inline: 0;
+    flex: 1 1 auto;
+  }
+
+  .nav__liste {
+    justify-content: flex-end;
+  }
+}
+
+/* Recentre le couple marque + navigation dans la largeur de lecture. */
+@media (min-width: 480px) {
+  .appli__entete {
+    padding-inline: max(
+      var(--marge-page),
+      calc((100% - var(--largeur-page)) / 2)
+    );
+  }
+}
+
+/* ---------------------------------------------------------------- page -- */
+
+.page {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--largeur-page);
+  flex: 1 1 auto;
+  margin-inline: auto;
+  padding: var(--e-5) var(--marge-page) var(--purge-liste);
+}
+
+/*
+ * Pile verticale générique. C'est le conteneur qui porte l'espacement, jamais
+ * les composants (section 7.4).
+ */
+.pile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.pile--serree {
+  gap: var(--e-3);
+}
+
+.page__titre {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--l-lg);
+}
+
+.page__intro {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.page__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.section__titre {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-md);
+  font-weight: 600;
+  line-height: var(--l-md);
+}
+
+/* ---------------------------------------------------------- utilitaires -- */
+
+.discret {
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.discret--petit {
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.chiffres {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chip de catégorie : ne rétrécit jamais face à un titre long (section 7.4). */
+.chip {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  border: var(--bordure);
+  border-radius: var(--r-pilule);
+  padding: 0 var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: calc(var(--e-5) - 2px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip--accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip--retard {
+  border-color: var(--retard);
+  color: var(--retard-texte);
+}
+
+.invisible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ----------------------------------------------------- bouton flottant -- */
+
+/*
+ * Section 8.5 : 56px, cercle, --accent. Le `--bas-securise` est indispensable,
+ * sans lui le bouton passe sous la barre d'accueil iOS en mode PWA.
+ */
+.fab {
+  position: fixed;
+  right: var(--marge-page);
+  bottom: var(--bas-fab);
+  z-index: 3;
+  display: flex;
+  width: var(--h-fab);
+  height: var(--h-fab);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pilule);
+  background-color: var(--accent);
+  color: var(--surface);
+  transition: opacity var(--duree-court) var(--courbe),
+    transform var(--duree-court) var(--courbe);
+}
+
+.fab:hover {
+  background-color: var(--accent);
+  opacity: 0.92;
+}
+
+/* Le FAB s'efface dès qu'un panneau ou une feuille modale s'ouvre (7.3). */
+.fab--masque {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(var(--e-2));
+}
+
+/* ------------------------------------------------------------ bannière -- */
+
+.banniere {
+  min-width: 0;
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3) var(--e-4);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.banniere--retard {
+  border-color: var(--retard);
+  color: var(--retard-texte);
+}
+
+.banniere--fait {
+  border-color: var(--fait);
+  color: var(--fait-texte);
+}

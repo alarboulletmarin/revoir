@@ -1,0 +1,98 @@
+/*
+ * Source de vérité des valeurs visuelles — section 12 du design system.
+ * Aucune couleur, taille ou espacement ne doit être écrit en dur ailleurs
+ * dans le projet : tout passe par une de ces variables.
+ */
+:root {
+  /* Couleurs */
+  --papier: #FAF9F6;
+  --surface: #FDFCF8;
+  --surface-survol: #F3F1EA;
+  --trait: #E6E2D9;
+  --encre: #2C2A26;
+  --encre-2: #6B665D;
+  --accent: #52796F;
+  --accent-doux: #F1F4F2;
+  --retard: #B0763A;
+  --retard-texte: #8A5A28;
+  --fait: #6A8F6B;
+  --fait-texte: #4F6E50;
+
+  /* Typographie */
+  --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --t-display: 40px;
+  --t-champ: 16px;
+  --t-xl: 28px;
+  --t-lg: 20px;
+  --t-md: 17px;
+  --t-base: 15px;
+  --t-sm: 13px;
+  --t-xs: 12px;
+
+  /* Espacement */
+  --e-1: 4px;
+  --e-2: 8px;
+  --e-3: 12px;
+  --e-4: 16px;
+  --e-5: 24px;
+  --e-6: 32px;
+  --e-7: 48px;
+
+  /* Formes */
+  --r-carte: 12px;
+  --r-pilule: 999px;
+  --bordure: 1px solid var(--trait);
+
+  /* Mouvement */
+  --duree-court: 120ms;
+  --duree-moyen: 200ms;
+  --courbe: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Cibles et pile du bas */
+  --cible: 44px;
+  --bas-securise: env(safe-area-inset-bottom, 0px);
+  --h-fab: 56px;
+  --bas-fab: calc(var(--e-4) + var(--bas-securise));
+  --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
+  --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
+
+  color-scheme: light;
+}
+
+@media (min-width: 480px) {
+  :root { --t-display: 48px; }
+}
+
+@media (min-width: 768px) {
+  :root { --t-display: 64px; }
+}
+
+/*
+ * Interlignes associés à l'échelle typographique (section 4). Ils vivent ici
+ * pour que `font: var(--t-x)/var(--l-x)` ne soit jamais approximé sur place.
+ */
+:root {
+  --l-display: 1.05;
+  --l-xl: 1.15;
+  --l-lg: 1.3;
+  --l-md: 1.4;
+  --l-base: 1.5;
+  --l-sm: 1.45;
+  --l-xs: 1.4;
+  --l-champ: 1.4;
+
+  /* Marge de page et largeur de lecture (section 5). */
+  --marge-page: var(--e-4);
+  --largeur-page: 960px;
+
+  /*
+   * Pendant haut de --bas-securise. La section 10 exige `env(safe-area-inset-*)`
+   * sur la barre de navigation ; celle de Revoir est en haut de l'écran.
+   */
+  --haut-securise: env(safe-area-inset-top, 0px);
+}
+
+@media (min-width: 1024px) {
+  :root { --marge-page: var(--e-6); }
+}
