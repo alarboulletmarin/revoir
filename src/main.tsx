@@ -5,6 +5,8 @@ import { App } from './App'
 import './styles/tokens.css'
 import './styles/reset.css'
 import './styles/base.css'
+import './styles/composants.css'
+import './styles/ecrans.css'
 
 const container = document.getElementById('root')
 if (!container) {

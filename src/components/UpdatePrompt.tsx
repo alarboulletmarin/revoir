@@ -1,56 +1,39 @@
 import { useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-
-/** Duree d'affichage du message « prete hors ligne », purement informatif. */
-const OFFLINE_NOTICE_MS = 6000
+import { useToast } from '../state/useToast'
 
 /**
- * Toast affiché lorsqu'une nouvelle version a été mise en cache par le
- * Service Worker. L'utilisateur choisit le moment du rechargement.
+ * Deuxième et dernier usage autorisé du toast (section 8.10) : une nouvelle
+ * version a été mise en cache par le Service Worker. L'utilisateur choisit le
+ * moment du rechargement, d'où une durée nulle — le toast attend une décision.
+ *
+ * Le message « prête hors ligne » n'est volontairement pas affiché : c'est une
+ * information sur l'application, pas sur les révisions, et le toast n'est pas
+ * un canal de notification générique.
  */
 export function UpdatePrompt() {
+  const { needRefresh, updateServiceWorker } = useMiseAJour()
+  const { afficherToast } = useToast()
+
+  useEffect(() => {
+    if (!needRefresh) return
+    afficherToast({
+      texte: 'Une nouvelle version est disponible.',
+      action: {
+        libelle: 'Mettre à jour',
+        onAction: () => void updateServiceWorker(true),
+      },
+      duree: 0,
+    })
+  }, [needRefresh, updateServiceWorker, afficherToast])
+
+  return null
+}
+
+function useMiseAJour() {
   const {
-    offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW()
-
-  // Le message hors ligne s'efface seul ; celui de mise à jour attend une
-  // décision de l'utilisateur.
-  useEffect(() => {
-    if (!offlineReady || needRefresh) return
-    const timer = setTimeout(() => setOfflineReady(false), OFFLINE_NOTICE_MS)
-    return () => clearTimeout(timer)
-  }, [offlineReady, needRefresh, setOfflineReady])
-
-  if (!offlineReady && !needRefresh) return null
-
-  const close = () => {
-    setOfflineReady(false)
-    setNeedRefresh(false)
-  }
-
-  return (
-    <div className="toast" role="status" aria-live="polite">
-      <p className="toast__text">
-        {needRefresh
-          ? 'Une nouvelle version est disponible.'
-          : 'Revoir est prête à fonctionner hors ligne.'}
-      </p>
-      <div className="toast__actions">
-        {needRefresh && (
-          <button
-            type="button"
-            className="button button--small"
-            onClick={() => void updateServiceWorker(true)}
-          >
-            Mettre à jour
-          </button>
-        )}
-        <button type="button" className="button button--small button--ghost" onClick={close}>
-          Fermer
-        </button>
-      </div>
-    </div>
-  )
+  return { needRefresh, updateServiceWorker }
 }

@@ -134,11 +134,18 @@
 
 /* ---------------------------------------------------------------- page -- */
 
+/*
+ * `--purge-liste` en bas : sans elle, le dernier élément de toute liste reste
+ * inatteignable sous le FAB (section 7.3).
+ */
 .page {
+  display: flex;
   width: 100%;
   min-width: 0;
   max-width: var(--largeur-page);
   flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-5);
   margin-inline: auto;
   padding: var(--e-5) var(--marge-page) var(--purge-liste);
 }
@@ -274,7 +281,7 @@
 }
 
 /* Le FAB s'efface dès qu'un panneau ou une feuille modale s'ouvre (7.3). */
-.fab--masque {
+body[data-panneau='ouvert'] .fab {
   pointer-events: none;
   opacity: 0;
   transform: translateY(var(--e-2));

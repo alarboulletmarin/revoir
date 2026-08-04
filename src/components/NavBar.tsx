@@ -1,27 +1,30 @@
 import { NavLink } from 'react-router-dom'
-import { IconCalendar, IconSettings, IconToday } from './Icons'
 
-const LINKS = [
-  { to: '/', label: 'Aujourd’hui', Icon: IconToday },
-  { to: '/calendrier', label: 'Calendrier', Icon: IconCalendar },
-  { to: '/reglages', label: 'Réglages', Icon: IconSettings },
+/**
+ * Navigation en toutes lettres. Les six icônes autorisées (section 11) ne
+ * couvrent ni « aujourd'hui » ni « réglages » : plutôt que d'en inventer
+ * deux de plus, on écrit les mots.
+ */
+const LIENS = [
+  { vers: '/', libelle: "Aujourd'hui" },
+  { vers: '/calendrier', libelle: 'Calendrier' },
+  { vers: '/reglages', libelle: 'Réglages' },
 ]
 
 export function NavBar() {
   return (
     <nav className="nav" aria-label="Navigation principale">
-      <ul className="nav__list">
-        {LINKS.map(({ to, label, Icon }) => (
-          <li key={to}>
+      <ul className="nav__liste">
+        {LIENS.map(({ vers, libelle }) => (
+          <li key={vers} className="nav__element">
             <NavLink
-              to={to}
-              end={to === '/'}
+              to={vers}
+              end={vers === '/'}
               className={({ isActive }) =>
-                isActive ? 'nav__link nav__link--active' : 'nav__link'
+                isActive ? 'nav__lien nav__lien--actif' : 'nav__lien'
               }
             >
-              <Icon />
-              <span>{label}</span>
+              {libelle}
             </NavLink>
           </li>
         ))}

@@ -1,13 +1,16 @@
-import { Link } from 'react-router-dom'
+import { useTitrePage } from '../state/useTitrePage'
+import { LienBouton } from '../components/Bouton'
 
 export function NotFound() {
+  useTitrePage('Page introuvable')
+
   return (
-    <div className="stack">
-      <h1 className="page-title">Page introuvable</h1>
-      <p className="muted">Cette adresse ne correspond à aucune page de Revoir.</p>
-      <Link to="/" className="button">
+    <div className="etat-vide">
+      <h1 className="page__titre">Page introuvable</h1>
+      <p className="discret">Cette adresse ne correspond à aucune page de Revoir.</p>
+      <LienBouton vers="/" variante="primaire">
         Retour au tableau de bord
-      </Link>
+      </LienBouton>
     </div>
   )
 }

@@ -91,6 +91,15 @@
    * sur la barre de navigation ; celle de Revoir est en haut de l'écran.
    */
   --haut-securise: env(safe-area-inset-top, 0px);
+
+  /*
+   * Barres de charge (section 8.8). Ces trois valeurs sont hors de la base 4
+   * parce que la section les fixe telles quelles ; elles sont nommées ici pour
+   * qu'aucune ne soit écrite en dur dans une feuille.
+   */
+  --charge-gap: 3px;
+  --charge-rayon: 2px;
+  --charge-plancher: 3px;
 }
 
 @media (min-width: 1024px) {
