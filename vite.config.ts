@@ -1,0 +1,53 @@
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  base: '/',
+  plugins: [
+    react(),
+    VitePWA({
+      // 'prompt' plutot que 'autoUpdate' : l'utilisateur decide quand recharger,
+      // via le toast affiche par <UpdatePrompt />.
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Revoir',
+        short_name: 'Revoir',
+        description:
+          'Planifier ses révisions grace a la répétition espacée, sans stocker le contenu a apprendre.',
+        lang: 'fr',
+        dir: 'ltr',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#faf7f2',
+        theme_color: '#faf7f2',
+        categories: ['education', 'productivity'],
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'icon-512-maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        navigateFallback: 'index.html',
+        cleanupOutdatedCaches: true,
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ],
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+  },
+})
