@@ -19,7 +19,7 @@ import { IconChevronLeft, IconChevronRight } from '../components/Icons'
 const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 
 export function CalendarPage() {
-  const { items, setReviewDone } = useItems()
+  const { items, valider, devalider } = useItems()
   const today = todayKey()
   const [selected, setSelected] = useState(today)
   const [month, setMonth] = useState(() => startOfMonth(fromKey(today)))
@@ -46,7 +46,8 @@ export function CalendarPage() {
   )
 
   const toggle = (entry: ReviewEntry, done: boolean) => {
-    void setReviewDone(entry.item.id, entry.review.offset, done)
+    if (done) valider(entry.item.id, entry.review.offset)
+    else devalider(entry.item.id, entry.review.offset)
   }
 
   const goToMonth = (next: Date) => {

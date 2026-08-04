@@ -7,19 +7,19 @@ export const BACKUP_VERSION = 1
 export interface Backup {
   app: typeof BACKUP_APP
   version: number
-  exportédAt: string
+  exporteLe: string
   items: Item[]
 }
 
 /** Erreur levée quand un fichier importé n'est pas une sauvegarde exploitable. */
 export class BackupError extends Error {}
 
-export function buildBackup(items: Item[], exportédAt = new Date().toISOString()): Backup {
-  return { app: BACKUP_APP, version: BACKUP_VERSION, exportédAt, items }
+export function buildBackup(items: Item[], exporteLe = new Date().toISOString()): Backup {
+  return { app: BACKUP_APP, version: BACKUP_VERSION, exporteLe, items }
 }
 
-export function serializeBackup(items: Item[], exportédAt?: string): string {
-  return JSON.stringify(buildBackup(items, exportédAt), null, 2)
+export function serializeBackup(items: Item[], exporteLe?: string): string {
+  return JSON.stringify(buildBackup(items, exporteLe), null, 2)
 }
 
 /** Nom de fichier proposé au téléchargement : « revoir-2026-03-14.json ». */

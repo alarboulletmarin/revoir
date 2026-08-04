@@ -16,7 +16,7 @@ import { IconCheck } from '../components/Icons'
 export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, loading, setReviewDone, setArchived, removeItem } = useItems()
+  const { items, loading, valider, devalider, setArchived, removeItem } = useItems()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const today = todayKey()
 
@@ -79,7 +79,11 @@ export function ItemDetail() {
                   role="checkbox"
                   aria-checked={review.done}
                   aria-label={`${review.done ? 'Annuler' : 'Marquer comme effectuée'} la révision J+${review.offset}`}
-                  onClick={() => void setReviewDone(item.id, review.offset, !review.done)}
+                  onClick={() =>
+                    review.done
+                      ? devalider(item.id, review.offset)
+                      : valider(item.id, review.offset)
+                  }
                 >
                   {review.done && <IconCheck width="16" height="16" strokeWidth="2.2" />}
                 </button>
@@ -112,7 +116,7 @@ export function ItemDetail() {
           <button
             type="button"
             className="button button--ghost"
-            onClick={() => void setArchived(item.id, !item.archived)}
+            onClick={() => setArchived(item.id, !item.archived)}
           >
             {item.archived ? 'Désarchiver' : 'Archiver'}
           </button>

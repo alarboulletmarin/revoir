@@ -7,20 +7,26 @@ import {
   type ReactNode,
 } from 'react'
 import type { Item, ScheduleId } from '../types'
-import {
-  deleteItem,
-  getAllItems,
-  putItem,
-  replaceAllItems,
-} from '../db/database'
+import { deleteItem, getAllItems, putItem, replaceAllItems } from '../db/database'
 import { buildReviews, rebuildReviews } from '../lib/schedules'
-import type { DateKey } from '../lib/dates'
+import { devaliderRevision, validerRevision } from '../lib/recalage'
+import { todayKey, type DateKey } from '../lib/dates'
 
 export interface ItemDraft {
   title: string
   category: string
   startDate: DateKey
   schedule: ScheduleId
+}
+
+/** Ce qu'une validation renvoie à l'appelant pour construire son toast. */
+export interface ValidationEffectuee {
+  /** L'élément tel qu'il était avant la validation — la cible d'« Annuler ». */
+  precedent: Item
+  /** Jours de retard absorbés. 0 si la validation n'était pas en retard. */
+  retard: number
+  /** Échéances à venir déplacées par le recalage. */
+  deplacees: number
 }
 
 export interface ItemsContextValue {
@@ -31,8 +37,12 @@ export interface ItemsContextValue {
   createItem: (draft: ItemDraft) => Promise<Item>
   editItem: (id: string, draft: ItemDraft) => Promise<void>
   removeItem: (id: string) => Promise<void>
-  setArchived: (id: string, archived: boolean) => Promise<void>
-  setReviewDone: (id: string, offset: number, done: boolean) => Promise<void>
+  setArchived: (id: string, archived: boolean) => void
+  /** Validation optimiste : l'état change tout de suite, l'écriture suit. */
+  valider: (id: string, offset: number) => ValidationEffectuee | null
+  devalider: (id: string, offset: number) => void
+  /** Remet un élément dans l'état exact fourni. Sert au bouton « Annuler ». */
+  restaurer: (item: Item) => void
   importItems: (items: Item[]) => Promise<void>
 }
 
@@ -59,7 +69,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       .catch(() => {
         if (!cancelled) {
           setError(
-            "Impossible d’accéder au stockage local. Les données ne seront pas conservées.",
+            "Impossible d'accéder au stockage local. Les données ne seront pas conservées.",
           )
         }
       })
@@ -88,7 +98,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       await putItem(item)
       setError(null)
     } catch {
-      setError("L’enregistrement local a échoué.")
+      setError("L'enregistrement local a échoué.")
     }
   }, [])
 
@@ -140,29 +150,46 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setArchived = useCallback(
-    async (id: string, archived: boolean) => {
+    (id: string, archived: boolean) => {
       const existing = items.find((item) => item.id === id)
       if (!existing) return
-      await persist({ ...existing, archived, updatedAt: new Date().toISOString() })
+      void persist({ ...existing, archived, updatedAt: new Date().toISOString() })
     },
     [items, persist],
   )
 
-  const setReviewDone = useCallback(
-    async (id: string, offset: number, done: boolean) => {
-      const existing = items.find((item) => item.id === id)
-      if (!existing) return
-      await persist({
-        ...existing,
-        reviews: existing.reviews.map((review) =>
-          review.offset === offset
-            ? { ...review, done, doneAt: done ? new Date().toISOString() : null }
-            : review,
-        ),
-        updatedAt: new Date().toISOString(),
-      })
+  /**
+   * Règle métier n°2 : aucune confirmation, mise à jour immédiate, et de quoi
+   * revenir en arrière. On renvoie l'élément d'avant plutôt qu'un identifiant
+   * d'opération — c'est la seule façon d'annuler exactement un recalage, qui
+   * a pu déplacer plusieurs échéances d'un coup.
+   */
+  const valider = useCallback(
+    (id: string, offset: number): ValidationEffectuee | null => {
+      const precedent = items.find((item) => item.id === id)
+      if (!precedent) return null
+
+      const resultat = validerRevision(precedent, offset, todayKey())
+      void persist(resultat.item)
+      return { precedent, retard: resultat.retard, deplacees: resultat.deplacees }
     },
     [items, persist],
+  )
+
+  const devalider = useCallback(
+    (id: string, offset: number) => {
+      const existing = items.find((item) => item.id === id)
+      if (!existing) return
+      void persist(devaliderRevision(existing, offset))
+    },
+    [items, persist],
+  )
+
+  const restaurer = useCallback(
+    (item: Item) => {
+      void persist(item)
+    },
+    [persist],
   )
 
   const importItems = useCallback(async (imported: Item[]) => {
@@ -171,7 +198,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       await replaceAllItems(imported)
       setError(null)
     } catch {
-      setError("L'import n’a pas pu être enregistré localement.")
+      setError("L'import n'a pas pu être enregistré localement.")
     }
   }, [])
 
@@ -184,7 +211,9 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       editItem,
       removeItem,
       setArchived,
-      setReviewDone,
+      valider,
+      devalider,
+      restaurer,
       importItems,
     }),
     [
@@ -195,7 +224,9 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       editItem,
       removeItem,
       setArchived,
-      setReviewDone,
+      valider,
+      devalider,
+      restaurer,
       importItems,
     ],
   )

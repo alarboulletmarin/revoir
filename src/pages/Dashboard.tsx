@@ -16,7 +16,7 @@ import { LoadBars } from '../components/LoadBars'
 import { EmptyState } from '../components/EmptyState'
 
 export function Dashboard() {
-  const { items, loading, setReviewDone } = useItems()
+  const { items, loading, valider, devalider } = useItems()
   const today = todayKey()
 
   const view = useMemo(
@@ -31,7 +31,8 @@ export function Dashboard() {
   )
 
   const toggle = (entry: ReviewEntry, done: boolean) => {
-    void setReviewDone(entry.item.id, entry.review.offset, done)
+    if (done) valider(entry.item.id, entry.review.offset)
+    else devalider(entry.item.id, entry.review.offset)
   }
 
   if (loading) {
