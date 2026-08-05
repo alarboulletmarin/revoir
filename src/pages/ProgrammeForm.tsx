@@ -70,12 +70,22 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
     [jours],
   )
 
+  /*
+   * Au plafond, une graduation de plus ne remplace rien en silence : jusqu'ici
+   * le `slice` faisait disparaître la plus lointaine sans un mot, et le geste
+   * semblait n'avoir servi à rien. On refuse l'ajout, et la phrase sous les
+   * graduations dit pourquoi.
+   */
+  const plein = jours.length >= RYTHME_MAX_REVISIONS
+
   const basculer = (jour: number) => {
-    setJours((actuels) =>
-      actuels.includes(jour)
-        ? actuels.filter((candidat) => candidat !== jour)
-        : [...actuels, jour].sort((a, b) => a - b).slice(0, RYTHME_MAX_REVISIONS),
-    )
+    setJours((actuels) => {
+      if (actuels.includes(jour)) {
+        return actuels.filter((candidat) => candidat !== jour)
+      }
+      if (actuels.length >= RYTHME_MAX_REVISIONS) return actuels
+      return [...actuels, jour].sort((a, b) => a - b)
+    })
   }
 
   const erreurNom =
@@ -183,15 +193,23 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
               <div className="jours">
                 {graduations.map((jour) => {
                   const retenu = jours.includes(jour)
+                  const indisponible = plein && !retenu
                   return (
                     <label
                       key={jour}
-                      className={retenu ? 'jour jour--actif' : 'jour'}
+                      className={
+                        retenu
+                          ? 'jour jour--actif'
+                          : indisponible
+                            ? 'jour jour--indisponible'
+                            : 'jour'
+                      }
                     >
                       <input
                         className="jour__case"
                         type="checkbox"
                         checked={retenu}
+                        disabled={indisponible}
                         onChange={() => basculer(jour)}
                       />
                       <span aria-hidden="true">{nommerEcart(jour)}</span>
@@ -200,6 +218,12 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
                   )
                 })}
               </div>
+              {plein && (
+                <p className="champ__aide" role="status">
+                  {RYTHME_MAX_REVISIONS} échéances au plus : retirez-en une pour
+                  en ajouter une autre.
+                </p>
+              )}
               {soumis && erreurRythme && (
                 <p className="champ__erreur">{erreurRythme}</p>
               )}

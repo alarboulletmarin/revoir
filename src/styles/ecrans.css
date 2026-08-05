@@ -1067,6 +1067,17 @@ body[data-panneau='ouvert'] {
 }
 
 /*
+ * Le rythme est au plafond : les graduations non retenues cessent d'être
+ * touchables. Elles restent lisibles — les retirer ferait sauter la règle —
+ * mais ne promettent plus rien, et une phrase dit pourquoi juste en dessous.
+ */
+.jour--indisponible {
+  border-style: dashed;
+  color: var(--encre-2);
+  cursor: not-allowed;
+}
+
+/*
  * La case reste focusable, elle n'est simplement pas dessinée deux fois.
  * `pointer-events: none` laisse toute la pilule au doigt : sans lui, le
  * pixel de la case posé au bord du contenu capte les touchers qui l'effleurent.

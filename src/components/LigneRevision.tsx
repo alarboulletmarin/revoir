@@ -57,10 +57,28 @@ export function LigneRevision({
   const { categories, reviews } = useDonnees()
   const [partante, setPartante] = useState(false)
   const minuteur = useRef<number | undefined>(undefined)
+  /** La validation retardée par l'animation de sortie, tant qu'elle n'a pas eu lieu. */
+  const enAttente = useRef<(() => void) | null>(null)
 
-  // Le composant disparaît normalement avant la fin du minuteur ; le nettoyage
-  // couvre le cas où l'utilisateur quitte l'écran entre-temps.
-  useEffect(() => () => window.clearTimeout(minuteur.current), [])
+  /**
+   * Une validation en attente est **exécutée** au démontage, pas annulée.
+   *
+   * Les 200 ms qui séparent la coche du retrait de la ligne appartiennent à
+   * l'animation, pas à la décision : celle-ci est prise au moment du tap. Un
+   * nettoyage qui se contentait de couper le minuteur perdait la validation
+   * en silence — la coche s'était affichée, la ligne s'était barrée, et rien
+   * n'était écrit. Il suffisait de refermer la feuille du calendrier ou
+   * d'ouvrir la fiche dans la foulée.
+   */
+  useEffect(
+    () => () => {
+      window.clearTimeout(minuteur.current)
+      const differee = enAttente.current
+      enAttente.current = null
+      differee?.()
+    },
+    [],
+  )
 
   const revisions = useMemo(
     () => revisionsDe(topic.id, reviews),
@@ -82,7 +100,12 @@ export function LigneRevision({
     // Mise à jour optimiste : la coche et la ligne barrée sont immédiates,
     // le retrait de la liste suit 200 ms plus tard.
     setPartante(true)
-    minuteur.current = window.setTimeout(() => onValider(entry), DUREE_SORTIE)
+    enAttente.current = () => onValider(entry)
+    minuteur.current = window.setTimeout(() => {
+      const differee = enAttente.current
+      enAttente.current = null
+      differee?.()
+    }, DUREE_SORTIE)
   }
 
   // Le retard ne se signale que par sa mention, en toutes lettres : aucune

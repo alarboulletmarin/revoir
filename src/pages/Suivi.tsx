@@ -6,7 +6,8 @@ import { useMediaQuery } from '../state/useMediaQuery'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import { useToast } from '../state/useToast'
 import { estListeDeChaines, usePreference } from '../state/usePreference'
-import { formatLong, formatIsoDate, todayKey } from '../lib/dates'
+import { useAujourdhui } from '../state/useAujourdhui'
+import { formatLong, formatIsoDate } from '../lib/dates'
 import { CLE_SANS_CATEGORIE, grouperParCategorie, revisionsDe } from '../lib/sujets'
 import { etatRevision, resumeCategorie, statsCategorie, type ModeColonnes } from '../lib/suivi'
 import { progressionEntree } from '../lib/stats'
@@ -42,7 +43,7 @@ export function Suivi() {
   } = useDonnees()
   const { afficherToast } = useToast()
   const large = useMediaQuery('(min-width: 768px)')
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
   const champFiltre = useId()
 
   /*
@@ -91,11 +92,30 @@ export function Suivi() {
     )
   }
 
+  /*
+   * Le filtre retenu, ou « Toutes » si la catégorie qu'il désignait n'a plus
+   * un seul sujet actif. Sans ce garde, la page n'affiche plus aucun tableau
+   * et le champ reste sur une valeur qu'aucune option ne porte — un `<select>`
+   * vide sous un écran vide.
+   */
+  const filtreEffectif =
+    filtre === TOUTES || groupes.some((groupe) => groupe.cle === filtre)
+      ? filtre
+      : TOUTES
+
+  const choisirFiltre = (cle: string) => {
+    setFiltre(cle)
+    // Filtrer sur une catégorie, c'est demander à la voir : la déplier fait
+    // partie du geste. Rien n'empêche de la replier ensuite, et c'est alors
+    // ce choix-là qui vaut.
+    if (cle !== TOUTES) setChoix([...new Set([...ouvertes, cle])])
+  }
+
   // Stable : les colonnes du tableau se mémorisent dessus.
   const ouvrirCellule = useCallback((cible: CelluleVisee) => setVisee(cible), [])
 
   const visibles = groupes.filter(
-    (groupe) => filtre === TOUTES || groupe.cle === filtre,
+    (groupe) => filtreEffectif === TOUTES || groupe.cle === filtreEffectif,
   )
 
   if (loading) return <p className="discret">Chargement…</p>
@@ -130,8 +150,8 @@ export function Suivi() {
             <select
               id={champFiltre}
               className="champ-select__saisie"
-              value={filtre}
-              onChange={(event) => setFiltre(event.target.value)}
+              value={filtreEffectif}
+              onChange={(event) => choisirFiltre(event.target.value)}
             >
               <option value={TOUTES}>Toutes les catégories</option>
               {groupes.map((groupe) => (
@@ -300,17 +320,22 @@ function PanneauCellule({
         <>
           <p className="panneau__etat">{etatEnClair(review, revisions, aujourdhui)}</p>
 
+          {/*
+            Une révision à venir se valide comme les autres. Elle l'était déjà
+            depuis la feuille du calendrier, depuis « Prochaines révisions » et
+            depuis la fiche du sujet : le panneau était le seul écran à la
+            refuser, ce qui ne se lisait pas comme une règle mais comme une
+            case morte. Réviser en avance est un usage, pas une erreur.
+          */}
           <div className="panneau__actions">
             {etatRevision(review, aujourdhui) === 'faite' ? (
               <Bouton variante="discret" onClick={() => onDevalider(review.id)}>
                 Annuler la validation
               </Bouton>
             ) : (
-              etatRevision(review, aujourdhui) !== 'avenir' && (
-                <Bouton variante="primaire" onClick={() => onValider(review.id)}>
-                  Marquer comme effectuée
-                </Bouton>
-              )
+              <Bouton variante="primaire" onClick={() => onValider(review.id)}>
+                Marquer comme effectuée
+              </Bouton>
             )}
             <Link to={`/sujet/${topic.id}`} className="btn btn--discret">
               Voir le sujet
@@ -322,10 +347,7 @@ function PanneauCellule({
   )
 }
 
-/**
- * L'état d'une révision, écrit. Une échéance à venir se lit sans action : la
- * valider en avance n'a pas de sens, et le panneau ne le propose donc pas.
- */
+/** L'état d'une révision, écrit en toutes lettres. */
 function etatEnClair(review: Review, revisions: Review[], aujourdhui: string): string {
   const { rang, total } = progressionEntree(review, revisions)
   const situation = `Révision ${rang} sur ${total}`

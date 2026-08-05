@@ -11,7 +11,8 @@ import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import type { Category } from '../types'
-import { formatLong, formatMonth, fromKey, toKey, todayKey, type DateKey } from '../lib/dates'
+import { useAujourdhui } from '../state/useAujourdhui'
+import { formatLong, formatMonth, fromKey, toKey, type DateKey } from '../lib/dates'
 import { entriesForDate } from '../lib/stats'
 import { teinteDe } from '../lib/categories'
 import {
@@ -31,7 +32,7 @@ export function CalendarPage() {
   useTitrePage('Calendrier')
   const { topics, reviews, categories } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
 
   const [mois, setMois] = useState(() => startOfMonth(fromKey(aujourdhui)))
   const [choisi, setChoisi] = useState<DateKey | null>(null)

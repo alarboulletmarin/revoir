@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
+import { useAujourdhui } from '../state/useAujourdhui'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
-import { formatLong, formatShort, todayKey } from '../lib/dates'
+import { formatLong, formatShort } from '../lib/dates'
 import {
   computeStats,
   loadForDays,
@@ -32,7 +33,7 @@ export function Dashboard() {
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
   const tablette = useMediaQuery('(min-width: 768px)')
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
 
   const vue = useMemo(() => {
     const dujour = todayEntries(topics, reviews, aujourdhui)

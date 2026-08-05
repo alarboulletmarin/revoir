@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
+import { useAujourdhui } from '../state/useAujourdhui'
 import { useTitrePage } from '../state/useTitrePage'
 import { getSchedule } from '../lib/schedules'
-import { formatIsoDate, formatLong, formatRelative, todayKey } from '../lib/dates'
+import { formatIsoDate, formatLong, formatRelative } from '../lib/dates'
 import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
 import { Frise } from '../components/Frise'
 import { AnneauProgression } from '../components/AnneauProgression'
@@ -32,7 +33,7 @@ export function SujetDetail() {
   } = useDonnees()
   const { afficherToast } = useToast()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
 
   const topic = topics.find((candidat) => candidat.id === id)
   useTitrePage(topic?.title ?? 'Sujet')

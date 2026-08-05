@@ -11,6 +11,7 @@ import {
   isFuture,
   isPast,
   isToday,
+  msAvantMinuit,
   toKey,
 } from './dates'
 
@@ -54,6 +55,36 @@ describe('comparaisons', () => {
   it('compare correctement au passage d’année', () => {
     expect(isPast('2025-12-31', '2026-01-01')).toBe(true)
     expect(isFuture('2026-01-01', '2025-12-31')).toBe(true)
+  })
+})
+
+describe('msAvantMinuit', () => {
+  const MINUTE = 60_000
+  const HEURE = 60 * MINUTE
+
+  it('compte le temps restant jusqu’au prochain minuit local', () => {
+    const veille = new Date(2026, 2, 10, 22, 0, 0)
+    expect(msAvantMinuit(veille)).toBe(2 * HEURE + 1000)
+  })
+
+  it('donne une journée pleine juste après minuit', () => {
+    const debut = new Date(2026, 2, 10, 0, 0, 0)
+    expect(msAvantMinuit(debut)).toBe(24 * HEURE + 1000)
+  })
+
+  /*
+   * Le délai doit rester franchement positif : un minuteur réveillé une
+   * milliseconde avant minuit relirait la veille, puis se reprogrammerait pour
+   * une milliseconde — une boucle serrée jusqu'au changement de jour.
+   */
+  it('garde une marge à la seconde qui précède minuit', () => {
+    const juste = new Date(2026, 2, 10, 23, 59, 59, 999)
+    expect(msAvantMinuit(juste)).toBeGreaterThanOrEqual(1000)
+  })
+
+  it('franchit un changement de mois comme un autre jour', () => {
+    const fin = new Date(2026, 1, 28, 23, 0, 0)
+    expect(msAvantMinuit(fin)).toBe(HEURE + 1000)
   })
 })
 

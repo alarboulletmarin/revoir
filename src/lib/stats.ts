@@ -65,16 +65,22 @@ export function todayEntries(
   return allEntries(topics, reviews).filter((entry) => entry.review.dueDate === today)
 }
 
-/** Prochaines révisions à venir, hors aujourd'hui. */
+/**
+ * Prochaines révisions à venir, hors aujourd'hui.
+ *
+ * `limit` à `null` les rend toutes : c'est ce que demande l'écran « Tout voir »,
+ * dont le nom est une promesse. Un plafond y tronquait la liste sans le dire.
+ */
 export function upcomingEntries(
   topics: Topic[],
   reviews: Review[],
-  limit = 8,
+  limit: number | null = 8,
   today: DateKey = todayKey(),
 ): ReviewEntry[] {
-  return allEntries(topics, reviews)
-    .filter((entry) => !estFaite(entry.review) && entry.review.dueDate > today)
-    .slice(0, limit)
+  const avenir = allEntries(topics, reviews).filter(
+    (entry) => !estFaite(entry.review) && entry.review.dueDate > today,
+  )
+  return limit === null ? avenir : avenir.slice(0, limit)
 }
 
 /** Révisions tombant un jour donné, sujets archivés exclus. */
@@ -207,6 +213,11 @@ export interface ProgressionEntree {
  * recalage après retard réécrit les dates, et rien ne garantit qu'elles
  * restent croissantes.
  *
+ * Les candidates se comparent par identifiant et non par date : une autre
+ * révision tombant le même jour — ce que le recalage et le report produisent —
+ * est bien une prochaine échéance, et la taire donnerait « plus rien après »
+ * à qui en a encore une dans la journée.
+ *
  * @param revisions les révisions du sujet, celle-ci comprise.
  */
 export function progressionEntree(
@@ -215,7 +226,10 @@ export function progressionEntree(
 ): ProgressionEntree {
   const suivantes = revisions
     .filter(
-      (candidate) => !estFaite(candidate) && candidate.dueDate > review.dueDate,
+      (candidate) =>
+        candidate.id !== review.id &&
+        !estFaite(candidate) &&
+        candidate.dueDate >= review.dueDate,
     )
     .map((candidate) => candidate.dueDate)
     .sort()
