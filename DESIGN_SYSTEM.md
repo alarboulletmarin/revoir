@@ -129,9 +129,8 @@ Si tu veux zéro dépendance de police, retire Instrument Sans et passe tout en 
 
 | Token | Taille / interligne | Usage |
 |---|---|---|
-| `--t-display` | 40px / 1,05 → 48px ≥ 480px → 64px ≥ 768px | le grand chiffre du jour |
 | `--t-champ` | 16px / 1,4 | **valeur plancher des champs de saisie** (anti-zoom iOS) |
-| `--t-xl` | 28px / 1,15 | chiffres des cellules secondaires |
+| `--t-xl` | 28px / 1,15 | chiffres des cellules, titre de la cellule du jour |
 | `--t-lg` | 20px / 1,3 | titre de page, titre de fiche |
 | `--t-md` | 17px / 1,4 | titre d'élément dans une liste |
 | `--t-base` | 15px / 1,5 | texte courant |
@@ -227,40 +226,37 @@ Réservée au **tableau de bord**. Le calendrier, la fiche d'élément et le for
   grid-template-columns: repeat(2, 1fr);
   grid-template-areas:
     "aujourdhui aujourdhui"
-    "aujourdhui aujourdhui"
-    "retard     restantes"
-    "charge     charge"
-    "prochaines prochaines";
+    "retard     retard"
+    "synthese   synthese";
 }
 
 @media (min-width: 768px) {
   .bento {
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
-      "aujourdhui aujourdhui retard     restantes"
-      "aujourdhui aujourdhui charge     charge"
-      "prochaines prochaines calendrier calendrier"
-      "prochaines prochaines calendrier calendrier";
+      "aujourdhui aujourdhui retard     retard"
+      "aujourdhui aujourdhui synthese   synthese"
+      "aujourdhui aujourdhui calendrier calendrier";
   }
 }
 ```
 
 `grid-auto-rows: minmax(96px, auto)` est obligatoire : le français est plus long que l'anglais et casserait une grille à hauteur fixe.
 
+Une zone par cellule, jamais deux rangées pour une seule carte : la cellule du jour doit pouvoir ne faire que la hauteur de son unique révision. Elle porte donc `min-height: 0` et `align-self: start` — au-delà de 768px elle couvre trois rangées, et sans cela une journée à deux révisions se retrouverait au sommet de huit cents pixels de vert.
+
 ### Inventaire des cellules
 
 | Zone | Contenu | Comportement |
 |---|---|---|
-| `aujourdhui` | **Cellule héros, fond `--accent` plein.** Grand chiffre + liste cochable directement dans la cellule | Si 0 : bascule en état vide (section 8.9) |
+| `aujourdhui` | **Cellule héros, fond `--accent` plein.** Titre « 3 révisions aujourd'hui » + liste cochable directement dans la cellule | Si 0 : bascule en état vide (section 8.9) |
 | `retard` | Chiffre en `--retard-texte`, point `--retard` | **Disparaît du DOM si 0** — la grille se recompose |
-| `restantes` | Anneau de progression `conic-gradient` + total restant | Toujours affichée |
-| `charge` | 14 barres verticales, `--accent` à opacité variable | Toujours affichée |
-| `prochaines` | 3 lignes max + lien « Tout voir » | Si 0 : « Aucune révision planifiée » |
+| `synthese` | Total restant, puis les 14 barres de charge sous leur intitulé | Toujours affichée |
 | `calendrier` | Mini-mois, points de densité | **≥ 768px uniquement** |
 
 Les six stats de la spec initiale sont volontairement réduites à trois chiffres visibles. Le reste vit dans la fiche d'élément.
 
-Sous 480px, la cellule héros réduit son chiffre à `--t-display` (40px) et n'affiche que **3 items + « Tout voir »** : un grand chiffre, un label et une liste complète ne tiennent pas dans une cellule à 320px.
+Sous 480px, la cellule héros n'affiche que **3 items + « Tout voir »** : un titre et une liste complète ne tiennent pas dans une cellule à 320px. Le grand chiffre de 64px a disparu — la question du jour est une phrase, « 3 révisions aujourd'hui », et c'est le fond `--accent` plein qui porte la hiérarchie, pas la taille du texte.
 
 ### 7.3 La pile du bas — source n°1 de chevauchement
 
@@ -354,18 +350,24 @@ Trois cartes empilées (Simple / Poussé / Ultime), chacune affichant **sa frise
 
 ### 8.8 Barres de charge
 
-14 barres, largeur `1fr` chacune, gap 3px, `border-radius: 2px`, hauteur proportionnelle au nombre de révisions (min 3px pour un jour vide). Opacité `--accent` de 0,25 à 1 selon la densité. Le jour courant porte un point sous sa barre.
+14 barres, largeur `1fr` chacune, gap 3px, `border-radius: 2px`, hauteur proportionnelle au nombre de révisions (min 3px pour un jour vide). Opacité `--accent` de 0,25 à 1 selon la densité. La barre du jour porte un trait `--encre` de 2px à sa base — sa hauteur peut être celle d'un jour vide.
+
+La hauteur ne porte jamais l'information seule : les barres forment une `<ul>` dont chaque `<li>` contient un texte `.invisible` — « aujourd'hui, 3 révisions », « ven. 7 août, aucune révision ». Sous l'axe, trois repères seulement — « Auj. », la date médiane, la dernière —, calés par `space-between` sur la première et la dernière barre : quatorze dates tiendraient sur seize pixels chacune à 320px.
+
+À zéro sur les quatorze jours, les barres cèdent la place à une phrase.
 
 ### 8.9 États vides
 
 **L'état vide « rien aujourd'hui » est l'écran le plus fréquent de l'app.** Il mérite le meilleur traitement, pas un gris triste.
 
 ```
-Rien à revoir aujourd'hui.
-Prochaine révision : jeudi 6 août, 3 éléments.
+Aucune révision prévue aujourd'hui
+Prochaine révision : jeu. 6 août, 3 éléments.
 ```
 
 Il reste dans la cellule héros, fond `--accent` plein. La deuxième ligne est une information utile, pas un encouragement. Aucune illustration, aucun emoji.
+
+Une journée bouclée n'est pas une journée vide, et les deux ne se disent pas pareil : **« Tout est terminé pour aujourd'hui »** quand quelque chose était prévu, **« Aucune révision prévue aujourd'hui »** quand rien ne l'était. Sans rien à annoncer non plus, la seconde ligne devient « Les prochaines révisions apparaîtront ici. »
 
 ### 8.10 Toast
 
@@ -461,7 +463,6 @@ Seule dérogation à la palette : les huit teintes de matière de la section 3 b
   /* Typographie */
   --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --t-display: 40px;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;
@@ -498,14 +499,6 @@ Seule dérogation à la palette : les huit teintes de matière de la section 3 b
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
 
   color-scheme: light;
-}
-
-@media (min-width: 480px) {
-  :root { --t-display: 48px; }
-}
-
-@media (min-width: 768px) {
-  :root { --t-display: 64px; }
 }
 
 /* Teintes de matière — section 3 bis. */

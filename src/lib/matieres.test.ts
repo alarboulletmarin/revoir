@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Item, ScheduleId } from '../types'
 import { buildReviews } from './schedules'
-import { SANS_MATIERE, grouperParMatiere, prochaineEcheance } from './matieres'
+import {
+  SANS_CATEGORIE,
+  grouperParMatiere,
+  prochaineEcheance,
+  prochaineRevision,
+} from './matieres'
 
 function makeItem(
   title: string,
@@ -56,7 +61,7 @@ describe('grouperParMatiere', () => {
       makeItem('B', 'Zoologie'),
       makeItem('C', 'Anglais'),
     ])
-    expect(groupes.map((g) => g.nom)).toEqual(['Anglais', 'Zoologie', SANS_MATIERE])
+    expect(groupes.map((g) => g.nom)).toEqual(['Anglais', 'Zoologie', SANS_CATEGORIE])
   })
 
   it('écarte les éléments archivés', () => {
@@ -119,5 +124,32 @@ describe('prochaineEcheance', () => {
   it('rend null quand tout est fait', () => {
     const fini = makeItem('A', 'X', '2026-03-01', { doneOffsets: [1, 3, 7, 14, 30] })
     expect(prochaineEcheance(fini)).toBeNull()
+  })
+})
+
+describe('prochaineRevision', () => {
+  it('rend la révision entière, décalage compris', () => {
+    // Programme « simple » : J+1, J+3, J+7, J+14, J+30 depuis le 1er mars.
+    expect(prochaineRevision(makeItem('A', 'X', '2026-03-01'))).toMatchObject({
+      offset: 1,
+      date: '2026-03-02',
+    })
+    expect(
+      prochaineRevision(makeItem('A', 'X', '2026-03-01', { doneOffsets: [1, 3] })),
+    ).toMatchObject({ offset: 7, date: '2026-03-08' })
+  })
+
+  it('prend la date la plus proche, même hors ordre du tableau', () => {
+    // Le recalage après retard réécrit les dates : rien ne garantit qu'elles
+    // restent croissantes.
+    const decale = makeItem('A', 'X', '2026-03-01')
+    decale.reviews[0].date = '2026-03-20'
+    expect(prochaineRevision(decale)?.offset).toBe(3)
+  })
+
+  it('rend null quand tout est fait', () => {
+    expect(
+      prochaineRevision(makeItem('A', 'X', '2026-03-01', { doneOffsets: [1, 3, 7, 14, 30] })),
+    ).toBeNull()
   })
 })

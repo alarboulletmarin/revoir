@@ -411,6 +411,11 @@
   color: var(--surface);
 }
 
+/* Sans quoi « Tout voir » s'écrit en --accent sur --accent : invisible. */
+.cellule--accent .btn--texte {
+  color: var(--surface);
+}
+
 /* ========================================================= boutons ====== */
 
 .btn {

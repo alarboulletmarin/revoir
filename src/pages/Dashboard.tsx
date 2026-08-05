@@ -1,22 +1,19 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { useItems } from '../state/useItems'
 import { useValidation } from '../state/useValidation'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
-import { formatLong, formatRelative, formatShort, todayKey } from '../lib/dates'
+import { formatLong, formatShort, todayKey } from '../lib/dates'
 import {
   computeStats,
   loadForDays,
   nextReviewDay,
   overdueEntries,
   todayEntries,
-  upcomingEntries,
 } from '../lib/stats'
 import { Cellule } from '../components/Cellule'
 import { ItemRevision } from '../components/ItemRevision'
 import { BarresCharge } from '../components/BarresCharge'
-import { AnneauProgression } from '../components/AnneauProgression'
 import { MiniMois } from '../components/MiniMois'
 import { GroupesMatiere } from '../components/GroupesMatiere'
 import { LienBouton } from '../components/Bouton'
@@ -25,7 +22,6 @@ import { grouperParMatiere } from '../lib/matieres'
 /** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
 const ITEMS_HERO_ETROIT = 3
 const ITEMS_HERO_LARGE = 6
-const LIGNES_PROCHAINES = 3
 
 export function Dashboard() {
   useTitrePage("Aujourd'hui")
@@ -35,18 +31,24 @@ export function Dashboard() {
   const tablette = useMediaQuery('(min-width: 768px)')
   const aujourdhui = todayKey()
 
-  const vue = useMemo(
-    () => ({
-      dujour: todayEntries(items, aujourdhui).filter((entree) => !entree.review.done),
+  const vue = useMemo(() => {
+    const dujour = todayEntries(items, aujourdhui)
+    return {
+      /** Ce qu'il reste à faire aujourd'hui. */
+      dujour: dujour.filter((entree) => !entree.review.done),
+      /**
+       * Ce qui était prévu aujourd'hui, coché ou non. Sans ce compte, une
+       * journée bouclée et une journée sans rien de prévu se ressemblent —
+       * or ce ne sont pas du tout les mêmes nouvelles.
+       */
+      prevuesDuJour: dujour.length,
       retard: overdueEntries(items, aujourdhui),
-      prochaines: upcomingEntries(items, LIGNES_PROCHAINES, aujourdhui),
       stats: computeStats(items, aujourdhui),
       charge: loadForDays(items, 14, aujourdhui),
       prochainJour: nextReviewDay(items, aujourdhui),
       matieres: grouperParMatiere(items),
-    }),
-    [items, aujourdhui],
-  )
+    }
+  }, [items, aujourdhui])
 
   if (loading) {
     return <p className="discret">Chargement…</p>
@@ -71,23 +73,10 @@ export function Dashboard() {
       <div className={sansRetard ? 'bento bento--sans-retard' : 'bento'}>
         {/* L'unique cellule --accent pleine de l'écran (section 3). */}
         <Cellule zone="aujourdhui" accent>
-          <output className="hero__chiffre">{vue.dujour.length}</output>
-          <p className="cellule__label">
-            {vue.dujour.length > 1 ? 'révisions aujourd’hui' : 'révision aujourd’hui'}
-          </p>
+          <h2 className="hero__titre">{titreDuJour(vue.dujour.length, vue.prevuesDuJour)}</h2>
 
           {vue.dujour.length === 0 ? (
-            <p className="hero__vide">
-              Rien à revoir aujourd'hui.
-              {vue.prochainJour && (
-                <>
-                  {' '}
-                  Prochaine révision&nbsp;: {formatShort(vue.prochainJour.date)},{' '}
-                  {vue.prochainJour.count} élément
-                  {vue.prochainJour.count > 1 ? 's' : ''}.
-                </>
-              )}
-            </p>
+            <p className="hero__vide">{secondeLigne(vue.prevuesDuJour, vue.prochainJour)}</p>
           ) : (
             <>
               <ul className="hero__liste">
@@ -124,44 +113,19 @@ export function Dashboard() {
           </Cellule>
         )}
 
-        <Cellule zone="restantes" label="révisions restantes">
-          <div className="restantes">
-            <AnneauProgression
-              part={vue.stats.progress / 100}
-              label={`Progression : ${vue.stats.progress} %`}
-            />
-            <output className="cellule__chiffre">{vue.stats.remainingReviews}</output>
-          </div>
-        </Cellule>
-
-        <Cellule zone="charge" label="charge sur 14 jours">
+        {/*
+          Une seule cellule pour le total et sa répartition : deux cartes
+          disaient la même chose — combien il reste — à deux échelles. Le
+          chiffre d'abord, la forme des quinze jours qui viennent en dessous.
+        */}
+        <Cellule zone="synthese">
+          <output className="cellule__chiffre">{vue.stats.remainingReviews}</output>
+          <p className="cellule__label">
+            révision{vue.stats.remainingReviews > 1 ? 's' : ''} restante
+            {vue.stats.remainingReviews > 1 ? 's' : ''}
+          </p>
+          <p className="synthese__intitule">Charge sur 14 jours</p>
           <BarresCharge charge={vue.charge} aujourdhui={aujourdhui} />
-        </Cellule>
-
-        <Cellule zone="prochaines" label="prochaines révisions">
-          {vue.prochaines.length === 0 ? (
-            <p className="discret discret--petit">Aucune révision planifiée</p>
-          ) : (
-            <div className="prochaines">
-              {vue.prochaines.map((entree) => (
-                <Link
-                  key={`${entree.item.id}-${entree.review.offset}`}
-                  to={`/element/${entree.item.id}`}
-                  className="prochaines__ligne"
-                >
-                  <span className="prochaines__titre">{entree.item.title}</span>
-                  <time className="prochaines__date" dateTime={entree.review.date}>
-                    {formatRelative(entree.review.date, aujourdhui)}
-                  </time>
-                </Link>
-              ))}
-              <p className="hero__pied">
-                <LienBouton vers="/revisions/prochaines" variante="texte">
-                  Tout voir
-                </LienBouton>
-              </p>
-            </div>
-          )}
         </Cellule>
 
         {/*
@@ -179,11 +143,11 @@ export function Dashboard() {
 
       {/*
         Sous le bento, jamais dedans : le tableau de bord reste une réponse,
-        et cette liste-ci est une consultation. Chaque matière se replie.
+        et cette liste-ci est une consultation. Chaque catégorie se replie.
       */}
       {vue.matieres.length > 0 && (
         <section className="pile pile--serree">
-          <h2 className="section__titre">Par matière</h2>
+          <h2 className="section__titre">Par catégorie</h2>
           <GroupesMatiere
             matieres={vue.matieres}
             teintes={teintes}
@@ -193,6 +157,31 @@ export function Dashboard() {
       )}
     </>
   )
+}
+
+/**
+ * Une journée bouclée n'est pas une journée vide. `restantes` à zéro se lit
+ * « Tout est terminé » quand quelque chose était prévu, et « Aucune révision
+ * prévue » quand rien ne l'était.
+ */
+function titreDuJour(restantes: number, prevues: number): string {
+  if (restantes > 0) {
+    return `${restantes} révision${restantes > 1 ? 's' : ''} aujourd’hui`
+  }
+  return prevues > 0 ? 'Tout est terminé pour aujourd’hui' : 'Aucune révision prévue aujourd’hui'
+}
+
+/**
+ * La seconde ligne est une information, pas un encouragement (section 8.9) :
+ * la prochaine échéance quand il y en a une, sinon la promesse minimale.
+ */
+function secondeLigne(prevues: number, prochain: { date: string; count: number } | null): string {
+  if (prochain === null) {
+    return prevues > 0
+      ? 'Plus rien à revoir : le programme reprendra à la prochaine échéance.'
+      : 'Les prochaines révisions apparaîtront ici.'
+  }
+  return `Prochaine révision : ${formatShort(prochain.date)}, ${prochain.count} élément${prochain.count > 1 ? 's' : ''}.`
 }
 
 function PremierUsage() {

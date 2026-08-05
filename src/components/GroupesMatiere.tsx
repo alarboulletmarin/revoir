@@ -11,11 +11,10 @@ import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Item } from '../types'
 import { formatRelative, type DateKey } from '../lib/dates'
-import { prochaineEcheance, type Matiere } from '../lib/matieres'
-import { itemProgress } from '../lib/stats'
+import { prochaineRevision, type Matiere } from '../lib/matieres'
+import { progressionEntree } from '../lib/stats'
 import type { Teintes } from '../lib/categories'
 import { PastilleCategorie } from './ChipCategorie'
-import { Frise } from './Frise'
 import { IconeChevron } from './Icons'
 
 const CLE_STOCKAGE = 'revoir.matieres.repliees'
@@ -48,19 +47,24 @@ export function GroupesMatiere({ matieres, teintes, aujourdhui }: GroupesMatiere
           open={!repliees.has(matiere.cle)}
           onToggle={(event) => basculer(matiere.cle, event.currentTarget.open)}
         >
-          <summary className="matiere__entete">
+          {/*
+            `aria-expanded` double l'état natif de <details>, que Safari
+            n'expose pas toujours. Il vient de la même source que l'attribut
+            `open` : les deux ne peuvent pas se désaccorder.
+          */}
+          <summary
+            className="matiere__entete"
+            aria-expanded={!repliees.has(matiere.cle)}
+          >
             <IconeChevron className="matiere__chevron" width="16" height="16" />
             <PastilleCategorie categorie={matiere.nom} teintes={teintes} />
             <span className="matiere__nom">{matiere.nom}</span>
             {/*
-              Le nombre d'éléments s'efface sous 480px : à 320px, le compteur
-              complet ne laisse plus assez de place au nom de la matière.
+              Un seul compteur, et un compteur nommé : « 5 restantes » tout
+              seul ne disait pas restantes de quoi.
             */}
             <span className="matiere__compte">
-              <span className="matiere__elements">
-                {matiere.items.length} élément{matiere.items.length > 1 ? 's' : ''} ·{' '}
-              </span>
-              {matiere.restantes} restante{matiere.restantes > 1 ? 's' : ''}
+              {matiere.items.length} élément{matiere.items.length > 1 ? 's' : ''}
             </span>
           </summary>
 
@@ -75,26 +79,32 @@ export function GroupesMatiere({ matieres, teintes, aujourdhui }: GroupesMatiere
   )
 }
 
+/**
+ * Deux lignes : le titre, puis quand et où on en est.
+ *
+ * Une seule façon de dire la progression. La frise, le pourcentage et la date
+ * relative disaient tous les trois la même chose, en trois langues — il reste
+ * « Demain · Révision 2 sur 5 », qui se lit sans mode d'emploi.
+ */
 function LigneMatiere({ item, aujourdhui }: { item: Item; aujourdhui: DateKey }) {
-  const prochaine = prochaineEcheance(item)
+  const prochaine = prochaineRevision(item)
 
   return (
     <li className="matiere__element">
       <Link to={`/element/${item.id}`} className="matiere__lien">
         <span className="matiere__titre">{item.title}</span>
         <span className="matiere__etat">
-          {prochaine === null
-            ? 'terminé'
-            : formatRelative(prochaine, aujourdhui)}{' '}
-          · {itemProgress(item)} %
+          {prochaine === null ? (
+            'terminé'
+          ) : (
+            <>
+              {formatRelative(prochaine.date, aujourdhui)}
+              {' · Révision '}
+              {progressionEntree({ item, review: prochaine }).rang} sur{' '}
+              {item.reviews.length}
+            </>
+          )}
         </span>
-        <Frise
-          origine={item.startDate}
-          reviews={item.reviews}
-          aujourdhui={aujourdhui}
-          variante="mini"
-          intitule={item.title}
-        />
       </Link>
     </li>
   )

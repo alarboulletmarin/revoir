@@ -10,7 +10,7 @@ Aucun compte, aucun serveur, aucune synchronisation, aucune publicité, aucun tr
 
 ## Fonctionnalités
 
-- **Tableau de bord** en grille bento : révisions du jour cochables sur place, retards, progression, charge des quatorze prochains jours, prochaines échéances. Sous le bento, les éléments regroupés **par matière**, chaque groupe repliable.
+- **Tableau de bord** en grille bento : les révisions du jour cochables sur place, les retards, puis une carte de synthèse — ce qu'il reste à faire en tout et la charge des quatorze prochains jours. Sous le bento, les éléments regroupés **par catégorie**, chaque groupe repliable.
 - **Calendrier mensuel** : nombre de révisions par jour lu en un à trois points, navigation au clavier, et le détail du jour dans une feuille glissant du bas.
 - **Fiche d'élément** : la frise en grand, liste complète des échéances, progression, modification, archivage, suppression.
 - **Trois programmes** de répétition espacée :
@@ -29,9 +29,11 @@ Une frise graduée représente le programme d'un élément : chaque graduation e
 
 Valider une révision en retard recale les échéances suivantes sur la date réelle de validation, en conservant les écarts du programme : une J+7 validée avec trois jours de retard place la J+14 sept jours après la validation, pas quatre. Sans ce recalage, rattraper une semaine de retard ferait tomber toutes les échéances suivantes le même jour.
 
-### Matières et couleurs
+### Catégories et couleurs
 
-La couleur appartient à la matière, pas à l'élément : la changer quelque part la change partout. Elle ne sert jamais seule — le nom est toujours écrit à côté — et jamais en surface pleine, pour ne pas concurrencer la cellule du jour. Les huit teintes et leurs contraintes sont décrites en section 3 bis du design system.
+L'interface dit « catégorie » — le mot du champ que vous remplissez ; le code dit `matiere`, et les deux désignent la même chose.
+
+La couleur appartient à la catégorie, pas à l'élément : la changer quelque part la change partout. Elle ne sert jamais seule — le nom est toujours écrit à côté — et jamais en surface pleine, pour ne pas concurrencer la cellule du jour. Les huit teintes et leurs contraintes sont décrites en section 3 bis du design system.
 
 ### Valider, puis annuler
 
