@@ -703,15 +703,22 @@
 }
 
 /*
- * Réservée même à zéro point : sans cette hauteur, les chiffres des jours
- * vides ne s'aligneraient pas sur ceux des jours chargés. Elle tient la
- * hauteur du « + », qui est le plus haut des deux contenus possibles.
+ * Sous le chiffre : les points, et sous eux le reste du compte. Le bloc garde
+ * la même hauteur qu'il soit plein ou vide — sans quoi les chiffres du mois
+ * ne tiendraient plus la même ligne d'une case à l'autre.
  */
+.calendrier__indicateurs {
+  display: flex;
+  height: calc(var(--point-jour) + var(--point-jour-gap) + var(--t-xs));
+  flex-direction: column;
+  align-items: center;
+  gap: var(--point-jour-gap);
+}
+
 .calendrier__points {
   display: flex;
-  height: var(--e-3);
-  align-items: center;
-  justify-content: center;
+  height: var(--point-jour);
+  flex-shrink: 0;
   gap: var(--point-jour-gap);
 }
 
@@ -739,14 +746,15 @@
 }
 
 /*
- * Au-delà de trois révisions, les points s'arrêtent mais ne mentent pas. Le
- * compte exact vit dans l'étiquette du bouton et dans la feuille du jour :
- * ici, un signe suffit à dire qu'il y en a davantage.
+ * Ce que les trois points ne montrent pas. « +4 » sous un jour à sept
+ * révisions : le chiffre est celui du reste, pas du total — le total, lui,
+ * est dans l'étiquette du bouton et dans la feuille du jour.
  */
 .calendrier__plus {
   color: var(--encre-2);
   font-size: var(--t-xs);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Sur le disque plein, les deux repassent en clair pour rester lisibles. */

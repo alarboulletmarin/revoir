@@ -173,31 +173,35 @@ export function CalendarPage() {
                 <span className="calendrier__numero" aria-hidden="true">
                   {jour.numero}
                 </span>
-                <span className="calendrier__points" aria-hidden="true">
-                  {jour.categories.slice(0, densite(jour.total)).map((categorie, index) => (
-                    <span
-                      key={index}
-                      className={
-                        toutesFaites
-                          ? 'calendrier__point calendrier__point--fait'
-                          : 'calendrier__point'
-                      }
-                      // Un élément sans matière garde le point --accent : la
-                      // teinte par défaut de la chaîne vide ne veut rien dire.
-                      data-teinte={
-                        categorie.trim() === ''
-                          ? undefined
-                          : teinteDe(categorie, teintes)
-                      }
-                    />
-                  ))}
+                <span className="calendrier__indicateurs" aria-hidden="true">
+                  <span className="calendrier__points">
+                    {jour.categories.slice(0, densite(jour.total)).map((categorie, index) => (
+                      <span
+                        key={index}
+                        className={
+                          toutesFaites
+                            ? 'calendrier__point calendrier__point--fait'
+                            : 'calendrier__point'
+                        }
+                        // Un élément sans matière garde le point --accent : la
+                        // teinte par défaut de la chaîne vide ne veut rien dire.
+                        data-teinte={
+                          categorie.trim() === ''
+                            ? undefined
+                            : teinteDe(categorie, teintes)
+                        }
+                      />
+                    ))}
+                  </span>
                   {/*
                     Trois points au plus, mais on ne peut pas laisser croire
-                    qu'un jour à sept révisions en porte trois. Le compte exact
-                    est dans l'étiquette du bouton, et dans la feuille.
+                    qu'un jour à sept révisions en porte trois : le reste du
+                    compte s'écrit sous eux.
                   */}
                   {jour.total > densite(jour.total) && (
-                    <span className="calendrier__plus">+</span>
+                    <span className="calendrier__plus">
+                      +{jour.total - densite(jour.total)}
+                    </span>
                   )}
                 </span>
               </button>

@@ -373,7 +373,7 @@ Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, text
 
 ### 8.11 Calendrier
 
-Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), suivis d'un `+` en `--t-xs` `--encre-2` au-delà : trois points ne doivent pas laisser croire qu'il y a trois révisions.
+Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), et sous eux le reste du compte : « +4 » en `--t-xs` `--encre-2` pour un jour à sept révisions. Trois points ne doivent pas laisser croire qu'il y a trois révisions. Le bloc points + reste garde sa hauteur qu'il soit plein ou vide, pour que les chiffres du mois tiennent tous la même ligne.
 
 Chaque point prend la teinte de sa matière, comme la chip et la pastille (section 3 bis) — c'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un élément sans matière. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
 
