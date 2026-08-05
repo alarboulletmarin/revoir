@@ -346,6 +346,8 @@ Hauteur minimale 44px partout. Focus : `outline: 2px solid var(--encre); outline
 
 Fond `--surface`, 1px `--trait`, `--r-carte`, hauteur 48px, padding `--e-3`. Focus : bordure `--accent` + `outline` 2px. Label au-dessus, 13px, `--encre-2`. Jamais de placeholder en guise de label.
 
+**Champ date** (`.champ-date`). Mêmes bordure, rayon, fond et padding, mais 44px de haut : on y choisit, on n'y écrit pas. Il affiche la date en toutes lettres (« 5 août 2026 ») et l'icône calendrier 18px `--encre-2` au bord droit. La valeur reste ISO. Un `input[type="date"]` transparent couvre la carte : toute la surface ouvre le sélecteur natif, au doigt comme au clavier, et un composant calendrier maison ne se justifie pas. Survol et pression sous `@media (hover: hover)` seulement.
+
 ### 8.7 Sélecteur de programme
 
 Trois cartes empilées (Simple / Poussé / Ultime), chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
