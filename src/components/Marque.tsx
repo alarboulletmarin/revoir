@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Le signe de l'application : la frise réduite à un logotype.
  *

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Mini-mois de la cellule « calendrier » du bento. Visible à partir de 768px
  * seulement (section 7.2) : sous cette largeur, la place manque et le

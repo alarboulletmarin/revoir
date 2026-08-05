@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Barres de charge (section 8.8) : 14 barres, hauteur proportionnelle au
  * nombre de révisions, opacité de 0,25 à 1 selon la densité.

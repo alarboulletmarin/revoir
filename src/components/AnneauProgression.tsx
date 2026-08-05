@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Anneau de progression de la cellule « restantes » (section 7.2).
  *

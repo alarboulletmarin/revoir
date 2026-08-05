@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useCallback } from 'react'
 import type { ReviewEntry } from '../types'
 import { lire, ecrire } from './usePreference'

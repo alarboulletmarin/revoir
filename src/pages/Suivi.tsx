@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useCallback, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { PracticeStatus, Review } from '../types'

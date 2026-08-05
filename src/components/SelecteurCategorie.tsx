@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Choix de la catégorie d'un sujet (section 8.15).
  *

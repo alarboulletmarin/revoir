@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { DonneesProvider } from './state/DonneesContext'
 import { ToastProvider } from './state/ToastContext'

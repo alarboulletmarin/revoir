@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useMemo } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'

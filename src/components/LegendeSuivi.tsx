@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * La légende du tableau de suivi (section 8.13).
  *

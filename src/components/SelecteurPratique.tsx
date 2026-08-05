@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Le statut de pratique d'un sujet : à faire → en cours → terminée.
  *

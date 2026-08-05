@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * L'écran de premier usage — et la page de présentation de l'application.
  *

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Les champs d'une catégorie : un nom, une couleur, et l'aperçu de ce que ça
  * donnera.

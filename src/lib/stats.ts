@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Review, ReviewEntry, Topic } from '../types'
 import { addDaysToKey, type DateKey, todayKey } from './dates'
 import { activeTopics, estFaite, revisionsParSujet } from './sujets'
