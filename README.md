@@ -1,5 +1,7 @@
 # Revoir
 
+[![Licence : AGPL-3.0-only](https://img.shields.io/badge/licence-AGPL--3.0--only-blue.svg)](LICENSE)
+
 > Application PWA minimaliste pour planifier ses révisions par répétition espacée, sans stocker le contenu à apprendre.
 
 Revoir ne conserve ni vos cours, ni vos fiches, ni vos documents. Vous indiquez seulement **ce que** vous voulez revoir — un titre, une catégorie, une date de départ, un programme — et l'application calcule les dates de révision. Elle répond à une seule question :
@@ -206,6 +208,16 @@ Le journal des versions est dans [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Licence
 
-MIT — voir [LICENSE](LICENSE). Copyright (c) 2026 Andréa Larboullet Marin.
+**AGPL-3.0-only** — voir [LICENSE](LICENSE). Copyright (c) 2026 Andréa Larboullet Marin.
 
-Les bibliothèques embarquées dans le build sont elles aussi sous licence libre, et leurs mentions voyagent avec l'application : `public/THIRD-PARTY.txt` est régénéré à chaque build par `scripts/generate-notices.mjs`, servi en ligne et hors ligne, et accessible depuis les réglages. La MIT demande que sa mention de copyright accompagne toute portion substantielle du logiciel : le bundle contient leur code, il doit donc contenir leurs licences.
+C'est une licence libre à copyleft fort. En clair :
+
+- **Utiliser Revoir, l'installer, l'héberger, le modifier pour vous : librement**, y compris dans un cadre professionnel ou commercial. La licence ne discrimine aucun usage.
+- **Redistribuer Revoir, ou l'héberger pour d'autres, après l'avoir modifié : vous devez publier vos sources modifiées sous AGPL-3.0.** L'article 13 l'exige même quand le logiciel n'est qu'accessible par le réseau — et c'est bien le cas ici, puisque servir l'application, c'est en distribuer le code au navigateur.
+- **L'intégrer dans un produit fermé : non**, sauf accord séparé avec l'auteur.
+
+L'intention n'est pas d'empêcher qui que ce soit de gagner sa vie avec Revoir, c'est d'empêcher qu'on le referme. Ce qui part d'ici reste libre.
+
+Si vous hébergez Revoir, l'application affiche déjà dans ses réglages un lien vers le code source et la version exacte servie : c'est ce que demande l'article 13. Si vous en publiez une version modifiée, faites pointer ce lien vers **votre** dépôt.
+
+Les bibliothèques embarquées dans le build sont sous licences permissives (MIT, ISC), compatibles avec l'AGPL, et leurs mentions voyagent avec l'application : `public/THIRD-PARTY.txt` est régénéré à chaque build par `scripts/generate-notices.mjs`, servi en ligne et hors ligne, et accessible depuis les réglages. La MIT demande que sa mention de copyright accompagne toute portion substantielle du logiciel : le bundle contient leur code, il doit donc contenir leurs licences.

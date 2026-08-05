@@ -79,9 +79,10 @@ const paquets = paquetsEmbarques()
 const entete = [
   'Revoir — licences des composants tiers',
   '',
-  'Revoir est distribué sous licence MIT (voir LICENSE). Le fichier JavaScript',
-  'produit par le build embarque le code des bibliothèques listées ci-dessous ;',
-  'leurs licences respectives sont reproduites ici, comme elles le demandent.',
+  'Revoir est distribué sous licence AGPL-3.0-only (voir LICENSE). Le fichier',
+  'JavaScript produit par le build embarque le code des bibliothèques listées',
+  'ci-dessous ; leurs licences respectives — permissives, donc compatibles avec',
+  "l'AGPL — sont reproduites ici, comme elles le demandent.",
   '',
   'Ce fichier est régénéré à chaque build par scripts/generate-notices.mjs.',
   '',

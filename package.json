@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Planifier ses révisions grâce à la répétition espacée, sans stocker le contenu à apprendre.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "author": "Andréa Larboullet Marin (https://github.com/alarboulletmarin)",
   "homepage": "https://github.com/alarboulletmarin/revoir#readme",
   "repository": {
@@ -43,6 +43,7 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@types/node": "^24.13.3",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
