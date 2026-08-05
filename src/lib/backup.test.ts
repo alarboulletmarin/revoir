@@ -177,11 +177,16 @@ describe('couleurs de matière personnalisées', () => {
     expect(parseBackup(serializeBackup([], teintes)).teintes).toEqual(teintes)
   })
 
-  it('renormalise une couleur venue d’ailleurs', () => {
-    // Un fichier écrit à la main pourrait faire entrer une couleur illisible :
-    // elle est ramenée dans le registre, pas refusée.
-    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: { maths: '#ff0000' } })
-    expect(parseBackup(raw).teintes.maths).toBe('#8a5048')
+  it('garde la couleur du fichier telle quelle', () => {
+    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: { maths: '#FF0000' } })
+    expect(parseBackup(raw).teintes.maths).toBe('#ff0000')
+  })
+
+  it('descend une couleur qui serait invisible', () => {
+    // Un fichier écrit à la main pourrait faire entrer un blanc : la pastille
+    // disparaîtrait dans le papier.
+    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: { maths: '#ffffff' } })
+    expect(parseBackup(raw).teintes.maths).not.toBe('#ffffff')
   })
 
   it('ignore une valeur qui n’est ni une teinte ni une couleur', () => {

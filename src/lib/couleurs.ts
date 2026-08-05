@@ -1,46 +1,39 @@
 /**
  * Couleurs de matière choisies librement.
  *
- * La section 3 bis pose huit teintes désaturées. Mesurées en OKLab — un espace
- * perceptuel, où deux couleurs de même clarté paraissent aussi claires l'une
- * que l'autre —, elles forment un registre d'une régularité qui n'est pas un
- * hasard :
+ * **La couleur choisie est la couleur retenue.** Elle n'est ni assombrie ni
+ * désaturée pour ressembler aux huit teintes intégrées : un jaune pâle reste
+ * un jaune pâle, sur sa pastille comme dans le sélecteur.
  *
- *     clarté   de 0,489 (bleu) à 0,505 (ocre)
- *     chroma   de 0,038 (ardoise) à 0,079 (ocre)
+ * Deux contraintes seulement, et aucune n'est affaire de goût — ce sont
+ * celles sans lesquelles l'écran cesse de fonctionner :
  *
- * C'est ce qui leur donne le même poids à l'écran : aucune matière ne crie
- * plus fort que sa voisine, et toutes restent lisibles en texte (5,54:1 à
- * 5,99:1 sur `--papier`).
+ *   1. **Le texte doit se lire.** `--teinte` sert d'encre au libellé de la
+ *      chip : un jaune pâle y serait illisible. La couleur du texte est donc
+ *      dérivée — même teinte, même chroma, assombrie juste assez pour tenir
+ *      4,5:1 sur `--papier`. Elle ne remplace jamais la couleur choisie,
+ *      elle s'y ajoute.
+ *   2. **La pastille doit se voir.** Un blanc cassé sur du papier crème est
+ *      un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue
+ *      jusqu'à ce seuil, et pas d'un pas de plus.
  *
- * Une couleur prise telle quelle au sélecteur casserait ce registre. La
- * couleur choisie y est donc ramenée : **sa teinte est conservée exactement**
- * — c'est elle que l'utilisateur a choisie —, sa chroma est ramenée dans la
- * bande des huit, sa clarté posée au milieu de la leur.
- *
- * En HSL, la même opération ne tiendrait pas : à saturation égale un rouge
- * crie bien plus fort qu'un ocre. C'est tout l'intérêt de passer par OKLab.
- *
- * Un rouge vif ressort donc en brique, un bleu électrique en ardoise soutenue.
- * Le sélecteur montre le résultat en direct : rien n'est décidé dans le dos.
+ * Tout se calcule en OKLab, où la clarté est perceptuelle : assombrir un
+ * jaune et un bleu de la même quantité les assombrit autant à l'œil.
  */
 
 /** Une couleur libre, toujours normalisée, toujours en `#rrggbb` minuscule. */
 export type CouleurPersonnalisee = `#${string}`
 
-/** Clarté OKLab des huit teintes, moyennée. */
-const CLARTE = 0.497
-
-/** Bande de chroma des huit : de l'ardoise à l'ocre. */
-const CHROMA_MIN = 0.038
-const CHROMA_MAX = 0.079
+/** Contraste minimal d'un texte sur `--papier` (WCAG AA, texte courant). */
+const CONTRASTE_TEXTE = 4.5
 
 /**
- * En dessous, la couleur est un gris. Lui imposer la chroma plancher la
- * teinterait — une couleur neutre a une teinte arbitraire —, alors qu'un gris
- * est un choix légitime. Il reste gris, à la bonne clarté.
+ * Plancher de visibilité d'une surface. Bien en dessous des 3:1 que la WCAG
+ * demande d'un objet graphique porteur d'information — la pastille n'en porte
+ * aucune, le nom de la matière est toujours écrit à côté (section 3 bis). Il
+ * ne sert qu'à écarter l'invisible.
  */
-const SEUIL_NEUTRE = 0.004
+const CONTRASTE_VISIBLE = 1.4
 
 const HEX = /^#([0-9a-f]{6})$/i
 
@@ -126,29 +119,62 @@ export function repereOklab(couleur: CouleurPersonnalisee): {
 }
 
 /**
- * Ramène une couleur dans le registre des huit teintes : même clarté
- * perceptuelle, chroma dans leur bande, teinte inchangée.
+ * Assombrit une couleur jusqu'à ce qu'elle atteigne le contraste visé sur le
+ * papier, sans la toucher si elle y est déjà. La teinte et la chroma sont
+ * conservées ; seule la clarté descend, et du minimum.
  */
-export function normaliserCouleur(hex: string): CouleurPersonnalisee {
-  const [, a, b] = versOklab(versRgb(HEX.test(hex) ? hex : '#808080'))
+function assombrirJusqua(
+  couleur: CouleurPersonnalisee,
+  cible: number,
+): CouleurPersonnalisee {
+  if (contrasteSurPapier(couleur) >= cible) return couleur
+
+  const [clarteSource, a, b] = versOklab(versRgb(couleur))
+  const angle = Math.atan2(b, a)
   const chromaSource = Math.hypot(a, b)
 
-  if (chromaSource < SEUIL_NEUTRE) return versHex(depuisOklab([CLARTE, 0, 0]))
-
-  const angle = Math.atan2(b, a)
-  let chroma = Math.min(CHROMA_MAX, Math.max(CHROMA_MIN, chromaSource))
-
   /*
-   * La bande de chroma tient dans le gamut sRGB à cette clarté pour toutes les
-   * teintes, mais on ne le suppose pas : tant qu'une composante déborde, on
-   * resserre. La teinte, elle, n'est jamais touchée.
+   * Le contraste sur le papier décroît quand la clarté monte : on cherche la
+   * clarté la plus haute qui tienne encore la cible — la couleur la plus
+   * proche de celle qu'on a choisie.
    */
+  const rendu = (clarte: number, chroma: number) =>
+    depuisOklab([clarte, Math.cos(angle) * chroma, Math.sin(angle) * chroma])
+
+  let chroma = chromaSource
   for (let essai = 0; essai < 24; essai += 1) {
-    const rgb = depuisOklab([CLARTE, Math.cos(angle) * chroma, Math.sin(angle) * chroma])
+    let bas = 0
+    let haut = clarteSource
+    for (let tour = 0; tour < 30; tour += 1) {
+      const milieu = (bas + haut) / 2
+      if (contraste(versHex(rendu(milieu, chroma)), '#faf9f6') >= cible) bas = milieu
+      else haut = milieu
+    }
+    const rgb = rendu(bas, chroma)
+    // Une chroma trop forte pour cette clarté sort du gamut sRGB : on la
+    // resserre plutôt que de laisser le rendu se faire écrêter n'importe où.
     if (rgb.every((composante) => composante >= -0.001 && composante <= 1.001)) {
       return versHex(rgb)
     }
-    chroma *= 0.95
+    chroma *= 0.9
   }
-  return versHex(depuisOklab([CLARTE, 0, 0]))
+  return versHex(rendu(0, 0))
+}
+
+/**
+ * La couleur telle qu'elle sera portée par les pastilles, les points du
+ * calendrier et les bordures : celle qui a été choisie, à ceci près qu'une
+ * couleur invisible sur le papier est descendue jusqu'au seuil.
+ */
+export function couleurRetenue(hex: string): CouleurPersonnalisee {
+  if (!HEX.test(hex)) return '#6b665d'
+  return assombrirJusqua(hex.toLowerCase() as CouleurPersonnalisee, CONTRASTE_VISIBLE)
+}
+
+/**
+ * La même couleur, en encre : assombrie juste assez pour se lire sur le
+ * papier. Une couleur déjà assez foncée ressort inchangée.
+ */
+export function couleurTexte(couleur: CouleurPersonnalisee): CouleurPersonnalisee {
+  return assombrirJusqua(couleur, CONTRASTE_TEXTE)
 }

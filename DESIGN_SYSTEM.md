@@ -97,6 +97,8 @@ Sur fond `--accent` plein, le texte est `--surface` (4,6:1) : réservé au poids
 
 Huit teintes, dans le même registre que la palette : désaturées, aucun rouge. `--retard` et `--fait` restent réservés à leurs états et n'entrent pas dans ce jeu.
 
+Ces huit sont ce que l'application **propose**. Elles ne bornent pas ce que l'utilisateur peut choisir : voir « Couleurs libres » plus bas.
+
 ```css
 --cat-ardoise: #4A6572;   --cat-prune: #6B5B7B;
 --cat-olive:   #5A6B3C;   --cat-terre: #7A5B45;
@@ -117,18 +119,24 @@ Une matière sans couleur choisie en reçoit une, dérivée de son nom par hacha
 
 #### Couleurs libres
 
-Le sélecteur propose un neuvième cercle, marqué d'un « + », qui ouvre le sélecteur de couleurs du système. La couleur choisie n'est pas retenue telle quelle : **elle est ramenée dans le registre des huit**, sans quoi les trois règles ci-dessus tomberaient en même temps — un jaune vif est illisible en chip, un rouge est interdit (section 11), et une couleur qui crie plus fort que ses voisines rend la pastille bruyante.
+Le sélecteur propose un neuvième cercle, marqué d'un « + », qui ouvre le sélecteur de couleurs du système. **La couleur choisie est la couleur retenue.** Elle n'est ni assombrie ni désaturée pour ressembler aux huit : un jaune pâle reste un jaune pâle, sur sa pastille comme dans le sélecteur. Les huit sont ce que l'app *propose* ; une couleur choisie appartient à l'utilisateur.
 
-Le registre se mesure en OKLab, pas en HSL : à saturation HSL égale, un rouge crie bien plus fort qu'un ocre. Les huit y sont d'une régularité qui n'est pas un hasard.
+Deux garde-fous seulement, et aucun n'est affaire de goût — ce sont ceux sans lesquels l'écran cesse de fonctionner.
 
-| | Clarté OKLab | Chroma OKLab |
+**Le libellé doit se lire.** La teinte sert d'encre au texte de la chip : un jaune pâle y serait illisible. Les composants lisent donc **deux variables** :
+
+| Variable | Porte | Garantie |
 |---|---|---|
-| Les huit | 0,489 → 0,505 | 0,038 → 0,079 |
-| Après normalisation | 0,497 | dans la bande |
+| `--teinte` | pastilles, points du calendrier, bordures, pastille du sélecteur | la couleur choisie, telle quelle |
+| `--teinte-texte` | libellé de la chip, anneau de sélection | ≥ 4,5:1 sur `--papier` |
 
-La normalisation **conserve la teinte exactement** — c'est elle que l'utilisateur a choisie —, pose la clarté au milieu de celle des huit et ramène la chroma dans leur bande. Un gris reste gris : en dessous de 0,004 de chroma, aucune teinte ne lui est imposée. Un rouge vif ressort en brique, un bleu électrique en ardoise soutenue, et tous restent lisibles en texte. Le cercle montre le résultat en direct : rien n'est décidé dans le dos.
+Pour les huit intégrées, les deux valent la même chose : elles tiennent déjà 5,5:1. Seule une couleur libre pâle les fait diverger — un rose `#ffb6c1` garde sa bordure rose et écrit son nom en `#a2606c`.
 
-`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
+L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et la chroma sont conservées, seule la clarté descend, **et du minimum**. Un rose pâle donne un rose foncé, jamais un brun quelconque.
+
+**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la matière est toujours écrit à côté (règle 2 ci-dessus).
+
+`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `retenirTeinte` dans `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
 
 ---
 

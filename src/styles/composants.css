@@ -809,7 +809,8 @@
  */
 .chip--matiere {
   border-color: var(--teinte, var(--trait));
-  color: var(--teinte, var(--encre-2));
+  /* L'encre, pas la couleur : une matière pâle doit rester lisible. */
+  color: var(--teinte-texte, var(--encre-2));
 }
 
 .pastille {
@@ -900,10 +901,14 @@
   color: var(--encre-2);
 }
 
-/* La sélection se lit à l'anneau, pas seulement à la couleur. */
+/*
+ * La sélection se lit à l'anneau, pas seulement à la couleur. L'anneau est
+ * tracé en --teinte-texte : sur une couleur pâle, il doit se voir alors même
+ * que la pastille se confond presque avec le papier.
+ */
 .teintes__choix--actif .teintes__pastille {
   border-color: var(--papier);
-  outline: 2px solid var(--teinte);
+  outline: 2px solid var(--teinte-texte, var(--teinte));
   outline-offset: 1px;
 }
 

@@ -10,13 +10,13 @@
  * affichent ainsi « Mathématiques » de la même couleur, et la table ne
  * contient que les choix explicites de l'utilisateur.
  *
- * Une matière peut aussi porter une couleur libre, en dehors des huit. Elle
- * est alors ramenée dans leur registre par `lib/couleurs.ts` — sinon la
- * section 3 bis ne tiendrait plus.
+ * Une matière peut aussi porter n'importe quelle couleur, en dehors des huit.
+ * Elle est retenue telle quelle : `lib/couleurs.ts` ne fait qu'écarter
+ * l'invisible et dériver la couleur d'encre qui rendra le libellé lisible.
  */
 import {
+  couleurRetenue,
   estCouleurPersonnalisee,
-  normaliserCouleur,
   type CouleurPersonnalisee,
 } from './couleurs'
 
@@ -66,13 +66,13 @@ export function couleurLibre(teinte: Teinte): CouleurPersonnalisee | null {
 }
 
 /**
- * Toute couleur libre est ramenée dans le registre des huit avant d'être
- * retenue. Le point de passage est unique : sélecteur, import et migration
- * l'empruntent tous.
+ * Le point de passage unique d'une couleur : sélecteur, import et migration
+ * l'empruntent tous. Une couleur libre en ressort telle qu'elle a été
+ * choisie, sauf si elle est invisible sur le papier.
  */
 export function retenirTeinte(valeur: string): Teinte | null {
   if (estTeinteNommee(valeur)) return valeur
-  if (estCouleurPersonnalisee(valeur)) return normaliserCouleur(valeur)
+  if (estCouleurPersonnalisee(valeur)) return couleurRetenue(valeur)
   return null
 }
 

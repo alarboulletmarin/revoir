@@ -1,38 +1,30 @@
 import { describe, expect, it } from 'vitest'
 import {
   contrasteSurPapier,
+  couleurRetenue,
+  couleurTexte,
   estCouleurPersonnalisee,
-  normaliserCouleur,
   repereOklab,
   type CouleurPersonnalisee,
 } from './couleurs'
 
 /** Les huit teintes de la section 3 bis, telles qu'écrites dans tokens.css. */
 const HUIT: CouleurPersonnalisee[] = [
-  '#4A6572',
-  '#6B5B7B',
-  '#5A6B3C',
-  '#7A5B45',
-  '#3F6389',
-  '#3E6B68',
-  '#7A5470',
-  '#75632A',
+  '#4a6572',
+  '#6b5b7b',
+  '#5a6b3c',
+  '#7a5b45',
+  '#3f6389',
+  '#3e6b68',
+  '#7a5470',
+  '#75632a',
 ]
 
-/** De quoi éprouver le registre : les extrêmes de la roue, plus deux gris. */
-const EXTREMES = [
-  '#FF0000',
-  '#FF8800',
-  '#FFEE00',
-  '#00FF00',
-  '#00FFEE',
-  '#0000FF',
-  '#8800FF',
-  '#FF00AA',
-  '#FFFFFF',
-  '#000000',
-  '#808080',
-]
+/** Des couleurs franches, aux quatre coins de la roue. */
+const VIVES = ['#ff0000', '#ff8800', '#00ff00', '#00ffee', '#0000ff', '#ff00aa']
+
+/** Des couleurs pâles : c'est là que tout se joue. */
+const PALES = ['#ffb6c1', '#ffee88', '#d8f0ff', '#fff8dc', '#e8e0f8']
 
 describe('estCouleurPersonnalisee', () => {
   it('accepte un hexadécimal à six chiffres, quelle que soit la casse', () => {
@@ -49,9 +41,102 @@ describe('estCouleurPersonnalisee', () => {
   })
 })
 
+describe('couleurRetenue', () => {
+  /*
+   * L'engagement principal : la couleur choisie est la couleur retenue. Rien
+   * n'est assombri ni désaturé pour ressembler aux huit teintes intégrées.
+   */
+  it('rend la couleur choisie, sans y toucher', () => {
+    // Un rouge franc reste ce rouge, un rose pâle reste ce rose.
+    expect(couleurRetenue('#ff0000')).toBe('#ff0000')
+    expect(couleurRetenue('#ffb6c1')).toBe('#ffb6c1')
+    for (const teinte of HUIT) expect(couleurRetenue(teinte)).toBe(teinte)
+  })
+
+  /*
+   * Le contrat en une phrase : on ne touche à une couleur que si elle est
+   * invisible, et alors on la descend jusqu'au seuil, pas plus bas. Formulé
+   * comme une propriété plutôt qu'avec une liste : c'est la mesure de la
+   * couleur d'entrée qui décide, pas une intuition sur son nom.
+   */
+  it('ne touche qu’à ce qui serait invisible, et du minimum', () => {
+    for (const couleur of [...VIVES, ...PALES, '#ffffff', '#000000']) {
+      const retenue = couleurRetenue(couleur)
+      if (contrasteSurPapier(couleur as CouleurPersonnalisee) >= 1.4) {
+        expect(retenue).toBe(couleur.toLowerCase())
+      } else {
+        expect(contrasteSurPapier(retenue)).toBeGreaterThanOrEqual(1.39)
+        expect(contrasteSurPapier(retenue)).toBeLessThan(1.6)
+      }
+    }
+  })
+
+  it('garde la teinte de ce qu’elle descend', () => {
+    // Un jaune très clair reste jaune, il ne vire pas au gris.
+    const [rouge, vert, bleu] = canaux(couleurRetenue('#ffffe0'))
+    expect(rouge).toBeGreaterThan(bleu)
+    expect(vert).toBeGreaterThan(bleu)
+  })
+
+  it('rend une valeur exploitable pour une saisie qui n’est pas une couleur', () => {
+    expect(couleurRetenue('pas une couleur')).toMatch(/^#[0-9a-f]{6}$/)
+  })
+
+  it('normalise la casse, pour que deux écritures soient une seule couleur', () => {
+    expect(couleurRetenue('#FF00AA')).toBe('#ff00aa')
+  })
+})
+
+describe('couleurTexte', () => {
+  /*
+   * L'autre engagement : quelle que soit la couleur, son libellé se lit. C'est
+   * la seule raison pour laquelle une couleur est parfois assombrie — et elle
+   * ne l'est que là, dans l'encre, jamais sur la pastille.
+   */
+  it('rend lisible sur le papier n’importe quelle couleur', () => {
+    for (const couleur of [...VIVES, ...PALES, '#ffffff']) {
+      expect(contrasteSurPapier(couleurTexte(couleur as CouleurPersonnalisee))).toBeGreaterThanOrEqual(
+        4.49,
+      )
+    }
+  })
+
+  it('laisse intacte une couleur qui se lit déjà', () => {
+    for (const teinte of HUIT) {
+      expect(couleurTexte(teinte)).toBe(teinte)
+    }
+    expect(couleurTexte('#0000ff')).toBe('#0000ff')
+  })
+
+  it('assombrit du minimum : la couleur reste reconnaissable', () => {
+    // Un rose pâle donne un rose foncé, pas un brun quelconque.
+    const encre = couleurTexte('#ffb6c1')
+    const [rouge, vert, bleu] = canaux(encre)
+    expect(rouge).toBeGreaterThan(vert)
+    expect(bleu).toBeGreaterThan(vert)
+    // Juste ce qu'il faut, pas davantage.
+    expect(contrasteSurPapier(encre)).toBeLessThan(5.2)
+  })
+
+  it('conserve la teinte choisie', () => {
+    const [rouge, , bleu] = canaux(couleurTexte('#d8f0ff'))
+    expect(bleu).toBeGreaterThan(rouge)
+  })
+
+  it('est idempotente', () => {
+    for (const couleur of [...PALES, '#ffffff']) {
+      const encre = couleurTexte(couleur as CouleurPersonnalisee)
+      expect(couleurTexte(encre)).toBe(encre)
+    }
+  })
+})
+
 describe('registre des huit teintes', () => {
-  // Ce que la normalisation vise. Si ces bornes bougent, c'est la palette de
-  // tokens.css qui a changé, et couleurs.ts doit suivre.
+  /*
+   * Elles ne passent plus par aucune normalisation — elles sont stockées par
+   * leur nom. Ce relevé reste là parce qu'il documente la palette : si ces
+   * bornes bougent, c'est tokens.css qui a changé.
+   */
   it('tient dans une bande étroite de clarté et de chroma', () => {
     for (const teinte of HUIT) {
       const { clarte, chroma } = repereOklab(teinte)
@@ -61,76 +146,10 @@ describe('registre des huit teintes', () => {
       expect(chroma).toBeLessThanOrEqual(0.08)
     }
   })
-})
 
-describe('normaliserCouleur', () => {
-  it('rend toujours un hexadécimal exploitable', () => {
-    expect(normaliserCouleur('#FF0000')).toMatch(/^#[0-9a-f]{6}$/)
-    expect(normaliserCouleur('pas une couleur')).toMatch(/^#[0-9a-f]{6}$/)
-  })
-
-  /*
-   * Le cœur du contrat : quelle que soit la couleur choisie, elle sort dans le
-   * registre des huit. C'est ce qui autorise la couleur libre sans faire
-   * dérailler la section 3 bis.
-   */
-  it('pose toute couleur dans le registre des huit', () => {
-    for (const couleur of EXTREMES) {
-      const { clarte, chroma } = repereOklab(normaliserCouleur(couleur))
-      expect(clarte).toBeCloseTo(0.497, 2)
-      expect(chroma).toBeLessThanOrEqual(0.08)
-    }
-  })
-
-  it('la rend lisible en texte sur le papier', () => {
-    for (const couleur of EXTREMES) {
-      const ratio = contrasteSurPapier(normaliserCouleur(couleur))
-      expect(ratio).toBeGreaterThanOrEqual(4.5)
-      expect(ratio).toBeLessThanOrEqual(6.5)
-    }
-  })
-
-  it('conserve la teinte choisie', () => {
-    // Un bleu franc reste bleu : c'est son canal dominant qui le dit.
-    const [rouge, vert, bleu] = canaux(normaliserCouleur('#0000FF'))
-    expect(bleu).toBeGreaterThan(rouge)
-    expect(bleu).toBeGreaterThan(vert)
-
-    const [r2, v2, b2] = canaux(normaliserCouleur('#00FF00'))
-    expect(v2).toBeGreaterThan(r2)
-    expect(v2).toBeGreaterThan(b2)
-  })
-
-  it('ne teinte pas un gris', () => {
-    // Une couleur neutre a une teinte arbitraire : lui imposer la chroma
-    // plancher en ferait un vieux rose.
-    for (const gris of ['#808080', '#FFFFFF', '#000000']) {
-      const [rouge, vert, bleu] = canaux(normaliserCouleur(gris))
-      expect(rouge).toBe(vert)
-      expect(vert).toBe(bleu)
-    }
-  })
-
-  /*
-   * Le passage par huit bits fait dériver d'une unité au plus au premier
-   * report ; ensuite la couleur ne bouge plus. C'est ce qui permet de
-   * renormaliser à l'import sans faire glisser les couleurs à chaque
-   * aller-retour.
-   */
-  it('atteint un point fixe', () => {
-    for (const couleur of EXTREMES) {
-      const une = normaliserCouleur(couleur)
-      const deux = normaliserCouleur(une)
-      expect(normaliserCouleur(deux)).toBe(deux)
-      expect(ecartMaximal(une, deux)).toBeLessThanOrEqual(1)
-    }
-  })
-
-  it('laisse une teinte déjà dans le registre à sa place', () => {
-    // Les huit ne passent jamais par là en production — elles sont stockées
-    // par leur nom —, mais elles font le meilleur des cas de contrôle.
+  it('se lit en texte sans retouche', () => {
     for (const teinte of HUIT) {
-      expect(ecartMaximal(teinte, normaliserCouleur(teinte))).toBeLessThanOrEqual(8)
+      expect(contrasteSurPapier(teinte)).toBeGreaterThanOrEqual(4.5)
     }
   })
 })
@@ -141,9 +160,4 @@ function canaux(hex: CouleurPersonnalisee): [number, number, number] {
     parseInt(hex.slice(3, 5), 16),
     parseInt(hex.slice(5, 7), 16),
   ]
-}
-
-function ecartMaximal(a: CouleurPersonnalisee, b: CouleurPersonnalisee): number {
-  const gauche = canaux(a)
-  return Math.max(...canaux(b).map((valeur, index) => Math.abs(valeur - gauche[index])))
 }

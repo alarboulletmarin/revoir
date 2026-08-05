@@ -13,10 +13,9 @@
  * (section 8.6). Il porte un « + » tant qu'aucune couleur libre n'est en
  * cours, la couleur elle-même ensuite.
  *
- * La couleur choisie est ramenée dans le registre des huit avant d'être
- * retenue (voir `lib/couleurs.ts`) : c'est ce qui permet de l'ouvrir sans que
- * la section 3 bis s'effondre. Le cercle montre le résultat, pas la valeur
- * brute.
+ * La couleur choisie est la couleur retenue : le cercle montre exactement ce
+ * qui a été pris. `lib/couleurs.ts` n'écarte que l'invisible et dérive à part
+ * l'encre du libellé — un jaune pâle reste un jaune pâle.
  */
 import { useId } from 'react'
 import {
@@ -26,7 +25,7 @@ import {
   estTeinteNommee,
   type Teinte,
 } from '../lib/categories'
-import { normaliserCouleur } from '../lib/couleurs'
+import { couleurRetenue } from '../lib/couleurs'
 import { IconePlus } from './Icons'
 import { proprietesTeinte } from './teinte'
 
@@ -114,7 +113,7 @@ export function SelecteurTeinte({
             className="teintes__pipette"
             type="color"
             defaultValue={amorce}
-            onChange={(event) => onChange(normaliserCouleur(event.target.value))}
+            onChange={(event) => onChange(couleurRetenue(event.target.value))}
           />
           <span className="teintes__pastille teintes__pastille--libre" aria-hidden="true">
             {!libre && <IconePlus width="16" height="16" strokeWidth="2" />}
