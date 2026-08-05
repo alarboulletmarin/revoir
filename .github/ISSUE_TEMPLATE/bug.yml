@@ -1,0 +1,67 @@
+name: Signaler un bug
+description: Quelque chose ne se comporte pas comme annoncé.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci. Pour une faille de sécurité, n'utilisez pas ce gabarit : passez par
+        un [avis privé](https://github.com/alarboulletmarin/revoir/security/advisories/new).
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Ce que vous attendiez
+      description: En une phrase ou deux.
+    validations:
+      required: true
+
+  - type: textarea
+    id: constate
+    attributes:
+      label: Ce qui s'est passé
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Comment le reproduire
+      placeholder: |
+        1. Créer un sujet avec le programme « Ultime », départ il y a dix jours
+        2. Ouvrir Suivi, toucher la cellule J+7
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contexte
+    attributes:
+      label: Comment l'application tournait-elle ?
+      description: >
+        Les comportements d'IndexedDB, de la feuille du bas et du Service Worker
+        divergent assez pour que la réponse en dépende.
+      options:
+        - Installée sur l'écran d'accueil (PWA)
+        - Dans un onglet du navigateur
+        - Je ne sais pas
+    validations:
+      required: true
+
+  - type: input
+    id: navigateur
+    attributes:
+      label: Navigateur et système
+      placeholder: Safari 18 sur iOS 18.2 · Firefox 134 sur Ubuntu · Chrome 132 sur Android 15
+    validations:
+      required: true
+
+  - type: textarea
+    id: divers
+    attributes:
+      label: Autre chose
+      description: >
+        Nombre approximatif de sujets, capture d'écran, message d'erreur.
+        N'y collez pas un export complet : il contient vos titres de sujets.
+    validations:
+      required: false

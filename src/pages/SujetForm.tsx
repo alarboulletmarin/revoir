@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import {
@@ -17,9 +17,45 @@ import { Bouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
 import { SelecteurCategorie } from '../components/SelecteurCategorie'
 
+/**
+ * Ce qu'une duplication transmet au formulaire de création.
+ *
+ * La date de départ n'en fait pas partie : dupliquer, c'est reprendre le
+ * chapitre suivant, pas rejouer les échéances du précédent. Elle vaut donc
+ * aujourd'hui, comme pour toute création.
+ */
+export interface ModeleSujet {
+  titre: string
+  categoryId: string | null
+  scheduleId: ScheduleId
+  /** Le sujet d'origine, pour le dire à l'écran. */
+  depuis: string
+}
+
+/**
+ * L'état d'historique est une donnée extérieure : il survit au rechargement,
+ * se conserve dans le `sessionStorage` du navigateur et s'écrit à la main. On
+ * le relit comme on relit une sauvegarde, plutôt que de le croire sur parole.
+ */
+function modeleDepuis(state: unknown): ModeleSujet | null {
+  if (typeof state !== 'object' || state === null) return null
+  const modele = (state as { modele?: unknown }).modele
+  if (typeof modele !== 'object' || modele === null) return null
+  const { titre, categoryId, scheduleId, depuis } = modele as Record<string, unknown>
+  if (typeof titre !== 'string' || typeof scheduleId !== 'string') return null
+  return {
+    titre,
+    categoryId: typeof categoryId === 'string' ? categoryId : null,
+    scheduleId,
+    depuis: typeof depuis === 'string' ? depuis : titre,
+  }
+}
+
 export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { state } = useLocation()
+  const [modele] = useState(() => (mode === 'create' ? modeleDepuis(state) : null))
   const {
     topics,
     reviews,
@@ -36,10 +72,14 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
 
   const existant = mode === 'edit' ? topics.find((topic) => topic.id === id) : undefined
 
-  const [titre, setTitre] = useState('')
-  const [categorieId, setCategorieId] = useState<string | null>(null)
+  const [titre, setTitre] = useState(modele?.titre ?? '')
+  const [categorieId, setCategorieId] = useState<string | null>(
+    modele?.categoryId ?? null,
+  )
   const [depart, setDepart] = useState(todayKey)
-  const [programme, setProgramme] = useState<ScheduleId>(DEFAULT_SCHEDULE)
+  const [programme, setProgramme] = useState<ScheduleId>(
+    modele?.scheduleId ?? DEFAULT_SCHEDULE,
+  )
   const [soumis, setSoumis] = useState(false)
   const [enregistrement, setEnregistrement] = useState(false)
   const [feuille, setFeuille] = useState(false)
@@ -123,7 +163,25 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
         {mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet'}
       </h1>
 
+      {/*
+        Ce qui a été repris, et ce qui ne l'a pas été. Sans cette phrase, un
+        formulaire pré-rempli laisse croire qu'on modifie le sujet d'origine.
+      */}
+      {modele && (
+        <p className="page__intro">
+          Dupliqué depuis « {modele.depuis} ». Le titre, la catégorie et le
+          programme sont repris ; la date de départ est celle d'aujourd'hui.
+        </p>
+      )}
+
       <form className="formulaire" onSubmit={soumettre} noValidate>
+        {/*
+          Trois exemples plutôt qu'un champ nu. « Sujet » est un mot large, et
+          la première création se fait à froid : personne ne sait s'il faut y
+          écrire « Mathématiques » ou « les dérivées ». Les exemples le disent
+          sans l'expliquer, et couvrent trois domaines pour que l'application
+          ne passe pas pour un outil scolaire.
+        */}
         <Champ
           label="Titre"
           type="text"
@@ -132,6 +190,11 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
           autoComplete="off"
           onChange={(event) => setTitre(event.target.value)}
           erreur={soumis ? erreurTitre : null}
+          aide={
+            mode === 'create'
+              ? 'Ce que vous voulez revoir. Par exemple : les dérivées, les accords majeurs, le vocabulaire du voyage.'
+              : undefined
+          }
         />
 
         {/*

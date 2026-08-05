@@ -171,7 +171,7 @@
   }
 
   /* Au bout de la rangée, aussi loin du logotype que la largeur le permet. */
-  .appli__reglages {
+  .appli__outils {
     flex: 0 0 auto;
   }
 }
@@ -363,13 +363,21 @@ body[data-panneau='ouvert'] .fab {
 }
 
 /*
- * Les réglages au bout de l'en-tête, à l'opposé du logotype.
+ * Aide et réglages au bout de l'en-tête, à l'opposé du logotype.
  *
  * Le signe fait 20px, sa cible en fait 44 : c'est le carré qui se touche, pas
- * le dessin.
+ * le dessin. Deux cibles de 44px côte à côte tiennent encore à 320px — le
+ * logotype garde 180px pour lui, et la navigation vit sur sa propre ligne.
  */
-.appli__reglages {
+.appli__outils {
   grid-area: reglages;
+  display: flex;
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.appli__outil {
   display: inline-flex;
   min-height: var(--cible);
   min-width: var(--cible);
@@ -383,12 +391,33 @@ body[data-panneau='ouvert'] .fab {
     background-color var(--duree-court) var(--courbe);
 }
 
-.appli__reglages:hover {
+.appli__outil:hover {
   background-color: var(--surface-survol);
   color: var(--encre);
 }
 
-.appli__reglages--actif {
+.appli__outil--actif {
   background-color: var(--accent-doux);
   color: var(--accent);
+}
+
+/*
+ * Le point d'interrogation de l'aide. Une lettre cerclée, pas une huitième
+ * icône : la section 11 arrête la liste des signes dessinés à sept, et il n'y
+ * a rien à dessiner ici que l'alphabet ne dise déjà.
+ *
+ * Le cercle est tracé au trait, à la taille du signe des réglages, pour que
+ * les deux pèsent pareil dans la rangée.
+ */
+.appli__aide {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid currentcolor;
+  border-radius: var(--r-pilule);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
 }

@@ -1,6 +1,8 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
+import type { Programme } from '../types'
 import { useDonnees } from '../state/useDonnees'
+import { useToast } from '../state/useToast'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   BackupError,
@@ -19,6 +21,9 @@ import { ChipCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
+/** Le dépôt : seule adresse extérieure de toute l'application. */
+const DEPOT = 'https://github.com/alarboulletmarin/revoir'
+
 export function Settings() {
   useTitrePage('Réglages')
   const {
@@ -29,8 +34,10 @@ export function Settings() {
     setArchived,
     programmes,
     supprimerProgramme,
+    restaurerProgramme,
     compterUsages,
   } = useDonnees()
+  const { afficherToast } = useToast()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
@@ -38,9 +45,23 @@ export function Settings() {
   const archives = archivedTopics(topics)
   const rangees = categoriesTriees(categories)
 
-  const supprimer = (id: string, label: string) => {
-    void supprimerProgramme(id).then((fait) => {
-      if (fait) setRetour({ ton: 'ok', message: `Programme « ${label} » supprimé.` })
+  /*
+   * On annule, on ne confirme pas (règle métier n°3). Un programme supprimable
+   * n'est suivi par aucun sujet — il n'emporte donc rien —, mais il a pu
+   * demander quelques gestes à composer, et un message de constat ne les rendait
+   * pas. Le toast, lui, les rend.
+   */
+  const supprimer = (programme: Programme) => {
+    void supprimerProgramme(programme.id).then((fait) => {
+      if (!fait) return
+      afficherToast({
+        texte: 'Programme supprimé',
+        detail: programme.label,
+        action: {
+          libelle: 'Annuler',
+          onAction: () => restaurerProgramme(programme),
+        },
+      })
     })
   }
 
@@ -209,10 +230,7 @@ export function Settings() {
                       {usages > 0 ? 'Renommer' : 'Modifier'}
                     </LienBouton>
                     {usages === 0 && (
-                      <Bouton
-                        variante="danger"
-                        onClick={() => supprimer(programme.id, programme.label)}
-                      >
+                      <Bouton variante="danger" onClick={() => supprimer(programme)}>
                         Supprimer
                       </Bouton>
                     )}
@@ -274,6 +292,26 @@ export function Settings() {
           Effacer les données du site depuis votre navigateur supprime donc toutes vos
           révisions. Pensez à exporter régulièrement.
         </p>
+        {/*
+          La licence dans l'application, pas seulement dans le dépôt : c'est ce
+          qui rend le projet trouvable depuis le produit. Les notices des
+          composants tiers sont servies en fichier statique et précachées — la
+          MIT demande que leurs mentions accompagnent le code distribué, et ce
+          code est dans le bundle.
+        */}
+        <p className="discret">
+          Logiciel libre sous licence MIT.{' '}
+          <a className="lien" href={DEPOT} target="_blank" rel="noreferrer noopener">
+            Code source
+          </a>{' '}
+          ·{' '}
+          <a className="lien" href="/THIRD-PARTY.txt">
+            Licences des composants tiers
+          </a>
+        </p>
+        <div className="reglages__actions">
+          <LienBouton vers="/aide">Comment ça marche</LienBouton>
+        </div>
       </section>
 
       <ConfirmDialog

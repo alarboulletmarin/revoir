@@ -116,6 +116,21 @@ describe('vues du tableau de bord', () => {
     expect(upcomingEntries(topics, reviews, 3, TODAY)).toHaveLength(3)
   })
 
+  /*
+   * « Tout voir » est une promesse : l'écran de destination passe `null` et
+   * doit recevoir la liste entière, pas les cent premières.
+   */
+  it('rend toutes les prochaines révisions quand aucun plafond n’est posé', () => {
+    const { topics, reviews } = collections(
+      sujet('Vocabulaire', '2026-03-09', { schedule: 'ultime' }),
+      sujet('Piano', '2026-03-09', { schedule: 'ultime' }),
+    )
+    const toutes = upcomingEntries(topics, reviews, null, TODAY)
+    const attendues = reviews.filter((review) => review.dueDate > TODAY)
+    expect(toutes).toHaveLength(attendues.length)
+    expect(toutes.length).toBeGreaterThan(8)
+  })
+
   it('retourne les révisions d’un jour précis, effectuées comprises', () => {
     const { topics, reviews } = collections(
       sujet('Histoire', '2026-03-09', { doneOffsets: [1] }),
@@ -311,6 +326,26 @@ describe('progressionEntree', () => {
     expect(progressionEntree(avance.reviews[0], avance.reviews).suivante).toBe(
       '2026-03-15',
     )
+  })
+
+  /*
+   * Le recalage et le report font tomber deux échéances le même jour. Se
+   * comparer par date faisait alors disparaître la seconde : « Révision 2 sur
+   * 5 » sans prochaine, alors qu'il en restait une dans la journée.
+   */
+  it('annonce une échéance tombée le même jour que celle qu’on lit', () => {
+    const groupe = sujet('Chapitre 7', '2026-03-01')
+    // J+7 est reportée sur la date de J+3 : les deux tombent le 4 mars.
+    groupe.reviews[2] = { ...groupe.reviews[2], dueDate: '2026-03-04' }
+    expect(progressionEntree(groupe.reviews[1], groupe.reviews).suivante).toBe(
+      '2026-03-04',
+    )
+  })
+
+  it('ne se compte jamais elle-même comme sa propre suivante', () => {
+    const seule = sujet('Chapitre 8', '2026-03-01')
+    const derniere = seule.reviews[4]
+    expect(progressionEntree(derniere, [derniere]).suivante).toBeNull()
   })
 
   it('prend la plus proche des dates restantes, quel que soit leur ordre', () => {

@@ -13,6 +13,30 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Revoir" />
+
+    <!--
+      L'aperçu d'un lien partagé. Sans ces balises, coller l'adresse dans une
+      conversation n'affiche qu'une URL nue : l'écran d'accueil explique le
+      projet, encore faut-il donner envie de l'ouvrir.
+
+      `og:image` est relative faute de domaine connu. La plupart des robots la
+      résolvent, certains non : le jour où l'application a une adresse, c'est
+      ici qu'elle s'écrit en absolu, avec `og:url`.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Revoir" />
+    <meta property="og:title" content="Revoir — planifier ses révisions" />
+    <meta
+      property="og:description"
+      content="Planifier ses révisions grâce à la répétition espacée, sans stocker le contenu à apprendre. Aucun compte, aucun serveur : tout reste sur l'appareil."
+    />
+    <meta property="og:image" content="/social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="La frise graduée du programme Simple : J+1, J+3, J+7, J+14, J+30." />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <title>Revoir</title>
   </head>
   <body>

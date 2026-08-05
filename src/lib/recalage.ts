@@ -83,6 +83,57 @@ export function validerRevision(
 }
 
 /**
+ * Date d'un report : le lendemain, à partir d'aujourd'hui si l'échéance est
+ * déjà passée.
+ *
+ * Reporter une révision en retard du 1er août alors qu'on est le 5 la place au
+ * 6, pas au 2 : sans quoi le report ne ferait rien d'autre que déplacer le
+ * retard d'un jour. Une échéance à venir, elle, recule d'un jour depuis sa
+ * propre date.
+ */
+export function dateDeReport(review: Review, aujourdhui: DateKey = todayKey()): DateKey {
+  const base = review.dueDate < aujourdhui ? aujourdhui : review.dueDate
+  return addDaysToKey(base, 1)
+}
+
+export interface ResultatReport {
+  reviews: Review[]
+  /** La nouvelle échéance, ou null si rien n'a bougé. */
+  date: DateKey | null
+}
+
+/**
+ * Reporte une révision d'un jour — règle métier n°6.
+ *
+ * **Seule cette échéance bouge.** Le recalage après retard déplace les
+ * suivantes parce qu'une validation dit quelque chose du rythme réel : elle a
+ * eu lieu, et le programme repart de là. Un report ne dit rien de tel — il dit
+ * « pas aujourd'hui ». Le programme n'a pas changé, les échéances suivantes
+ * non plus.
+ *
+ * Une révision faite ne se reporte pas : elle appartient au passé, et il n'y a
+ * rien à décaler. Le retour est alors inchangé, `date` à null.
+ */
+export function reporterRevision(
+  reviews: Review[],
+  reviewId: string,
+  aujourdhui: DateKey = todayKey(),
+): ResultatReport {
+  const cible = reviews.find((review) => review.id === reviewId)
+  if (!cible || cible.completedAt !== null) return { reviews, date: null }
+
+  const date = dateDeReport(cible, aujourdhui)
+  if (date === cible.dueDate) return { reviews, date: null }
+
+  return {
+    reviews: reviews.map((review) =>
+      review.id === reviewId ? { ...review, dueDate: date } : review,
+    ),
+    date,
+  }
+}
+
+/**
  * Décoche une révision.
  *
  * Volontairement asymétrique : décocher ne défait pas un recalage, parce que

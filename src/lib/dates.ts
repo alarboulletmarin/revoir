@@ -25,6 +25,23 @@ export function todayKey(): DateKey {
   return toKey(new Date())
 }
 
+/**
+ * Millisecondes avant le prochain minuit local.
+ *
+ * L'application est installable : elle passe la nuit ouverte sur un téléphone
+ * posé sur une table. Sans réveil, « aujourd'hui » resterait la veille au
+ * matin — mauvaise date en tête de page, mauvaise liste du jour, retard
+ * inventé. C'est ce nombre qui arme le minuteur.
+ *
+ * Une seconde de marge : un minuteur réveillé à 23:59:59,998 relirait encore
+ * la veille, puis se reprogrammerait pour deux millisecondes.
+ */
+export function msAvantMinuit(maintenant: Date = new Date()): number {
+  const minuit = new Date(maintenant)
+  minuit.setHours(24, 0, 0, 0)
+  return minuit.getTime() - maintenant.getTime() + 1000
+}
+
 /** Décale une clé de `days` jours. */
 export function addDaysToKey(key: DateKey, days: number): DateKey {
   return toKey(addDays(fromKey(key), days))

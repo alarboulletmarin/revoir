@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { Review, ScheduleId } from '../types'
 import { compteur } from './ids'
 import { buildReviews } from './schedules'
-import { dateEffective, devaliderRevision, validerRevision } from './recalage'
+import {
+  dateDeReport,
+  dateEffective,
+  devaliderRevision,
+  reporterRevision,
+  validerRevision,
+} from './recalage'
 
 const DEPART = '2026-03-01'
 
@@ -189,6 +195,63 @@ describe('dateEffective', () => {
   it('retombe sur l’échéance si l’horodatage est illisible', () => {
     const [premiere] = revisions()
     expect(dateEffective({ ...premiere, completedAt: 'jamais' })).toBe('2026-03-02')
+  })
+})
+
+describe('reporterRevision', () => {
+  /** Reporte la révision d'un décalage, comme un écran le ferait. */
+  const reporter = (reviews: Review[], intervalInDays: number, aujourdhui: string) =>
+    reporterRevision(reviews, idDe(reviews, intervalInDays), aujourdhui)
+
+  it('repousse une échéance à venir d’un jour', () => {
+    // « Simple » depuis le 1er mars : J+7 tombe le 8.
+    const { reviews, date } = reporter(revisions(), 7, '2026-03-05')
+    expect(date).toBe('2026-03-09')
+    expect(dates(reviews)[7]).toBe('2026-03-09')
+  })
+
+  it('repousse une échéance en retard à demain, pas au lendemain de sa date', () => {
+    // J+3 tombait le 4 mars, on est le 10 : le report vise le 11.
+    const { reviews, date } = reporter(revisions(), 3, '2026-03-10')
+    expect(date).toBe('2026-03-11')
+    expect(dates(reviews)[3]).toBe('2026-03-11')
+  })
+
+  it('repousse l’échéance du jour à demain', () => {
+    const { date } = reporter(revisions(), 3, '2026-03-04')
+    expect(date).toBe('2026-03-05')
+  })
+
+  /*
+   * La différence avec le recalage après retard, et toute la raison d'être de
+   * cette fonction : un report ne dit rien du rythme réel, il dit « pas
+   * aujourd'hui ». Le programme n'a pas bougé, les échéances suivantes non plus.
+   */
+  it('ne déplace aucune autre échéance', () => {
+    const depart = revisions()
+    const { reviews } = reporter(depart, 3, '2026-03-10')
+    const attendues = { ...dates(depart), 3: '2026-03-11' }
+    expect(dates(reviews)).toEqual(attendues)
+  })
+
+  it('refuse de reporter une révision déjà faite', () => {
+    const faites = valider(revisions(), 1, '2026-03-02').reviews
+    const resultat = reporterRevision(faites, idDe(faites, 1), '2026-03-10')
+    expect(resultat.date).toBeNull()
+    expect(resultat.reviews).toBe(faites)
+  })
+
+  it('ne bouge rien sur un identifiant inconnu', () => {
+    const depart = revisions()
+    const resultat = reporterRevision(depart, 'introuvable', '2026-03-10')
+    expect(resultat.date).toBeNull()
+    expect(resultat.reviews).toBe(depart)
+  })
+
+  it('annonce la date du report avant de l’appliquer', () => {
+    const [premiere] = revisions()
+    expect(dateDeReport(premiere, '2026-03-01')).toBe('2026-03-03')
+    expect(dateDeReport(premiere, '2026-03-20')).toBe('2026-03-21')
   })
 })
 

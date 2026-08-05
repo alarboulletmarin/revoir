@@ -2,10 +2,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
+import { useValidation } from '../state/useValidation'
+import { useAujourdhui } from '../state/useAujourdhui'
+import { libelleReport, useReport } from '../state/useReport'
 import { useTitrePage } from '../state/useTitrePage'
 import { getSchedule } from '../lib/schedules'
-import { formatIsoDate, formatLong, formatRelative, todayKey } from '../lib/dates'
+import { formatIsoDate, formatLong, formatRelative } from '../lib/dates'
 import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
+import type { ModeleSujet } from './SujetForm'
 import { Frise } from '../components/Frise'
 import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -22,17 +26,17 @@ export function SujetDetail() {
     reviews,
     categories,
     loading,
-    valider,
     devalider,
-    restaurerRevisions,
     setArchived,
     definirPratique,
     removeTopic,
     programmes,
   } = useDonnees()
   const { afficherToast } = useToast()
+  const { validerRevision } = useValidation()
+  const reporter = useReport()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
 
   const topic = topics.find((candidat) => candidat.id === id)
   useTitrePage(topic?.title ?? 'Sujet')
@@ -64,20 +68,18 @@ export function SujetDetail() {
   const archive = topic.status === 'archived'
 
   const basculer = (reviewId: string, faite: boolean) => {
-    if (faite) {
-      devalider(reviewId)
-      return
+    if (faite) devalider(reviewId)
+    else validerRevision(reviewId)
+  }
+
+  const dupliquer = () => {
+    const modele: ModeleSujet = {
+      titre: topic.title,
+      categoryId: topic.categoryId,
+      scheduleId: topic.scheduleId,
+      depuis: topic.title,
     }
-    const effet = valider(reviewId)
-    if (!effet) return
-    afficherToast({
-      texte: 'Révision enregistrée',
-      detail: effet.deplacees > 0 ? 'Prochaines dates ajustées' : undefined,
-      action: {
-        libelle: 'Annuler',
-        onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
-      },
-    })
+    navigate('/nouveau', { state: { modele } })
   }
 
   const archiver = () => {
@@ -137,6 +139,15 @@ export function SujetDetail() {
           legende="Où en est la pratique de ce sujet"
           onChange={(statut) => definirPratique(topic.id, statut)}
         />
+        {/*
+          Le mot ne se devine pas. Trois exemples valent mieux qu'une
+          définition, et disent au passage que le sens change avec le domaine.
+        */}
+        <p className="discret discret--petit">
+          Des exercices pour un cours, la répétition pour un instrument, une
+          série de questions pour le code de la route. La pratique est un état,
+          pas une date : elle n'a donc pas d'échéance.
+        </p>
       </section>
 
       <section className="fiche__bloc">
@@ -181,6 +192,22 @@ export function SujetDetail() {
                     {faite ? 'effectuée' : formatRelative(review.dueDate, aujourdhui)}
                   </span>
                 </div>
+
+                {/*
+                  « Pas aujourd'hui » : une échéance recule d'un jour sans que
+                  les suivantes bougent. Rien à reporter sur une révision faite,
+                  d'où l'absence du bouton plutôt qu'un bouton inerte.
+                */}
+                {!faite && (
+                  <Bouton
+                    variante="texte"
+                    className="echeance__report"
+                    aria-label={`${libelleReport(review, aujourdhui)} : révision J+${review.intervalInDays}`}
+                    onClick={() => reporter(review.id, aujourdhui)}
+                  >
+                    Reporter
+                  </Bouton>
+                )}
               </li>
             )
           })}
@@ -193,6 +220,15 @@ export function SujetDetail() {
           <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="discret">
             Modifier
           </LienBouton>
+          {/*
+            Le chapitre suivant se prépare comme le précédent : même catégorie,
+            même programme, titre à retoucher, date d'aujourd'hui. C'est le
+            formulaire de création qui s'ouvre — rien n'est écrit tant qu'il
+            n'est pas soumis.
+          */}
+          <Bouton variante="discret" onClick={dupliquer}>
+            Dupliquer
+          </Bouton>
           <Bouton variante="discret" onClick={archiver}>
             <IconeArchive width="18" height="18" />
             {archive ? 'Désarchiver' : 'Archiver'}

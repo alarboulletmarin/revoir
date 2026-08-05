@@ -4,14 +4,35 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Planifier ses révisions grâce à la répétition espacée, sans stocker le contenu à apprendre.",
+  "license": "MIT",
+  "author": "Andréa Larboullet Marin (https://github.com/alarboulletmarin)",
+  "homepage": "https://github.com/alarboulletmarin/revoir#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alarboulletmarin/revoir.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alarboulletmarin/revoir/issues"
+  },
+  "keywords": [
+    "revision",
+    "repetition-espacee",
+    "spaced-repetition",
+    "pwa",
+    "offline-first",
+    "local-first",
+    "react",
+    "indexeddb"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run notices && tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "notices": "node scripts/generate-notices.mjs"
   },
   "dependencies": {
     "@tanstack/react-table": "^9.0.0",

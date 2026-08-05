@@ -149,14 +149,18 @@ L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et l
 Deux rôles, deux familles.
 
 ```css
---police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+--police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 --police-ui:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 ```
 
-- **Instrument Sans** (variable, woff2 sous-ensemble latin, ~25 ko, auto-hébergée dans `/public/fonts`) : chiffres du bento, titres de page, titres de sujets. Grotesque légèrement condensée, chiffres tabulaires très lisibles en grand.
-- **Pile système** : tout le reste. Zéro octet, rendu natif, et l'app reste utilisable si la police ne charge pas (`font-display: swap`).
+- **`--police-titre`** : chiffres du bento, titres de page, titres de sujets.
+- **`--police-ui`** : tout le reste.
 
-Si tu veux zéro dépendance de police, retire Instrument Sans et passe tout en pile système : le design tient, il perd juste un peu de caractère dans les grands chiffres.
+**Deux rôles, une seule famille : la pile système.** Zéro octet téléchargé, rendu natif, aucune bascule au chargement.
+
+Cette section a longtemps décrit une autre réalité — « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé : aucun `@font-face`, aucun lien, aucun fichier. Tous les titres tombaient déjà sur la pile système, et la spécification décrivait une police que l'application n'a jamais servie. Elle dit maintenant ce qui se passe.
+
+Les deux variables restent distinctes, bien qu'elles vaillent la même chose : les rôles n'ont pas fusionné. Une police de titres se réintroduit ici, en un seul endroit — auto-hébergée, jamais appelée à un CDN, et sa licence versée à `THIRD-PARTY.txt` comme celle de toute autre dépendance.
 
 ### Échelle
 
@@ -447,9 +451,26 @@ Il reste dans la cellule héros, fond `--accent` plein. La deuxième ligne est u
 
 Une journée bouclée n'est pas une journée vide, et les deux ne se disent pas pareil : **« Tout est terminé pour aujourd'hui »** quand quelque chose était prévu, **« Aucune révision prévue aujourd'hui »** quand rien ne l'était. Sans rien à annoncer non plus, la seconde ligne devient « Les prochaines révisions apparaîtront ici. »
 
+**Le vide du tout premier jour est un cas à part** : il n'y a pas de tableau de bord à rendre, il y a un projet à expliquer. Voir section 8.17.
+
 ### 8.10 Toast
 
-Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, texte `--papier`, `--r-carte`. Deux usages seulement : validation annulable (5s) et mise à jour du Service Worker disponible.
+Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, texte `--papier`, `--r-carte`.
+
+**Le toast porte les gestes annulables, et rien d'autre.** C'est le pendant exact de la règle 2 de la section 1 : on annule, on ne confirme pas — alors ce qui ne se confirme pas doit pouvoir s'annuler quelque part, et cet endroit est le toast. Quatre emplois, pas un de plus :
+
+| Geste | Texte | Seconde ligne |
+|---|---|---|
+| valider une révision | Révision enregistrée | « Prochaines dates ajustées » si le recalage a déplacé quelque chose |
+| reporter une échéance | Révision reportée | la nouvelle date |
+| archiver un sujet | Sujet archivé | — |
+| supprimer un programme | Programme supprimé | son nom |
+
+Plus un cinquième cas qui n'est pas un geste : une nouvelle version mise en cache par le Service Worker, avec une durée nulle — le toast attend une décision au lieu de s'effacer.
+
+Ce n'est pas un canal de notification : rien qui ne s'annule n'y a sa place. Une suppression **confirmée** — un sujet, une catégorie — reste une bannière `role="status"` : elle a déjà eu son écran, et il n'y a plus rien à défaire.
+
+La première fois qu'un recalage déplace des échéances, la seconde ligne dit ce qui vient de se passer — « Les suivantes gardent leurs écarts, à partir d'aujourd'hui » — puis reprend sa forme courte. Personne ne peut deviner qu'« ajustées » veut dire « en conservant les écarts du programme », et des dates qui bougent sans explication ressemblent à une erreur de l'application. Une explication relue à chaque fois, elle, cesse d'être lue.
 
 ### 8.11 Calendrier
 
@@ -505,7 +526,7 @@ Le retard à zéro ne s'écrit pas : « 0 en retard » rappellerait un problème
 
 #### Les cinq marques
 
-Cinq états, **cinq formes** — elles doivent se distinguer en niveaux de gris, la couleur ne portant jamais l'information seule. Tout est dessiné en CSS : la section 11 arrête la liste des icônes à six, et la coche, qui en fait partie, est la seule reprise ici.
+Cinq états, **cinq formes** — elles doivent se distinguer en niveaux de gris, la couleur ne portant jamais l'information seule. Tout est dessiné en CSS : la section 11 arrête la liste des icônes à sept, et la coche, qui en fait partie, est la seule reprise ici.
 
 | État | Marque | Couleur |
 |---|---|---|
@@ -518,6 +539,8 @@ Cinq états, **cinq formes** — elles doivent se distinguer en niveaux de gris,
 C'est le vocabulaire déjà en place : le disque coché est celui de la section 8.2, l'anneau et le disque sont ceux du calendrier (section 8.11). Chaque case porte en plus un texte `.invisible` complet — « Dérivées, révision à 1 semaine, en retard depuis le 3 août » — parce qu'une forme ne se lit pas.
 
 La marque fait 16 à 20px, mais c'est la **cellule entière** qui se touche : `min-height` et `min-width` à `var(--cible)`. Une case hors programme n'est pas un bouton — il n'y a rien à ouvrir, et une cible tactile qui ne fait rien est pire que pas de cible.
+
+**Une légende dit ce que les formes veulent dire** (`.legende`, composant `LegendeSuivi`). Le texte `.invisible` de chaque case n'aide que les lecteurs d'écran ; l'œil, lui, devait deviner qu'un anneau au point central veut dire « en retard ». Elle est repliée dans un `<details>` au-dessus des tableaux : une légende sert une fois, et huit lignes au-dessus du tableau à chaque visite feraient payer aux habitués ce que les nouveaux venus lisent une seule fois. Le même composant est déplié sur la page d'aide (section 8.16).
 
 #### Deux modes de colonnes
 
@@ -555,10 +578,12 @@ Une feuille du bas (section 8.11), **une par page et non une par case** : un tab
 
 | État | Contenu |
 |---|---|
-| aujourd'hui, en retard | « Révision 3 sur 7 · prévue le 12 août » · **Marquer comme effectuée** · **Voir le sujet** |
+| aujourd'hui, en retard | « Révision 3 sur 7 · prévue le 12 août » · **Marquer comme effectuée** · **Reporter à demain** · **Voir le sujet** |
+| à venir | « prévue le 12 août » · **Marquer comme effectuée** · **Reporter d'un jour** · **Voir le sujet** |
 | effectuée | « effectuée le 12 août » · **Annuler la validation** · **Voir le sujet** |
-| à venir | l'échéance, et **Voir le sujet** — valider en avance n'a pas de sens |
 | Pratique | les trois états, en radios. **Jamais un cycle au toucher** : un changement accidentel serait trop facile |
+
+Une révision à venir se valide comme les autres. Elle l'était déjà depuis la feuille du calendrier, depuis « Prochaines révisions » et depuis la fiche : le panneau était le seul écran à la refuser, ce qui ne se lisait pas comme une règle mais comme une case morte. Réviser en avance est un usage, pas une erreur.
 
 La validation passe par `useValidation`, jamais par le contexte directement : c'est ce qui fait hériter du toast « Annuler » de cinq secondes (section 1, règle 2).
 
@@ -609,6 +634,42 @@ Le retour après suppression est une bannière `role="status"`, pas un toast : l
 
 ---
 
+### 8.16 Le signe de l'aide, et la page qu'il ouvre
+
+**Un point d'interrogation, pas une huitième icône.** La section 11 arrête la liste des signes dessinés à sept, et elle n'a pas à s'allonger ici : un « ? » est une lettre. Il est cerclé au trait, à 20px comme le signe des réglages, et sa cible fait 44px — c'est le carré qui se touche, pas le caractère. Repos `--encre-2`, actif `--accent` sur `--accent-doux`, comme un lien de navigation.
+
+Les deux signes vivent côte à côte au bout de l'en-tête (`.appli__outils`), à l'opposé du logotype. Deux cibles de 44px y tiennent encore à 320px, où la navigation occupe déjà sa propre ligne. Comme les réglages, l'aide porte son nom en `aria-label` et en `title` : un signe sans nom est une devinette.
+
+**La page** — `/aide`, cinq sections, dans l'ordre où les questions se posent : le vocabulaire, les programmes, le retard et le recalage, lire le tableau de suivi, vos données. Elle emprunte le bloc des réglages (`.aide__bloc`) : deux écrans de texte long n'ont aucune raison de se dessiner différemment.
+
+Elle est **hors ligne comme le reste** : aucun lien sortant, aucune capture d'écran. Ce sont les composants de l'application qui l'illustrent — la frise pour les programmes, la légende des cinq marques pour le tableau. Une capture vieillit dès la première retouche du CSS ; un composant, non.
+
+Ce n'est pas un doublon du README. Le README s'adresse à qui regarde le dépôt — vocabulaire du modèle, format d'export, choix d'architecture. La page d'aide s'adresse à qui utilise l'application, sur un téléphone, éventuellement sans réseau.
+
+---
+
+### 8.17 Le premier écran
+
+**L'écran de premier usage est la page de présentation.** Ce sont volontairement le même écran, et il est rendu par le tableau de bord tant qu'aucun sujet n'existe — donc à la même adresse, `/`.
+
+L'application vit à la racine : `start_url` et `scope` valent « / », et des raccourcis posés sur des écrans d'accueil y pointent déjà. La déplacer sous `/app` pour loger une vitrine à sa place casserait ces installations — c'est exactement ce que les redirections de `/element/:id` évitent par ailleurs. Il n'y avait de toute façon rien à arbitrer : qui arrive sans données ne veut pas une grille de zéros, il veut savoir ce que fait ce site ; qui vient d'installer l'application veut savoir par où commencer. Une seule page répond aux deux.
+
+Cinq temps, dans cet ordre :
+
+1. **La question**, en titre : « Qu'est-ce que je dois revoir aujourd'hui ? » C'est la section 1, écrite telle quelle.
+2. **La frise en grand**, dans sa carte. C'est l'argument, pas une illustration : elle montre en une ligne ce que trois paragraphes expliqueraient mal.
+3. **Trois temps numérotés** — noter, calculer, cocher —, le troisième disant le recalage après retard.
+4. **Ce que Revoir ne fait pas.** Ni compte, ni serveur, ni publicité, ni notification, ni série à tenir. C'est la moitié du projet, et personne ne la devine.
+5. **Un bouton**, « Créer un sujet », et un lien texte vers l'aide. Une seule `.btn--primaire` par écran (section 8.4).
+
+Une dernière ligne mentionne les six catégories livrées : elles existent avant le premier sujet, et les découvrir sans les avoir demandées serait une surprise.
+
+Aucune illustration, aucun emoji, aucun témoignage, aucune section « fonctionnalités » en trois colonnes. Ce serait le premier écran du projet à trahir sa propre section 1.
+
+Les balises `og:` de `index.html` vont avec : sans elles, un lien collé dans une conversation n'affiche qu'une adresse nue. L'image de partage est la frise, produite par le même script que les icônes (`npm run icons`).
+
+---
+
 ## 9. Écriture
 
 L'interface est en français, en casse normale, à l'infinitif pour les actions.
@@ -656,6 +717,8 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 ## 11. Interdits
 
 Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 7 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+
+Le « ? » de l'aide (section 8.16) n'entame pas le compte : c'est une lettre cerclée, pas un signe dessiné. La règle vise les dessins qu'il faut apprendre à lire, et l'alphabet n'en fait pas partie.
 
 Seule dérogation à la palette : les huit teintes de catégorie de la section 3 bis, et sous les trois conditions qui y sont posées.
 

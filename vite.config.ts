@@ -37,7 +37,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // `txt` couvre THIRD-PARTY.txt : les licences des composants tiers
+        // doivent rester lisibles hors ligne, comme le reste de l'application.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,txt}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
       },

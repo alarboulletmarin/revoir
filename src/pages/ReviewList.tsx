@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
+import { useAujourdhui } from '../state/useAujourdhui'
 import { useTitrePage } from '../state/useTitrePage'
-import { formatLong, formatRelative, todayKey, type DateKey } from '../lib/dates'
+import { formatLong, formatRelative, type DateKey } from '../lib/dates'
 import { overdueEntries, todayEntries, upcomingEntries } from '../lib/stats'
 import { estFaite } from '../lib/sujets'
 import type { Review, ReviewEntry, Topic } from '../types'
@@ -29,8 +30,9 @@ const FILTRES = {
   prochaines: {
     titre: 'Prochaines révisions',
     vide: 'Aucune révision planifiée',
+    // Sans plafond : cet écran est la destination de « Tout voir ».
     entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
-      upcomingEntries(topics, reviews, 100, jour),
+      upcomingEntries(topics, reviews, null, jour),
   },
 } as const
 
@@ -48,7 +50,7 @@ export function ReviewList() {
 function Liste({ filtre }: { filtre: Filtre }) {
   const { topics, reviews } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
   const config = FILTRES[filtre]
 
   useTitrePage(config.titre)

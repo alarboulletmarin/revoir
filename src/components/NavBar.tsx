@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 /**
- * Navigation en toutes lettres. Les six icônes autorisées (section 11) ne
+ * Navigation en toutes lettres. Les sept icônes autorisées (section 11) ne
  * couvrent ni « aujourd'hui » ni « suivi » : plutôt que d'en inventer deux de
  * plus, on écrit les mots.
  *

@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
+import { useAujourdhui } from '../state/useAujourdhui'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
-import { formatLong, formatShort, todayKey } from '../lib/dates'
+import { formatLong, formatShort } from '../lib/dates'
 import {
   computeStats,
   loadForDays,
@@ -18,6 +19,7 @@ import { LigneRevision } from '../components/LigneRevision'
 import { BarresCharge } from '../components/BarresCharge'
 import { MiniMois } from '../components/MiniMois'
 import { LienBouton } from '../components/Bouton'
+import { Accueil } from './Accueil'
 
 /** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
 const ITEMS_HERO_ETROIT = 3
@@ -32,7 +34,7 @@ export function Dashboard() {
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
   const tablette = useMediaQuery('(min-width: 768px)')
-  const aujourdhui = todayKey()
+  const aujourdhui = useAujourdhui()
 
   const vue = useMemo(() => {
     const dujour = todayEntries(topics, reviews, aujourdhui)
@@ -57,8 +59,9 @@ export function Dashboard() {
     return <p className="discret">Chargement…</p>
   }
 
+  // Aucun sujet : l'écran qui explique le projet, et non une grille de zéros.
   if (topics.length === 0) {
-    return <PremierUsage />
+    return <Accueil />
   }
 
   const plafond = large ? ITEMS_HERO_LARGE : ITEMS_HERO_ETROIT
@@ -205,18 +208,3 @@ function secondeLigne(prevues: number, prochain: { date: string; count: number }
   return `Prochaine révision : ${formatShort(prochain.date)}, ${prochain.count} sujet${prochain.count > 1 ? 's' : ''}.`
 }
 
-function PremierUsage() {
-  return (
-    <div className="etat-vide">
-      <h1 className="page__titre">Rien à revoir pour l'instant.</h1>
-      <p className="discret">
-        Créez un sujet : un titre, une catégorie, une date de départ et un
-        programme. Revoir calcule les dates de révision et ne stocke jamais ce que
-        vous apprenez.
-      </p>
-      <LienBouton vers="/nouveau" variante="primaire">
-        Créer un sujet
-      </LienBouton>
-    </div>
-  )
-}
