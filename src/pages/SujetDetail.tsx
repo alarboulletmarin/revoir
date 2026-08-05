@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
+import { useValidation } from '../state/useValidation'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { libelleReport, useReport } from '../state/useReport'
 import { useTitrePage } from '../state/useTitrePage'
@@ -25,15 +26,14 @@ export function SujetDetail() {
     reviews,
     categories,
     loading,
-    valider,
     devalider,
-    restaurerRevisions,
     setArchived,
     definirPratique,
     removeTopic,
     programmes,
   } = useDonnees()
   const { afficherToast } = useToast()
+  const { validerRevision } = useValidation()
   const reporter = useReport()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
   const aujourdhui = useAujourdhui()
@@ -68,20 +68,8 @@ export function SujetDetail() {
   const archive = topic.status === 'archived'
 
   const basculer = (reviewId: string, faite: boolean) => {
-    if (faite) {
-      devalider(reviewId)
-      return
-    }
-    const effet = valider(reviewId)
-    if (!effet) return
-    afficherToast({
-      texte: 'Révision enregistrée',
-      detail: effet.deplacees > 0 ? 'Prochaines dates ajustées' : undefined,
-      action: {
-        libelle: 'Annuler',
-        onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
-      },
-    })
+    if (faite) devalider(reviewId)
+    else validerRevision(reviewId)
   }
 
   const dupliquer = () => {
@@ -151,6 +139,15 @@ export function SujetDetail() {
           legende="Où en est la pratique de ce sujet"
           onChange={(statut) => definirPratique(topic.id, statut)}
         />
+        {/*
+          Le mot ne se devine pas. Trois exemples valent mieux qu'une
+          définition, et disent au passage que le sens change avec le domaine.
+        */}
+        <p className="discret discret--petit">
+          Des exercices pour un cours, la répétition pour un instrument, une
+          série de questions pour le code de la route. La pratique est un état,
+          pas une date : elle n'a donc pas d'échéance.
+        </p>
       </section>
 
       <section className="fiche__bloc">

@@ -35,13 +35,14 @@ function graduations() {
 }
 
 /** Canvas RGBA minimal, avec anticrénelage par sur-échantillonnage 3x3. */
-function createCanvas(size) {
-  const pixels = new Uint8Array(size * size * 4)
+function createCanvas(width, height = width) {
+  const pixels = new Uint8Array(width * height * 4)
   return {
-    size,
+    width,
+    height,
     pixels,
     fill(color) {
-      for (let i = 0; i < size * size; i += 1) {
+      for (let i = 0; i < width * height; i += 1) {
         pixels[i * 4] = color[0]
         pixels[i * 4 + 1] = color[1]
         pixels[i * 4 + 2] = color[2]
@@ -51,8 +52,8 @@ function createCanvas(size) {
     /** Peint la zone où `inside(x, y)` est vrai, bords lisses. */
     paint(color, inside) {
       const SAMPLES = 3
-      for (let y = 0; y < size; y += 1) {
-        for (let x = 0; x < size; x += 1) {
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
           let hits = 0
           for (let sy = 0; sy < SAMPLES; sy += 1) {
             for (let sx = 0; sx < SAMPLES; sx += 1) {
@@ -63,7 +64,7 @@ function createCanvas(size) {
           }
           if (hits === 0) continue
           const alpha = hits / (SAMPLES * SAMPLES)
-          const offset = (y * size + x) * 4
+          const offset = (y * width + x) * 4
           for (let channel = 0; channel < 3; channel += 1) {
             pixels[offset + channel] = Math.round(
               pixels[offset + channel] * (1 - alpha) + color[channel] * alpha,
@@ -107,18 +108,18 @@ function chunk(type, data) {
 }
 
 function encodePNG(canvas) {
-  const { size, pixels } = canvas
-  const stride = size * 4
+  const { width, height, pixels } = canvas
+  const stride = width * 4
   // Chaque ligne est préfixée par son octet de filtre (0 = aucun).
-  const raw = Buffer.alloc((stride + 1) * size)
-  for (let y = 0; y < size; y += 1) {
+  const raw = Buffer.alloc((stride + 1) * height)
+  for (let y = 0; y < height; y += 1) {
     raw[y * (stride + 1)] = 0
     Buffer.from(pixels.buffer, y * stride, stride).copy(raw, y * (stride + 1) + 1)
   }
 
   const ihdr = Buffer.alloc(13)
-  ihdr.writeUInt32BE(size, 0)
-  ihdr.writeUInt32BE(size, 4)
+  ihdr.writeUInt32BE(width, 0)
+  ihdr.writeUInt32BE(height, 4)
   ihdr[8] = 8 // profondeur
   ihdr[9] = 6 // RGBA
   ihdr[10] = 0
@@ -181,6 +182,49 @@ function drawIcon(size, inset = 0) {
   return encodePNG(canvas)
 }
 
+/**
+ * L'image de partage — celle qu'affiche un lien collé dans une conversation.
+ *
+ * Le même motif que l'icône, aux couleurs de l'application plutôt qu'à celles
+ * de son écran d'accueil : la frise en --accent sur le papier. Aucun mot n'y
+ * est dessiné, les balises `og:` portent déjà le titre et la description ; du
+ * texte rasterisé à la main ferait moins bien qu'elles.
+ *
+ * 1200 × 630 : le format que réclament les aperçus, et le seul endroit du
+ * projet où le canvas n'est pas carré.
+ */
+function drawSociale(width = 1200, height = 630) {
+  const canvas = createCanvas(width, height)
+  canvas.fill(FG)
+
+  const piste = width * 0.66
+  const gauche = (width - piste) / 2
+  const milieu = height * 0.5
+  const epaisseur = Math.max(1, height * 0.012)
+  const hauteurGraduation = height * 0.16
+
+  canvas.paint(
+    BG,
+    roundedRect(gauche, milieu - epaisseur / 2, piste, epaisseur, epaisseur / 2),
+  )
+
+  for (const position of graduations()) {
+    const x = gauche + piste * position - epaisseur * position
+    canvas.paint(
+      BG,
+      roundedRect(
+        x,
+        milieu - hauteurGraduation / 2,
+        epaisseur,
+        hauteurGraduation,
+        epaisseur / 2,
+      ),
+    )
+  }
+
+  return encodePNG(canvas)
+}
+
 mkdirSync(OUT_DIR, { recursive: true })
 
 const outputs = [
@@ -188,6 +232,7 @@ const outputs = [
   ['icon-512.png', drawIcon(512)],
   ['icon-512-maskable.png', drawIcon(512, 0.14)],
   ['apple-touch-icon.png', drawIcon(180)],
+  ['social.png', drawSociale()],
 ]
 
 for (const [name, data] of outputs) {

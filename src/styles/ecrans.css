@@ -1633,3 +1633,273 @@ body[data-panneau='ouvert'] {
   gap: var(--e-2);
   padding-top: var(--e-3);
 }
+
+/* ============================================================== aide ==== */
+
+/*
+ * La page d'aide emprunte le bloc des réglages : même carte, même respiration.
+ * Deux écrans de texte long n'ont aucune raison de se dessiner différemment.
+ */
+.aide__bloc {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+@media (min-width: 768px) {
+  .aide__bloc {
+    padding: var(--e-5);
+  }
+}
+
+/* Un mot, sa définition. La liste de définitions dit la relation, pas le CSS. */
+.aide__termes {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.aide__terme {
+  min-width: 0;
+  font-size: var(--t-base);
+  font-weight: 500;
+  line-height: var(--l-base);
+}
+
+.aide__definition {
+  min-width: 0;
+  padding-bottom: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.aide__definition:last-child {
+  padding-bottom: 0;
+}
+
+.aide__programmes {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.aide__programme {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.aide__programme-nom {
+  min-width: 0;
+  font-size: var(--t-base);
+  font-weight: 500;
+  line-height: var(--l-base);
+}
+
+.aide__programme-jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------ légende du tableau -------- */
+
+/*
+ * Les cinq marques et ce qu'elles disent. En colonne : cinq libellés côte à
+ * côte se coupent à 320px, et une légende qu'on relit de travers ne vaut pas
+ * mieux que pas de légende.
+ */
+.legende {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.legende__entree {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+@media (min-width: 480px) {
+  .legende {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--e-2) var(--e-4);
+  }
+}
+
+/* ========================================================== accueil ==== */
+
+/*
+ * L'écran de premier usage, qui est aussi la page de présentation. Colonne
+ * simple : le bento reste réservé au tableau de bord (section 7.2), et il n'y
+ * a de toute façon rien à mettre en grille — c'est un texte qu'on lit une fois.
+ */
+.accueil {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.accueil__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+/*
+ * Le titre de l'écran est la question de l'application. `text-wrap: balance`
+ * lui évite de finir sur un mot seul, et `--t-xl` le tient à la taille des
+ * chiffres du bento : c'est la même voix.
+ */
+.accueil__titre {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-xl);
+  font-weight: 600;
+  line-height: var(--l-xl);
+  text-wrap: balance;
+}
+
+.accueil__intro {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-md);
+  line-height: var(--l-md);
+}
+
+/* La frise en grand, dans sa propre carte : c'est la signature (section 2). */
+.accueil__frise {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4) var(--e-4) var(--e-3);
+}
+
+.accueil__legende {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.accueil__temps {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+/*
+ * Le rang est posé en colonne de gauche, le titre et le détail à sa droite :
+ * une grille de deux colonnes plutôt qu'une liste numérotée native, dont le
+ * marqueur ne se met pas au gabarit.
+ */
+.accueil__temp {
+  display: grid;
+  min-width: 0;
+  gap: 0 var(--e-3);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.accueil__rang {
+  display: flex;
+  width: var(--e-5);
+  height: var(--e-5);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--trait);
+  border-radius: var(--r-pilule);
+  grid-row: span 2;
+  color: var(--accent);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.accueil__temp-titre {
+  min-width: 0;
+  font-size: var(--t-md);
+  font-weight: 500;
+  line-height: var(--l-md);
+}
+
+.accueil__temp-detail {
+  min-width: 0;
+  padding-top: var(--e-1);
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.accueil__bloc {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+.accueil__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+/*
+ * La légende du tableau, repliée. Même chevron et même rotation que l'en-tête
+ * d'une catégorie : c'est le même geste, il se dessine pareil.
+ */
+.suivi__legende {
+  min-width: 0;
+}
+
+.suivi__legende-titre {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: var(--l-sm);
+  cursor: pointer;
+}
+
+.suivi__legende[open] .suivi__legende-titre {
+  color: var(--encre);
+}
+
+.suivi__legende > .legende {
+  padding-bottom: var(--e-2);
+  padding-left: var(--e-5);
+}

@@ -58,25 +58,45 @@ export function Layout() {
         </div>
         <NavBar />
         {/*
-          Les réglages ne sont pas dans la navigation : celle-ci porte les trois
-          vues, et à 320px un quatrième libellé la ferait déborder. Ils se
+          Aide et réglages ne sont pas dans la navigation : celle-ci porte les
+          trois vues, et à 320px un quatrième libellé la ferait déborder. Ils se
           tiennent au bout de l'en-tête, à l'opposé du logotype — accolés à lui,
           ils passeraient pour une seconde moitié du signe.
 
-          Seul lien de l'app réduit à son icône. Le mot reste lu par les
-          lecteurs d'écran et s'affiche au survol : une icône sans nom n'est pas
-          une icône, c'est une devinette.
+          Les deux seuls liens de l'app réduits à un signe. Le mot reste lu par
+          les lecteurs d'écran et s'affiche au survol : un signe sans nom n'est
+          pas un signe, c'est une devinette.
         */}
-        <NavLink
-          to="/reglages"
-          aria-label="Réglages"
-          title="Réglages"
-          className={({ isActive }) =>
-            isActive ? 'appli__reglages appli__reglages--actif' : 'appli__reglages'
-          }
-        >
-          <IconeReglages width="20" height="20" />
-        </NavLink>
+        <div className="appli__outils">
+          {/*
+            Un point d'interrogation composé, pas une huitième icône : la
+            section 11 arrête la liste à sept, et un « ? » est une lettre. Il
+            dit déjà ce qu'aucun dessin ne dirait mieux.
+          */}
+          <NavLink
+            to="/aide"
+            aria-label="Aide"
+            title="Aide"
+            className={({ isActive }) =>
+              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+            }
+          >
+            <span className="appli__aide" aria-hidden="true">
+              ?
+            </span>
+          </NavLink>
+
+          <NavLink
+            to="/reglages"
+            aria-label="Réglages"
+            title="Réglages"
+            className={({ isActive }) =>
+              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+            }
+          >
+            <IconeReglages width="20" height="20" />
+          </NavLink>
+        </div>
       </header>
 
       <main className="page" id="contenu">

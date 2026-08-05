@@ -175,6 +175,13 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
       )}
 
       <form className="formulaire" onSubmit={soumettre} noValidate>
+        {/*
+          Trois exemples plutôt qu'un champ nu. « Sujet » est un mot large, et
+          la première création se fait à froid : personne ne sait s'il faut y
+          écrire « Mathématiques » ou « les dérivées ». Les exemples le disent
+          sans l'expliquer, et couvrent trois domaines pour que l'application
+          ne passe pas pour un outil scolaire.
+        */}
         <Champ
           label="Titre"
           type="text"
@@ -183,6 +190,11 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
           autoComplete="off"
           onChange={(event) => setTitre(event.target.value)}
           erreur={soumis ? erreurTitre : null}
+          aide={
+            mode === 'create'
+              ? 'Ce que vous voulez revoir. Par exemple : les dérivées, les accords majeurs, le vocabulaire du voyage.'
+              : undefined
+          }
         />
 
         {/*

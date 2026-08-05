@@ -11,6 +11,7 @@ import { CategorieForm } from './pages/CategorieForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
+import { Aide } from './pages/Aide'
 import { Suivi } from './pages/Suivi'
 import { NotFound } from './pages/NotFound'
 
@@ -42,6 +43,7 @@ export function App() {
               <Route path="/sujet/:id" element={<SujetDetail />} />
               <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
               <Route path="/reglages" element={<Settings />} />
+              <Route path="/aide" element={<Aide />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
               <Route

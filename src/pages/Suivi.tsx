@@ -4,7 +4,7 @@ import type { PracticeStatus, Review } from '../types'
 import { useDonnees } from '../state/useDonnees'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
-import { useToast } from '../state/useToast'
+import { useValidation } from '../state/useValidation'
 import { estListeDeChaines, usePreference } from '../state/usePreference'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { libelleReport, useReport } from '../state/useReport'
@@ -15,6 +15,7 @@ import { progressionEntree } from '../lib/stats'
 import { PastilleCategorie } from '../components/ChipCategorie'
 import { IconeChevron } from '../components/Icons'
 import { FeuilleBas } from '../components/FeuilleBas'
+import { LegendeSuivi } from '../components/LegendeSuivi'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { SelecteurPratique } from '../components/SelecteurPratique'
 import { TableauSuivi, type CelluleVisee } from '../components/TableauSuivi'
@@ -32,17 +33,9 @@ const estChoixDePli = (valeur: unknown): valeur is string[] | null =>
 
 export function Suivi() {
   useTitrePage('Suivi')
-  const {
-    categories,
-    topics,
-    reviews,
-    loading,
-    valider,
-    devalider,
-    restaurerRevisions,
-    definirPratique,
-  } = useDonnees()
-  const { afficherToast } = useToast()
+  const { categories, topics, reviews, loading, devalider, definirPratique } =
+    useDonnees()
+  const { validerRevision } = useValidation()
   const reporter = useReport()
   const large = useMediaQuery('(min-width: 768px)')
   const aujourdhui = useAujourdhui()
@@ -193,6 +186,20 @@ export function Suivi() {
         </fieldset>
       </div>
 
+      {/*
+        Repliée : une légende sert une fois, et prendre huit lignes au-dessus
+        du tableau à chaque visite reviendrait à faire payer aux habitués ce
+        que les nouveaux venus lisent une seule fois. Un `<details>` fermé
+        reste annoncé et atteignable au clavier.
+      */}
+      <details className="suivi__legende">
+        <summary className="suivi__legende-titre">
+          <IconeChevron className="suivi__chevron" width="16" height="16" />
+          Que veulent dire les formes ?
+        </summary>
+        <LegendeSuivi />
+      </details>
+
       {visibles.map((groupe, index) => {
         const stats = statsCategorie(groupe.topics, reviews, aujourdhui)
         const ouvert = ouvertes.includes(groupe.cle)
@@ -231,22 +238,17 @@ export function Suivi() {
         )
       })}
 
+      {/*
+        Le toast et son « Annuler » viennent d'`useValidation` : la validation
+        se dit dans les mêmes mots depuis les listes, la fiche et le tableau.
+      */}
       <PanneauCellule
         visee={visee}
         onFermer={() => setVisee(null)}
         aujourdhui={aujourdhui}
         onValider={(reviewId) => {
-          const effet = valider(reviewId)
+          validerRevision(reviewId)
           setVisee(null)
-          if (!effet) return
-          afficherToast({
-            texte: 'Révision enregistrée',
-            detail: effet.deplacees > 0 ? 'Prochaines dates ajustées' : undefined,
-            action: {
-              libelle: 'Annuler',
-              onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
-            },
-          })
         }}
         onDevalider={(reviewId) => {
           devalider(reviewId)
