@@ -3,15 +3,17 @@
  * et le mini-mois du bento.
  */
 import {
+  addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   isSameMonth,
   startOfMonth,
   startOfWeek,
+  subMonths,
 } from 'date-fns'
 import type { Item } from '../types'
-import { toKey, type DateKey } from './dates'
+import { addDaysToKey, fromKey, toKey, type DateKey } from './dates'
 import { entriesForDate } from './stats'
 
 /** Semaine française : lundi en premier. */
@@ -50,4 +52,36 @@ export function grilleDuMois(items: Item[], mois: Date): JourCalendrier[] {
  */
 export function densite(total: number): number {
   return Math.min(3, total)
+}
+
+/**
+ * Jour visé par une touche de navigation dans la grille, ou null si la touche
+ * ne concerne pas le calendrier.
+ *
+ * Flèches d'un jour et d'une semaine, Origine et Fin aux deux bouts de la
+ * semaine, Page préc./suiv. d'un mois : c'est le jeu de touches attendu d'une
+ * grille de dates, et il vit ici pour partager la semaine française avec
+ * `grilleDuMois`.
+ */
+export function deplacementClavier(cle: DateKey, touche: string): DateKey | null {
+  switch (touche) {
+    case 'ArrowLeft':
+      return addDaysToKey(cle, -1)
+    case 'ArrowRight':
+      return addDaysToKey(cle, 1)
+    case 'ArrowUp':
+      return addDaysToKey(cle, -7)
+    case 'ArrowDown':
+      return addDaysToKey(cle, 7)
+    case 'Home':
+      return toKey(startOfWeek(fromKey(cle), DEBUT_SEMAINE))
+    case 'End':
+      return toKey(endOfWeek(fromKey(cle), DEBUT_SEMAINE))
+    case 'PageUp':
+      return toKey(subMonths(fromKey(cle), 1))
+    case 'PageDown':
+      return toKey(addMonths(fromKey(cle), 1))
+    default:
+      return null
+  }
 }

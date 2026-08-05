@@ -373,7 +373,15 @@ Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, text
 
 ### 8.11 Calendrier
 
-Cases de 44px minimum. Densité indiquée par 1 à 3 points sous le numéro (jamais plus de 3, même à 12 révisions). Jour sélectionné : cercle `--accent` plein. Aujourd'hui : cercle bordé `--accent`. Panneau du jour glissant depuis le bas.
+Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions) ; le nombre réel est dans l'étiquette du bouton, avec la date et, s'il y a lieu, « aujourd'hui » et « toutes faites ». Points `--accent`, `--fait` quand la journée est soldée.
+
+Deux états, deux moyens : **aujourd'hui** se marque d'un anneau `--accent`, le **jour sélectionné** d'un disque `--accent` plein. Les deux ensemble : le disque, plus un anneau posé à 2px. La bordure transparente est réservée sur toutes les cases pour qu'aucun changement d'état ne décale la grille.
+
+Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou d'une semaine, Origine et Fin bornent la semaine, Page préc./suiv. changent de mois. Un jour d'un mois voisin reste cliquable et cale le calendrier sur son mois.
+
+**Feuille du jour** (`.feuille`) : `<dialog>` ancré en bas, coins hauts en `--r-carte`, poignée de 32×4px centrée, `::backdrop` à 20 % de `--encre` pour laisser voir le mois. Hauteur suivant le contenu, plafonnée à 78dvh ; seule la liste défile. Quatre sorties : le bouton — un libellé `--t-sm` en `--encre-2`, pas une action —, Échap, le fond, et le glissement vers le bas depuis l'en-tête. Le focus entre dans la feuille à l'ouverture et revient au jour consulté à la fermeture.
+
+Les révisions y sont listées en `.item-revision--compact` : trait de séparation plutôt que carte, et la position dans le programme écrite — « Révision 2 sur 5 · Prochaine : 8 août » — plutôt que la frise. C'est la seule liste où la frise cède la place : sur 44px de haut, quatre traits verticaux ne se lisent pas.
 
 ---
 

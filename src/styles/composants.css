@@ -274,6 +274,41 @@
   color: var(--retard-texte);
 }
 
+/* « Révision 2 sur 5 · Prochaine : 8 août » — ce que la frise dit en dessin. */
+.item-revision__progression {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Variante resserrée : titre à la taille du corps de texte, case alignée sur
+ * sa première ligne plutôt que centrée sur toute la hauteur. Réservée aux
+ * contextes où la place manque — la feuille du calendrier.
+ */
+.item-revision--compact {
+  align-items: flex-start;
+  padding-right: 0;
+}
+
+/*
+ * La case garde ses 44px de cible, mais son cercle remonte se caler sur la
+ * première ligne du titre au lieu de flotter au milieu de la ligne.
+ */
+.item-revision--compact .item-revision__case {
+  align-items: flex-start;
+  padding-top: var(--e-2);
+}
+
+.item-revision--compact .item-revision__corps {
+  gap: 0;
+  padding-block: var(--e-2);
+}
+
+.item-revision--compact .item-revision__titre {
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
 .item-revision__corps .frise {
   flex: 1 1 100%;
 }

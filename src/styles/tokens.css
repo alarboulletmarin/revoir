@@ -100,6 +100,14 @@
   --charge-gap: 3px;
   --charge-rayon: 2px;
   --charge-plancher: 3px;
+
+  /*
+   * Points de densité du calendrier plein écran (section 8.11). Le mini-mois
+   * du bento garde les 3px des barres de charge : il ne se touche pas. Ici,
+   * la case se vise au pouce, et un point de 3px se perd sous le doigt.
+   */
+  --point-jour: var(--e-1);
+  --point-jour-gap: 2px;
 }
 
 /*

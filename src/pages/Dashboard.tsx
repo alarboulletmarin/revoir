@@ -99,7 +99,7 @@ export function Dashboard() {
                     onValider={validerEntree}
                     onDevalider={devaliderEntree}
                     masquerDate
-                    frise={false}
+                    detail="aucun"
                   />
                 ))}
               </ul>

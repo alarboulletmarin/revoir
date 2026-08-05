@@ -11,7 +11,7 @@ Aucun compte, aucun serveur, aucune synchronisation, aucune publicité, aucun tr
 ## Fonctionnalités
 
 - **Tableau de bord** en grille bento : révisions du jour cochables sur place, retards, progression, charge des quatorze prochains jours, prochaines échéances. Sous le bento, les éléments regroupés **par matière**, chaque groupe repliable.
-- **Calendrier mensuel** : nombre de révisions par jour, détail au clic sur une date.
+- **Calendrier mensuel** : nombre de révisions par jour lu en un à trois points, navigation au clavier, et le détail du jour dans une feuille glissant du bas.
 - **Fiche d'élément** : la frise en grand, liste complète des échéances, progression, modification, archivage, suppression.
 - **Trois programmes** de répétition espacée :
   - Simple — J+1, J+3, J+7, J+14, J+30
@@ -23,7 +23,7 @@ Aucun compte, aucun serveur, aucune synchronisation, aucune publicité, aucun tr
 
 ### La frise
 
-Une frise graduée représente le programme d'un élément : chaque graduation est une échéance, et l'écart entre deux graduations est proportionnel à l'écart réel entre les dates, compressé en racine carrée. L'espacement de la répétition espacée devient visible. Elle apparaît à trois endroits — fiche d'un élément, item de liste, aperçu du formulaire — et nulle part ailleurs.
+Une frise graduée représente le programme d'un élément : chaque graduation est une échéance, et l'écart entre deux graduations est proportionnel à l'écart réel entre les dates, compressé en racine carrée. L'espacement de la répétition espacée devient visible. Elle apparaît à trois endroits — fiche d'un élément, item de liste, aperçu du formulaire — et nulle part ailleurs. Dans la feuille du calendrier, où chaque entrée tient sur deux lignes, elle cède la place à la même information écrite : « Révision 2 sur 5 · Prochaine : 8 août ».
 
 ### Recalage après retard
 
