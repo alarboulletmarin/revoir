@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { addDays, differenceInCalendarDays, format, parse } from 'date-fns'
 import { fr } from 'date-fns/locale'
 

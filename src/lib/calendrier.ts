@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Construction d'une grille mensuelle, partagée par le calendrier plein écran
  * et le mini-mois du bento.

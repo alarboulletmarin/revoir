@@ -29,3 +29,5 @@ C'est un projet personnel : la réponse est de bonne foi, pas contractuelle. Com
 ## Pour qui héberge Revoir
 
 L'application est un lot de fichiers statiques. Deux points valent d'être vérifiés côté hébergement : servir en HTTPS, et réécrire les routes inconnues vers `index.html` — sans quoi un rechargement sur `/suivi` renvoie un 404 à la première visite.
+
+Un troisième point relève de la licence, pas de la sécurité, mais se règle au même moment. Revoir est sous **AGPL-3.0** : si vous hébergez une version **modifiée**, l'article 13 vous oblige à en publier les sources. Les réglages affichent un lien « Code source » épinglé au commit du build ; faites-le pointer vers votre dépôt en adaptant `DEPOT` dans `src/lib/build.ts`. Héberger la version d'origine sans y toucher ne demande rien de plus.

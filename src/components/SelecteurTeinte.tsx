@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Choix de la teinte d'une catégorie : les huit pastilles de la palette, plus un
  * neuvième cercle pour une couleur libre.

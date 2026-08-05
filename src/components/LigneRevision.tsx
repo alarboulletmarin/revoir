@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Ligne de révision — le composant le plus important de l'app (section 8.2).
  *

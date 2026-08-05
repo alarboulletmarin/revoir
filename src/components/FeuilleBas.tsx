@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Feuille glissant depuis le bas (section 8.11).
  *

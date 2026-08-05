@@ -1,9 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Rassemble les licences des dépendances embarquées dans le build.
  *
- * Ce n'est pas du confort : React, React Router, date-fns, idb et TanStack
- * Table sont sous licence MIT, et la MIT demande que sa mention de copyright
- * accompagne « toute copie ou portion substantielle du logiciel ». Le fichier
+ * Ce n'est pas du confort : React, React Router, date-fns et TanStack Table
+ * sont sous licence MIT, idb sous ISC, et l'une comme l'autre demandent que
+ * leur mention de copyright accompagne « toute copie ou portion substantielle
+ * du logiciel ». Le fichier
  * `dist/assets/index-*.js` contient leur code ; il doit donc voyager avec leurs
  * notices. Elles étaient jusqu'ici nulle part.
  *
@@ -79,9 +82,10 @@ const paquets = paquetsEmbarques()
 const entete = [
   'Revoir — licences des composants tiers',
   '',
-  'Revoir est distribué sous licence MIT (voir LICENSE). Le fichier JavaScript',
-  'produit par le build embarque le code des bibliothèques listées ci-dessous ;',
-  'leurs licences respectives sont reproduites ici, comme elles le demandent.',
+  'Revoir est distribué sous licence AGPL-3.0-only (voir LICENSE). Le fichier',
+  'JavaScript produit par le build embarque le code des bibliothèques listées',
+  'ci-dessous ; leurs licences respectives — permissives, donc compatibles avec',
+  "l'AGPL — sont reproduites ici, comme elles le demandent.",
   '',
   'Ce fichier est régénéré à chaque build par scripts/generate-notices.mjs.',
   '',

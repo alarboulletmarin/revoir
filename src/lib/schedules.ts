@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Programme, Review, ScheduleId } from '../types'
 import { addDaysToKey, type DateKey } from './dates'
 import { newId, type NouvelId } from './ids'

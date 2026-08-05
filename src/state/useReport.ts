@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useCallback } from 'react'
 import type { Review } from '../types'
 import { formatEcheance, type DateKey } from '../lib/dates'

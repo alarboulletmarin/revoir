@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useEffect, useId, useRef } from 'react'
 import { Bouton } from './Bouton'
 import { usePanneauOuvert } from '../state/useTitrePage'

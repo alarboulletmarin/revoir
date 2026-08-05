@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Boutons (section 8.4). Quatre variantes, hauteur minimale 44px partout,
  * focus toujours visible.

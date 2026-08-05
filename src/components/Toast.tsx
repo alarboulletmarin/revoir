@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Toast (section 8.10). Ancré en bas, au-dessus du FAB, largeur limitée.
  *

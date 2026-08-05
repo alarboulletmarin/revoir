@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Teinte } from './lib/categories'
 
 /** Identifiant d'un des trois programmes intégrés. */

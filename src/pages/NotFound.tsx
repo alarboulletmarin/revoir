@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useTitrePage } from '../state/useTitrePage'
 import { LienBouton } from '../components/Bouton'
 

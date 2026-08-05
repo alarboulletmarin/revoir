@@ -4,6 +4,10 @@
 
 ## Non publié
 
+### Changé — licence
+
+- **Revoir passe de la licence MIT à l'AGPL-3.0.** La MIT laissait reprendre le code dans un produit fermé et payant sans rien rendre ; l'AGPL demande que toute version modifiée reste libre, y compris quand elle n'est qu'hébergée pour d'autres. L'usage, la modification et l'hébergement restent libres, commerce compris : ce qui change, c'est qu'on ne peut plus refermer ce qui part d'ici. Les réglages affichent désormais la version et le commit exact du build à côté du lien vers le code source — c'est ce que l'article 13 demande d'une application qu'on atteint par le réseau.
+
 ### Corrigé
 
 - **Une coche ne se perd plus en route.** Valider une révision puis refermer aussitôt la feuille du calendrier, ou ouvrir la fiche dans la foulée, annulait l'enregistrement en silence : l'écran avait montré la coche, rien n'était écrit. Les deux cents millisecondes qui précèdent le retrait de la ligne appartiennent à l'animation, pas à la décision.

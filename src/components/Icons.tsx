@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Les sept icônes du projet, et pas une de plus (section 11) : plus,
  * calendrier, coche, chevron, archive, corbeille, réglages. SVG inline, aucune

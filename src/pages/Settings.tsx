@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
 import type { Programme } from '../types'
@@ -11,6 +13,7 @@ import {
   serializeBackup,
   type ContenuSauvegarde,
 } from '../lib/backup'
+import { REFERENCE, SOURCE } from '../lib/build'
 import { archivedTopics, categoriesTriees } from '../lib/sujets'
 import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
@@ -20,9 +23,6 @@ import { Frise } from '../components/Frise'
 import { ChipCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
-
-/** Le dépôt : seule adresse extérieure de toute l'application. */
-const DEPOT = 'https://github.com/alarboulletmarin/revoir'
 
 export function Settings() {
   useTitrePage('Réglages')
@@ -298,13 +298,19 @@ export function Settings() {
           composants tiers sont servies en fichier statique et précachées — la
           MIT demande que leurs mentions accompagnent le code distribué, et ce
           code est dans le bundle.
+
+          Sous AGPL, ce bloc n'est plus seulement une courtoisie : l'article 13
+          demande que qui accède au logiciel par le réseau puisse en obtenir la
+          source. Le lien est donc épinglé au commit du build (voir
+          `src/lib/build.ts`) — ce qui est servi est minifié, et une branche qui
+          a bougé depuis ne désigne plus le code qu'on a réellement reçu.
         */}
         <p className="discret">
-          Logiciel libre sous licence MIT.{' '}
-          <a className="lien" href={DEPOT} target="_blank" rel="noreferrer noopener">
+          Logiciel libre sous licence AGPL-3.0.{' '}
+          <a className="lien" href={SOURCE} target="_blank" rel="noreferrer noopener">
             Code source
           </a>{' '}
-          ·{' '}
+          <span className="discret">({REFERENCE})</span> ·{' '}
           <a className="lien" href="/THIRD-PARTY.txt">
             Licences des composants tiers
           </a>

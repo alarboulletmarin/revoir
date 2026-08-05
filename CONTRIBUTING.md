@@ -72,4 +72,6 @@ Pour une faille de sécurité, ne passez pas par une issue publique : voir [SECU
 
 ## Licence
 
-En contribuant, vous acceptez que votre contribution soit distribuée sous la [licence MIT](LICENSE) du projet.
+En contribuant, vous acceptez que votre contribution soit distribuée sous la [licence AGPL-3.0](LICENSE) du projet.
+
+Concrètement : votre code reste libre, et personne ne pourra l'enfermer dans un produit fermé. En contrepartie, qui héberge une version modifiée de Revoir doit en publier les sources. Les fichiers source portent l'en-tête `// SPDX-License-Identifier: AGPL-3.0-only` — gardez-le sur les fichiers existants, ajoutez-le sur ceux que vous créez.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Génère les icônes PNG de la PWA sans dépendance : on rasterise quelques
  * formes simples puis on encode le PNG à la main via zlib.

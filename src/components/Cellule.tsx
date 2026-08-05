@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Cellule bento (section 8.1). Réservée au tableau de bord : étendre le bento
  * aux autres écrans le banaliserait (section 7.2).

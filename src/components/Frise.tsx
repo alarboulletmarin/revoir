@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * La frise — signature de l'application (section 2 du design system).
  *
