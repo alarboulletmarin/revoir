@@ -39,7 +39,7 @@ Règles de la frise :
 - **Le rail et les graduations ne portent pas la même valeur.** `--trait` sur `--surface` tient à 1,2:1, très en dessous des 3:1 que la WCAG demande pour un objet graphique porteur d'information. Ce sont les graduations qui portent l'information — où tombent les échéances et à quelle distance : elles sont donc tracées en `--encre-2` (5,4:1). Le rail ne fait que les relier et reste en `--trait`, comme la règle graduée dont la frise s'inspire.
 - Le curseur « aujourd'hui » est un trait vertical de 16px en `--encre`, seul élément qui dépasse la frise.
 
-Où elle apparaît : fiche d'un élément (grande, avec libellés), item de liste (miniature de 24px de haut, sans libellés), prévisualisation du formulaire d'ajout (grande, avec dates réelles).
+Où elle apparaît : fiche d'un sujet (grande, avec libellés), ligne de liste (miniature de 24px de haut, sans libellés), prévisualisation du formulaire d'ajout (grande, avec dates réelles).
 
 Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse d'en être une.
 
@@ -91,9 +91,9 @@ Sur fond `--accent` plein, le texte est `--surface` (4,6:1) : réservé au poids
 
 **Une seule surface pleine `--accent` par écran.** C'est elle qui porte la hiérarchie. Si deux cellules sont pleines, la hiérarchie est morte.
 
-### 3 bis. Teintes de matière
+### 3 bis. Teintes de catégorie
 
-> Extension ajoutée après coup, pour distinguer les matières. Elle déroge à la règle des huit valeurs ci-dessus, et c'est la seule dérogation admise.
+> Extension ajoutée après coup, pour distinguer les catégories. Elle déroge à la règle des huit valeurs ci-dessus, et c'est la seule dérogation admise.
 
 Huit teintes, dans le même registre que la palette : désaturées, aucun rouge. `--retard` et `--fait` restent réservés à leurs états et n'entrent pas dans ce jeu.
 
@@ -111,11 +111,11 @@ Ces huit sont ce que l'application **propose**. Elles ne bornent pas ce que l'ut
 
 Trois règles, sans exception :
 
-1. **Jamais en surface pleine.** Trait, texte et pastille uniquement. Une matière qui remplirait une carte concurrencerait l'unique cellule `--accent` de l'écran, et la hiérarchie retomberait.
-2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la matière est donc toujours écrit à côté de sa pastille.
-3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de matière y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
+1. **Jamais en surface pleine.** Trait, texte et pastille uniquement. Une catégorie qui remplirait une carte concurrencerait l'unique cellule `--accent` de l'écran, et la hiérarchie retomberait.
+2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la catégorie est donc toujours écrit à côté de sa pastille.
+3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
 
-Une matière sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable.
+Une catégorie sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable. La couleur appartient à la catégorie elle-même, qui est une entité — la renommer une fois la renomme partout.
 
 #### Couleurs libres
 
@@ -134,7 +134,7 @@ Pour les huit intégrées, les deux valent la même chose : elles tiennent déj�
 
 L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et la chroma sont conservées, seule la clarté descend, **et du minimum**. Un rose pâle donne un rose foncé, jamais un brun quelconque.
 
-**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la matière est toujours écrit à côté (règle 2 ci-dessus).
+**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la catégorie est toujours écrit à côté (règle 2 ci-dessus).
 
 `lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `retenirTeinte` dans `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
 
@@ -149,7 +149,7 @@ Deux rôles, deux familles.
 --police-ui:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 ```
 
-- **Instrument Sans** (variable, woff2 sous-ensemble latin, ~25 ko, auto-hébergée dans `/public/fonts`) : chiffres du bento, titres de page, titres d'éléments. Grotesque légèrement condensée, chiffres tabulaires très lisibles en grand.
+- **Instrument Sans** (variable, woff2 sous-ensemble latin, ~25 ko, auto-hébergée dans `/public/fonts`) : chiffres du bento, titres de page, titres de sujets. Grotesque légèrement condensée, chiffres tabulaires très lisibles en grand.
 - **Pile système** : tout le reste. Zéro octet, rendu natif, et l'app reste utilisable si la police ne charge pas (`font-display: swap`).
 
 Si tu veux zéro dépendance de police, retire Instrument Sans et passe tout en pile système : le design tient, il perd juste un peu de caractère dans les grands chiffres.
@@ -161,7 +161,7 @@ Si tu veux zéro dépendance de police, retire Instrument Sans et passe tout en 
 | `--t-champ` | 16px / 1,4 | **valeur plancher des champs de saisie** (anti-zoom iOS) |
 | `--t-xl` | 28px / 1,15 | chiffres des cellules, titre de la cellule du jour |
 | `--t-lg` | 20px / 1,3 | titre de page, titre de fiche |
-| `--t-md` | 17px / 1,4 | titre d'élément dans une liste |
+| `--t-md` | 17px / 1,4 | titre de sujet dans une liste |
 | `--t-base` | 15px / 1,5 | texte courant |
 | `--t-sm` | 13px / 1,45 | labels de cellules, métadonnées |
 | `--t-xs` | 12px / 1,4 | graduations de la frise, catégories |
@@ -231,6 +231,11 @@ Tout le reste : transitions de couleur sur `:hover` / `:active` en `--duree-cour
 
 **Mobile first sans exception.** Chaque écran est écrit d'abord pour 320px, puis élargi. Aucune media query `max-width` dans le projet — uniquement des `min-width`. Si tu te surprends à écrire un `max-width`, c'est que le design de base a été pensé pour le bureau.
 
+L'en-tête de l'application est en **haut** et collant : la navigation y porte
+les trois vues — Aujourd'hui, Calendrier, Suivi — et rien de plus. « Réglages »
+se tient dans la barre de marque, face au logotype : à 320px un quatrième
+libellé ferait déborder la barre, et ce n'est pas une vue.
+
 ### 7.1 Points de rupture
 
 ```css
@@ -245,7 +250,7 @@ Hauteurs : `dvh`, jamais `vh` — la barre d'URL mobile fausse `100vh` et fait d
 
 ### 7.2 Grille bento
 
-Réservée au **tableau de bord**. Le calendrier, la fiche d'élément et le formulaire utilisent une colonne simple — étendre le bento partout le banaliserait.
+Réservée au **tableau de bord**. Le calendrier, le suivi, la fiche d'un sujet et le formulaire utilisent une colonne simple — étendre le bento partout le banaliserait.
 
 ```css
 .bento {
@@ -283,7 +288,7 @@ Une zone par cellule, jamais deux rangées pour une seule carte : la cellule du 
 | `synthese` | Total restant, puis les 14 barres de charge sous leur intitulé | Toujours affichée |
 | `calendrier` | Mini-mois, points de densité | **≥ 768px uniquement** |
 
-Les six stats de la spec initiale sont volontairement réduites à trois chiffres visibles. Le reste vit dans la fiche d'élément.
+Les six stats de la spec initiale sont volontairement réduites à trois chiffres visibles. Le reste vit dans la fiche d'un sujet et dans le suivi.
 
 Sous 480px, la cellule héros n'affiche que **3 items + « Tout voir »** : un titre et une liste complète ne tiennent pas dans une cellule à 320px. Le grand chiffre de 64px a disparu — la question du jour est une phrase, « 3 révisions aujourd'hui », et c'est le fond `--accent` plein qui porte la hiérarchie, pas la taille du texte.
 
@@ -300,7 +305,7 @@ Trois éléments se disputent le bas de l'écran : le FAB, le toast et la zone s
 }
 ```
 
-- Toute liste scrollable se termine par `padding-bottom: calc(var(--bas-fab) + var(--h-fab) + var(--e-5))`. Sans ça, le dernier élément est inatteignable sous le FAB — le bug le plus fréquent de ce type d'app.
+- Toute liste scrollable se termine par `padding-bottom: calc(var(--bas-fab) + var(--h-fab) + var(--e-5))`. Sans ça, la dernière ligne est inatteignable sous le FAB — le bug le plus fréquent de ce type d'app.
 - Le panneau du jour du calendrier porte `padding-bottom: var(--bas-securise)`.
 - Le FAB s'efface (opacité + `translateY`) dès qu'un panneau ou une feuille modale s'ouvre. Il ne flotte jamais par-dessus.
 
@@ -316,7 +321,7 @@ Trois éléments se disputent le bas de l'écran : le FAB, le toast et la zone s
 | iOS zoome au focus d'un champ | `font-size: 16px` minimum sur `input`, `select`, `textarea` — c'est le rôle de `--t-champ` |
 | Marges qui s'additionnent ou fusionnent | **Aucun composant ne porte de marge externe.** L'espacement vient exclusivement du `gap` du conteneur et de son `padding`. |
 | Paysage mobile écrasé | `@media (min-height: 560px)` pour agrandir la cellule héros — jamais l'inverse |
-| Double barre de défilement | Un seul conteneur scrollable par écran |
+| Double barre de défilement | Un seul conteneur à défilement **vertical** par écran. Le défilement **horizontal** appartient au tableau de suivi (section 8.13), et à lui seul — jamais à la page. |
 
 ---
 
@@ -332,7 +337,7 @@ Trois éléments se disputent le bas de l'écran : le FAB, le toast et la zone s
 
 Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le chiffre d'abord, parce que c'est ce qu'on vient chercher.
 
-### 8.2 Item de révision (le composant le plus important de l'app)
+### 8.2 Ligne de révision (le composant le plus important de l'app)
 
 ```
 ┌────────────────────────────────────────────┐
@@ -347,6 +352,8 @@ Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le c
 - Ligne de métadonnées : catégorie en `--encre-2` + frise miniature.
 - État en retard : mention « il y a 3 jours » en `--retard-texte`, et rien d'autre. **Aucune bande de couleur en bord de ligne** — elle alourdit la liste sans rien dire que la mention ne dise déjà, et la section 1 demande que le retard n'accuse pas.
 - Validation : mise à jour optimiste immédiate, ligne barrée 200ms, puis retrait de la liste. Toast avec « Annuler ».
+
+Classes : `.ligne-revision`, `.ligne-revision--faite`, `.ligne-revision--compact`, `.ligne-revision__case`, `.ligne-revision__cercle`, `.ligne-revision__coche`.
 
 ### 8.3 Frise
 
@@ -381,7 +388,7 @@ Les trois programmes intégrés (Simple / Poussé / Ultime) viennent en premier,
 
 #### Programmes personnalisés
 
-Un programme est un nom et une suite d'écarts. Il se compose sur son propre écran, `/programmes/nouveau`, comme un élément se crée sur le sien.
+Un programme est un nom et une suite d'écarts. Il se compose sur son propre écran, `/programmes/nouveau`, comme un sujet se crée sur le sien.
 
 **Un rythme ne se tape pas, il se touche.** Une grille de graduations, une par écart proposé, chacune basculable d'un doigt. Demander « 1 3 7 14 30 » dans un champ texte suppose de savoir déjà ce qu'est un rythme de répétition espacée — c'est exactement ce que l'écran doit apprendre.
 
@@ -399,8 +406,8 @@ La portée est dérivée du dernier écart, dans les mêmes mots que les trois i
 
 Deux règles tiennent le modèle :
 
-1. **Le nom se change toujours, le rythme seulement tant qu'il est libre.** Les révisions d'un élément sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. Dès qu'un élément suit le programme, la grille cède la place à la frise du rythme figé et à son explication — le champ du nom, lui, reste ouvert.
-2. **Un programme suivi ne se supprime pas.** Sa carte l'annonce — « Suivi par 3 éléments » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
+1. **Le nom se change toujours, le rythme seulement tant qu'il est libre.** Les révisions d'un sujet sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. Dès qu'un sujet suit le programme, la grille cède la place à la frise du rythme figé et à son explication — le champ du nom, lui, reste ouvert.
+2. **Un programme suivi ne se supprime pas.** Sa carte l'annonce — « Suivi par 3 sujets » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
 
 Un rythme venu d'un import peut porter un écart absent de l'échelle : sa graduation vient se ranger à sa place plutôt que de le rendre immodifiable.
 
@@ -418,7 +425,7 @@ La hauteur ne porte jamais l'information seule : les barres forment une `<ul>` d
 
 ```
 Aucune révision prévue aujourd'hui
-Prochaine révision : jeu. 6 août, 3 éléments.
+Prochaine révision : jeu. 6 août, 3 sujets.
 ```
 
 Il reste dans la cellule héros, fond `--accent` plein. La deuxième ligne est une information utile, pas un encouragement. Aucune illustration, aucun emoji.
@@ -433,9 +440,9 @@ Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, text
 
 Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), et sous eux le reste du compte : « +4 » en `--t-xs` `--encre-2` pour un jour à sept révisions. Trois points ne doivent pas laisser croire qu'il y a trois révisions. Le bloc points + reste garde sa hauteur qu'il soit plein ou vide, pour que les chiffres du mois tiennent tous la même ligne.
 
-Chaque point prend la teinte de sa matière, comme la chip et la pastille (section 3 bis) — c'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un élément sans matière. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
+Chaque point prend la teinte de sa catégorie, comme la chip et la pastille (section 3 bis) — c'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un sujet sans catégorie. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
 
-La couleur ne porte rien seule : l'étiquette du bouton donne la date, « aujourd'hui » s'il y a lieu, le nombre **réel** de révisions, « toutes faites », puis les matières du jour — trois au plus.
+La couleur ne porte rien seule : l'étiquette du bouton donne la date, « aujourd'hui » s'il y a lieu, le nombre **réel** de révisions, « toutes faites », puis les catégories du jour — trois au plus.
 
 Deux états, deux moyens : **aujourd'hui** se marque d'un anneau `--accent`, le **jour sélectionné** d'un disque `--accent` plein. Les deux ensemble : le disque, plus un anneau posé à 2px. La bordure transparente est réservée sur toutes les cases pour qu'aucun changement d'état ne décale la grille.
 
@@ -443,19 +450,102 @@ Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou 
 
 **Feuille du jour** (`.feuille`) : `<dialog>` ancré en bas, coins hauts en `--r-carte`, poignée de 32×4px centrée, `::backdrop` à 20 % de `--encre` pour laisser voir le mois. Hauteur suivant le contenu, plafonnée à 78dvh ; seule la liste défile. Quatre sorties : le bouton — un libellé `--t-sm` en `--encre-2`, pas une action —, Échap, le fond, et le glissement vers le bas depuis l'en-tête. Le focus entre dans la feuille à l'ouverture et revient au jour consulté à la fermeture.
 
-Les révisions y sont listées en `.item-revision--compact` : trait de séparation plutôt que carte, et la position dans le programme écrite — « Révision 2 sur 5 · Prochaine : 8 août » — plutôt que la frise. C'est la seule liste où la frise cède la place : sur 44px de haut, quatre traits verticaux ne se lisent pas.
+Les révisions y sont listées en `.ligne-revision--compact` : trait de séparation plutôt que carte, et la position dans le programme écrite — « Révision 2 sur 5 · Prochaine : 8 août » — plutôt que la frise. C'est la seule liste où la frise cède la place : sur 44px de haut, quatre traits verticaux ne se lisent pas.
 
 ### 8.12 Boîte de confirmation
 
-`<dialog>` centré (`.dialogue`), 400px au plus, `::backdrop` à 40 % de `--encre`. Deux emplois, pas un de plus : supprimer un élément, et remplacer les données par un import. Le reste s'annule, ne se confirme pas (section 1).
+`<dialog>` centré (`.dialogue`), 400px au plus, `::backdrop` à 40 % de `--encre`. Deux emplois, pas un de plus : supprimer un sujet, et remplacer les données par un import. Le reste s'annule, ne se confirme pas (section 1).
 
-Le reset pose `* { margin: 0 }`, qui écrase le `margin: auto` du navigateur : **`inset: 0` et `margin: auto` sont écrits explicitement**, sans quoi la boîte se colle en haut de l'écran. Sa hauteur est plafonnée à `calc(100dvh - var(--e-6))` et son contenu défile — un titre d'élément très long ne doit pas pousser les boutons hors écran.
+Le reset pose `* { margin: 0 }`, qui écrase le `margin: auto` du navigateur : **`inset: 0` et `margin: auto` sont écrits explicitement**, sans quoi la boîte se colle en haut de l'écran. Sa hauteur est plafonnée à `calc(100dvh - var(--e-6))` et son contenu défile — un titre de sujet très long ne doit pas pousser les boutons hors écran.
 
 Les deux boutons se partagent la largeur à parts égales sous 480px, puis reprennent leur largeur naturelle, alignés à droite. Ils ne se replient jamais l'un sous l'autre. « Annuler » est toujours à gauche.
 
-`showModal()` viserait « Annuler », qui s'ouvrirait cerclé de son anneau de focus alors que personne n'a tabulé : c'est le corps, `tabindex="-1"`, qui prend le focus — le lecteur d'écran lit le titre par `aria-labelledby`, et la première tabulation mène aux boutons. Ces réceptacles — celui-ci et celui de la feuille du calendrier — sont les deux seuls éléments du projet à porter `outline: none` : ils ne sont pas atteignables au clavier, leur anneau ne signalerait donc aucun parcours.
+`showModal()` viserait « Annuler », qui s'ouvrirait cerclé de son anneau de focus alors que personne n'a tabulé : c'est le corps, `tabindex="-1"`, qui prend le focus — le lecteur d'écran lit le titre par `aria-labelledby`, et la première tabulation mène aux boutons. Ces réceptacles — celui-ci et la feuille du bas — sont les deux seuls éléments du projet à porter `outline: none` : ils ne sont pas atteignables au clavier, leur anneau ne signalerait donc aucun parcours.
 
 Trois sorties, toutes non destructrices : le bouton « Annuler », Échap et un clic sur le fond. C'est l'état de la page qui referme, jamais le navigateur seul. Et comme toute surface modale, elle efface le FAB (section 7.3).
+
+---
+
+### 8.13 Tableau de suivi
+
+**C'est un tableau, et il le reste sur un téléphone.** Le replier en cartes sous 480px ferait perdre exactement ce qu'on vient y chercher : comparer les sujets verticalement, les étapes horizontalement, et voir les trous. La réponse au petit écran n'est pas de supprimer le défilement horizontal, c'est de le rendre lisible.
+
+Un tableau par catégorie, chacun dans un `<details>` repliable (`.suivi__groupe`) — **une seule catégorie ouverte par défaut**, la première. En-tête du groupe : la pastille, le nom, et trois chiffres, pas un de plus.
+
+```
+Mathématiques              8 sujets · 3 révisions en retard · 62 % terminé
+┌──────────────┬─────┬─────┬─────┬──────┬──────┬──────────┐
+│ Sujet        │ J+1 │ J+3 │ J+7 │ J+14 │ J+30 │ Pratique │
+├──────────────┼─────┼─────┼─────┼──────┼──────┼──────────┤
+│ Dérivées     │  ✓  │  ✓  │  ○  │  ·   │  ·   │  À faire │
+│ Probabilités │  ✓  │  ⊙  │  ·  │  ·   │  ·   │  En cours│
+└──────────────┴─────┴─────┴─────┴──────┴──────┴──────────┘
+```
+
+Le retard à zéro ne s'écrit pas : « 0 en retard » rappellerait un problème à qui n'en a aucun (section 1, règle 3). Aucun graphique, aucun score, aucun classement, aucune comparaison entre catégories.
+
+#### Les cinq marques
+
+Cinq états, **cinq formes** — elles doivent se distinguer en niveaux de gris, la couleur ne portant jamais l'information seule. Tout est dessiné en CSS : la section 11 arrête la liste des icônes à six, et la coche, qui en fait partie, est la seule reprise ici.
+
+| État | Marque | Couleur |
+|---|---|---|
+| effectuée | disque 20px + coche 12px | `--fait`, coche `--surface` |
+| à effectuer aujourd'hui | anneau 20px, trait 1,5px | `--accent` |
+| en retard | anneau 20px + point plein 6px au centre | `--retard` |
+| à venir | point 4px | `--encre-2` |
+| hors programme | filet 8 × 1px | `--trait` |
+
+C'est le vocabulaire déjà en place : le disque coché est celui de la section 8.2, l'anneau et le disque sont ceux du calendrier (section 8.11). Chaque case porte en plus un texte `.invisible` complet — « Dérivées, révision à 1 semaine, en retard depuis le 3 août » — parce qu'une forme ne se lit pas.
+
+La marque fait 16 à 20px, mais c'est la **cellule entière** qui se touche : `min-height` et `min-width` à `var(--cible)`. Une case hors programme n'est pas un bouton — il n'y a rien à ouvrir, et une cible tactile qui ne fait rien est pire que pas de cible.
+
+#### Deux modes de colonnes
+
+**Intervalles** nomme les étapes par leur écart — J+1, J+3, J+7 —, à partir de l'**union** des écarts de la catégorie. Un tableau par ligne interdirait la comparaison verticale ; l'union la préserve, et une étape absente d'un programme s'y lit « hors programme ». Plus informatif, mais une catégorie mêlant Simple et Ultime compte jusqu'à dix-sept colonnes.
+
+**Compact** les numérote — R1, R2, R3 —, et un en-tête tient alors dans 44px. C'est la condition pour que le tableau reste un tableau sur un téléphone, pas un repli esthétique.
+
+Tant que rien n'a été choisi, le mode suit la largeur : compact sous 768px, intervalles au-delà. Dès qu'on choisit, c'est le choix qui vaut, et il est retenu en `localStorage` — comme le pli des catégories. Ce sont des préférences d'affichage : elles ne s'exportent pas et ne valent que pour cet appareil.
+
+#### Colonne figée, en-tête figé
+
+La première colonne reste visible pendant le défilement horizontal (`position: sticky; left: 0`). Sans elle, glisser vers la droite fait perdre la ligne qu'on lisait. La cellule d'angle porte les **deux** classes de collage, faute de quoi le mot « Sujet » file vers la gauche pendant que les titres de ligne restent en place.
+
+Deux contraintes que le CSS impose, et qu'il faut connaître avant d'y toucher :
+
+- **`border-collapse: separate` est obligatoire.** Avec `collapse`, les bordures des cellules collantes ne se peignent pas au défilement. Chaque cellule ne porte donc qu'un trait bas — et la colonne figée, un trait droit —, sans quoi deux bordures voisines feraient 2px.
+- **Un élément qui défile horizontalement devient sa propre zone de défilement dans les deux sens.** `overflow-y: visible` n'existe plus à côté d'un `overflow-x: auto` : il vaut `auto`. Un `<thead>` collant s'y cale donc sur le cadre et non sur la page. D'où `top: 0` et un plafond de hauteur — `calc(100dvh - var(--h-entete) - var(--e-5))` : l'en-tête colle au haut du tableau, et le cadre ne défile verticalement que pour un tableau plus haut qu'un écran. En deçà, la page reste le seul conteneur qui défile.
+
+#### Dire le défilement, sans ombre ni dégradé
+
+Les deux sont interdits (section 11). Quatre moyens, tous conformes, et aucun masquage silencieux :
+
+1. le trait vertical `--trait` en bord de colonne figée ;
+2. des colonnes de 44px, telles que la suivante est toujours entamée à l'écran ;
+3. `scrollbar-width: thin` — une barre visible sur ordinateur ;
+4. une phrase, `--t-sm` en `--encre-2` : « Faites glisser pour voir la suite. » Elle ne s'affiche que si le tableau déborde vraiment — le composant le mesure plutôt que de le supposer.
+
+Le cadre porte `role="region"`, `tabindex="0"` et un `aria-label` : un conteneur qui défile doit être atteignable au clavier, sans quoi il n'existe que pour la souris et le doigt. La table porte une `<caption>` en `.invisible`, les en-têtes un `scope="col"`, et la cellule du sujet un `<th scope="row">` — c'est elle qui nomme sa ligne.
+
+L'anneau de focus passe en `outline-offset: -2px` **dans le tableau seulement** : posé à l'extérieur, il serait rogné par le cadre. C'est un déplacement de l'anneau, pas sa suppression.
+
+#### Toucher une cellule
+
+Une feuille du bas (section 8.11), **une par page et non une par case** : un tableau de deux cents cases ne peut pas porter deux cents feuilles.
+
+| État | Contenu |
+|---|---|
+| aujourd'hui, en retard | « Révision 3 sur 7 · prévue le 12 août » · **Marquer comme effectuée** · **Voir le sujet** |
+| effectuée | « effectuée le 12 août » · **Annuler la validation** · **Voir le sujet** |
+| à venir | l'échéance, et **Voir le sujet** — valider en avance n'a pas de sens |
+| Pratique | les trois états, en radios. **Jamais un cycle au toucher** : un changement accidentel serait trop facile |
+
+La validation passe par `useValidation`, jamais par le contexte directement : c'est ce qui fait hériter du toast « Annuler » de cinq secondes (section 1, règle 2).
+
+#### La colonne Pratique
+
+Elle porte du texte — « À faire », « En cours », « Terminée » — et non une sixième marque. La pratique n'est pas une étape de programme mais un état, et lui inventer une forme brouillerait le vocabulaire des cinq autres. Elle est la dernière colonne, là où la largeur coûte le moins.
 
 ---
 
@@ -469,11 +559,11 @@ L'interface est en français, en casse normale, à l'infinitif pour les actions.
 | Révision enregistrée | Bravo ! · Bien joué 🎉 |
 | 3 révisions en retard | ⚠️ Attention, retard ! |
 | Rien à revoir aujourd'hui. | Rien ici pour l'instant... |
-| Créer l'élément | Soumettre · Enregistrer |
-| Élément archivé | Opération réussie |
+| Créer le sujet | Soumettre · Enregistrer |
+| Sujet archivé | Opération réussie |
 | Aucune révision planifiée | Oups, c'est vide ! |
 
-Une action garde le même mot du bouton jusqu'au toast : « Archiver » produit « Élément archivé ». Zéro emoji, zéro exclamation, zéro gamification — c'est une exclusion explicite du projet.
+Une action garde le même mot du bouton jusqu'au toast : « Archiver » produit « Sujet archivé ». Zéro emoji, zéro exclamation, zéro gamification — c'est une exclusion explicite du projet.
 
 Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 jours »), absolu au-delà (« jeudi 6 août »). `date-fns` avec la locale `fr`.
 
@@ -487,10 +577,10 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 - [ ] Focus clavier visible sur chaque élément interactif, parcours complet au clavier
 - [ ] `prefers-reduced-motion` respecté
 - [ ] Contrastes conformes au tableau de la section 3
-- [ ] Zoom à 200 % sans perte de fonction ni scroll horizontal
+- [ ] Zoom à 200 % sans perte de fonction ni scroll horizontal **de page** — celui du tableau de suivi, à l'intérieur de son cadre, est prévu
 - [ ] Écran vérifié à **320px** : aucun scroll horizontal, aucun chevauchement, aucun texte tronqué involontairement
 - [ ] `min-width: 0` sur les enfants de grid/flex contenant du texte
-- [ ] Le dernier élément de chaque liste reste atteignable sous le FAB
+- [ ] La dernière ligne de chaque liste reste atteignable sous le FAB
 - [ ] Champs de saisie à 16px minimum
 - [ ] `100dvh` et non `100vh` ; aucune media query `max-width`
 - [ ] Aucun composant ne porte de marge externe
@@ -507,7 +597,11 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 
 Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 6 nécessaires (plus, calendrier, coche, chevron, archive, corbeille — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
 
-Seule dérogation à la palette : les huit teintes de matière de la section 3 bis, et sous les trois conditions qui y sont posées.
+Seule dérogation à la palette : les huit teintes de catégorie de la section 3 bis, et sous les trois conditions qui y sont posées.
+
+Seule dérogation au défilement : le tableau de suivi défile horizontalement dans son cadre (section 8.13). Le replier en cartes sous 480px lui retirerait sa raison d'être — comparer les sujets verticalement et les étapes horizontalement —, et c'est justement ce qu'on vient y chercher. La page, elle, ne défile jamais horizontalement.
+
+Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-table` fournit le modèle du tableau de suivi — colonnes, lignes, cellules — et pas une règle de style. Le balisage, le CSS et l'accessibilité restent écrits ici.
 
 ---
 
@@ -567,10 +661,30 @@ Seule dérogation à la palette : les huit teintes de matière de la section 3 b
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
 
+  /*
+   * Hauteur de l'en-tête de l'application, qui est collant. Le tableau de
+   * suivi s'y décale (section 8.13). C'est de l'arithmétique sur le gabarit
+   * de l'en-tête, pas une mesure : elle change avec lui, et rien ne le
+   * signalera d'autre que l'écran. 125px + zone sûre sous 480px, 69px au-delà.
+   */
+  --h-entete: calc(var(--e-3) + var(--haut-securise) + var(--cible)
+                 + var(--e-3) + var(--cible) + var(--e-3) + 1px);   /* 125px */
+  /* Largeur de la colonne figée du tableau de suivi. */
+  --suivi-sujet: 120px;
+
   color-scheme: light;
 }
 
-/* Teintes de matière — section 3 bis. */
+/* Dès 480px, l'en-tête tient sur une ligne et la colonne du sujet s'élargit. */
+@media (min-width: 480px) {
+  :root {
+    --h-entete: calc(var(--e-3) + var(--haut-securise) + var(--cible)
+                   + var(--e-3) + 1px);                              /* 69px */
+    --suivi-sujet: 180px;
+  }
+}
+
+/* Teintes de catégorie — section 3 bis. */
 :root {
   --cat-ardoise: #4A6572;
   --cat-prune: #6B5B7B;
