@@ -1150,30 +1150,70 @@ body[data-panneau='ouvert'] {
   align-items: flex-start;
 }
 
-/* ================================== catégories dans les réglages ======= */
+/* ===================================================== catégories ====== */
 
-.categories-reglage {
+/*
+ * Une catégorie se présente comme un programme créé : même carte, mêmes
+ * actions. Ici non plus on ne choisit pas, on inspecte — le nom, la couleur,
+ * et combien de sujets en dépendent avant de la supprimer.
+ */
+.categories {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-4);
+  gap: var(--e-3);
 }
 
-.categorie-reglage {
+.categorie {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3);
 }
 
-.categorie-reglage__nom {
+.categorie__entete {
   display: flex;
   min-width: 0;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   gap: var(--e-2);
-  font-size: var(--t-base);
+}
+
+.categorie__nom {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: var(--e-2);
+  font-size: var(--t-md);
   font-weight: 500;
+  line-height: var(--l-md);
   overflow-wrap: anywhere;
+}
+
+.categorie__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.categorie__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/* L'aperçu des Réglages : ce qu'il y a, d'un coup d'œil. La gestion est
+   ailleurs, sur son écran. */
+.reglages__apercu {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
 }
 
 /* ========================================================== suivi ====== */

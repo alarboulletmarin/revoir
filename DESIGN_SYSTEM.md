@@ -117,6 +117,10 @@ Trois règles, sans exception :
 
 Une catégorie sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable. La couleur appartient à la catégorie elle-même, qui est une entité — la renommer une fois la renomme partout.
 
+Une entité que l'on **gère**, et non un sous-produit de la saisie. Elle se crée, se renomme, se recolore et se supprime depuis son écran (section 8.15), et elle survit à zéro sujet. Tant qu'elle naissait du mot tapé dans le formulaire d'un sujet et disparaissait dès que plus aucun ne la portait, on ne pouvait ni la préparer, ni la renommer — retaper le nom en fabriquait une seconde, avec sa propre couleur —, ni la garder vide.
+
+Une base neuve en reçoit six, chacune avec sa teinte **explicite** : laissés au hachage, ces six noms ne produisent que cinq couleurs distinctes, et deux catégories livrées ensemble seraient jumelles dès le premier écran. `teinteParDefaut` garde son rôle pour tout ce qui se crée ensuite. Un test fige les six teintes distinctes, parce que c'est la raison du choix explicite et qu'elle ne se lit pas dans le code.
+
 #### Couleurs libres
 
 Le sélecteur propose un neuvième cercle, marqué d'un « + », qui ouvre le sélecteur de couleurs du système. **La couleur choisie est la couleur retenue.** Elle n'est ni assombrie ni désaturée pour ressembler aux huit : un jaune pâle reste un jaune pâle, sur sa pastille comme dans le sélecteur. Les huit sont ce que l'app *propose* ; une couleur choisie appartient à l'utilisateur.
@@ -383,6 +387,14 @@ Fond `--surface`, 1px `--trait`, `--r-carte`, hauteur 48px, padding `--e-3`. Foc
 
 **Champ date** (`.champ-date`). Mêmes bordure, rayon, fond et padding, mais 44px de haut : on y choisit, on n'y écrit pas. Il affiche la date en toutes lettres (« 5 août 2026 ») et l'icône calendrier 18px `--encre-2` au bord droit. La valeur reste ISO. Un `input[type="date"]` transparent couvre la carte : toute la surface ouvre le sélecteur natif, au doigt comme au clavier, et un composant calendrier maison ne se justifie pas. Survol et pression sous `@media (hover: hover)` seulement.
 
+**Champ de choix** (`.champ-select`). Un `<select>` natif, habillé aux mêmes bordure, rayon, fond et 48px. Le contrôle du système reste — liste roulante iOS, clavier, recherche à la frappe : même parti pris que le champ date et que la pipette du sélecteur de teinte, et pour la même raison.
+
+`appearance: none` est nécessaire, sans quoi iOS repeint le champ à sa façon par-dessus la bordure ; il emporte la flèche native au passage. Elle est donc **redessinée** : le chevron des sept icônes, pivoté de 90°, en `--encre-2` au bord droit — aucun signe nouveau (section 11). Sans elle, le champ n'est qu'une boîte de 48px sans le moindre indice qu'elle s'ouvre.
+
+Une pastille de teinte peut être peinte dans le champ, à gauche de la valeur (`.champ-select--pastille`) : la liste déroulée appartient au système et un `<option>` ne se colore pas de la même façon d'un navigateur à l'autre. Elle est `aria-hidden` et le nom reste écrit — section 3 bis, règle 2. Pastille et chevron sont `pointer-events: none` : c'est le `<select>` entier qui reste la cible.
+
+Aucun `font-size` ici : le reset le pose sur tous les `select`, et le plancher anti-zoom iOS ne se redéclare jamais plus bas (section 7.4).
+
 ### 8.7 Sélecteur de programme
 
 Des cartes empilées, chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
@@ -453,11 +465,15 @@ Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou 
 
 **Feuille du jour** (`.feuille`) : `<dialog>` ancré en bas, coins hauts en `--r-carte`, poignée de 32×4px centrée, `::backdrop` à 20 % de `--encre` pour laisser voir le mois. Hauteur suivant le contenu, plafonnée à 78dvh ; seule la liste défile. Quatre sorties : le bouton — un libellé `--t-sm` en `--encre-2`, pas une action —, Échap, le fond, et le glissement vers le bas depuis l'en-tête. Le focus entre dans la feuille à l'ouverture et revient au jour consulté à la fermeture.
 
+**Où le focus entre, au juste.** Une feuille qu'on **lit** vise son corps : l'anneau ne doit pas se poser sur « Fermer », qui est une sortie et non une action. L'argument tombe pour une feuille qui n'existe que pour qu'on y **écrive** — l'y laisser imposerait un geste de plus avant d'atteindre le premier champ. D'où `cibleFocus`, que l'appelant fournit ou non. La visée a lieu après `showModal()` : le `<dialog>` est monté bien avant de s'ouvrir, `autoFocus` y aurait tiré à blanc.
+
 Les révisions y sont listées en `.ligne-revision--compact` : trait de séparation plutôt que carte, et la position dans le programme écrite — « Révision 2 sur 5 · Prochaine : 8 août » — plutôt que la frise. C'est la seule liste où la frise cède la place : sur 44px de haut, quatre traits verticaux ne se lisent pas.
 
 ### 8.12 Boîte de confirmation
 
-`<dialog>` centré (`.dialogue`), 400px au plus, `::backdrop` à 40 % de `--encre`. Deux emplois, pas un de plus : supprimer un sujet, et remplacer les données par un import. Le reste s'annule, ne se confirme pas (section 1).
+`<dialog>` centré (`.dialogue`), 400px au plus, `::backdrop` à 40 % de `--encre`. Trois emplois, et une règle qui les réunit plutôt qu'un compte à tenir : **une action qu'aucun geste inverse ne rebâtirait**. Supprimer un sujet, remplacer les données par un import, supprimer une catégorie. Le reste s'annule, ne se confirme pas (section 1).
+
+La suppression d'une catégorie y a sa place parce qu'elle en touche d'autres : ses sujets rejoignent « Sans catégorie », et « Annuler » d'un toast rejoue une écriture — il ne rendrait pas leur catégorie à *n* sujets sans les avoir mémorisés. La boîte annonce donc leur nombre, et qu'aucun n'est supprimé.
 
 Le reset pose `* { margin: 0 }`, qui écrase le `margin: auto` du navigateur : **`inset: 0` et `margin: auto` sont écrits explicitement**, sans quoi la boîte se colle en haut de l'écran. Sa hauteur est plafonnée à `calc(100dvh - var(--e-6))` et son contenu défile — un titre de sujet très long ne doit pas pousser les boutons hors écran.
 
@@ -570,6 +586,26 @@ icône, c'est une devinette — et celle-ci est le seul lien de l'app à ne pas
 Le signe fait 20px, sa cible 44 (`min-width: var(--cible)`) : c'est le carré
 qui se touche, pas le dessin. Repos `--encre-2`, actif `--accent` sur
 `--accent-doux`, comme un lien de navigation.
+
+---
+
+### 8.15 Catégories
+
+**On désigne une catégorie, on ne la tape pas.** Le formulaire d'un sujet portait un champ libre doublé d'un `datalist` : une faute de frappe y créait une catégorie de plus, avec sa propre couleur, et rien ne permettait de la corriger — retaper le nom en fabriquait une troisième. La catégorie existe maintenant avant le sujet, et le formulaire la choisit dans un champ de choix (section 8.6).
+
+La pastille de la catégorie retenue est peinte dans le champ et suit la sélection. Le nom reste écrit, dans le champ comme dans chaque option : la couleur ne porte jamais l'information seule.
+
+**Le raccourci de création est un bouton sous le champ**, pas une option de la liste. Une option qui n'est pas une valeur est annoncée comme une valeur par un lecteur d'écran, et laisserait le champ dans un état incohérent si l'on renonce.
+
+Il ouvre une **feuille**, pas une navigation : le titre, la date et le programme déjà saisis sont derrière elle et l'attendent. Partir sur `/categories` reviendrait à abandonner la saisie en cours pour ranger ses étiquettes. La feuille ne porte que le nom et la couleur — c'est un raccourci, pas le formulaire complet —, et la catégorie créée devient aussitôt celle du sujet : c'est le geste qu'on venait faire. Le focus revient alors au champ, et non au bouton où `<dialog>.close()` le renvoie, sans quoi rien n'apprendrait au lecteur d'écran que la valeur a changé.
+
+Cette feuille est rendue au milieu du formulaire du sujet : elle ne porte donc **pas** de `<form>`. Un `<form>` dans un `<form>` est interdit, et le navigateur s'y perd — il soumet pour de bon, et la page se recharge en emportant la saisie. Entrée valide quand même, mais depuis le champ de texte seul : sur une pastille de couleur, elle n'a rien à déclencher.
+
+**L'écran** — `/categories`, atteint depuis Réglages, qui n'en garde qu'un aperçu en chips et un lien. Une carte par catégorie, sur le gabarit d'un programme créé (section 8.7) : la pastille, le nom, le nombre de sujets, puis Modifier et Supprimer. Une base neuve arrive avec six catégories (section 3 bis) ; l'état vide propose de les ajouter, pour les installations antérieures que le semis ne touche pas.
+
+**Une catégorie portée se supprime toujours** — et c'est l'inverse d'un programme suivi, qui refuse de l'être. Le contraste n'est pas un caprice : sans rythme, une fiche n'aurait plus rien à nommer, alors qu'un sujet sans catégorie est un état normal du modèle. Ses sujets rejoignent donc « Sans catégorie », aucun n'est supprimé, et la boîte de confirmation le dit (section 8.12).
+
+Le retour après suppression est une bannière `role="status"`, pas un toast : la section 8.10 n'en compte que deux usages, et une suppression confirmée n'est pas annulable.
 
 ---
 

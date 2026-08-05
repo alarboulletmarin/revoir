@@ -1,7 +1,7 @@
-import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
-import { useTitrePage } from '../state/useTitrePage'
+import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import {
   DEFAULT_SCHEDULE,
   buildReviews,
@@ -12,21 +12,10 @@ import {
 import { formatShort, todayKey } from '../lib/dates'
 import { chargeParDate } from '../lib/stats'
 import type { ScheduleId } from '../types'
-import { teinteDe, trouverCategorie } from '../lib/categories'
 import { Champ, ChampDate, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
-import { SelecteurTeinte } from '../components/SelecteurTeinte'
-
-const CATEGORIES_SUGGEREES = [
-  'Études',
-  'Travail',
-  'Développement',
-  'Langues',
-  'Lecture',
-  'Personnel',
-  'Autre',
-]
+import { SelecteurCategorie } from '../components/SelecteurCategorie'
 
 export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
@@ -35,37 +24,45 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
     topics,
     reviews,
     categories,
-    definirTeinte,
+    creerCategorie,
     loading,
     createTopic,
     editTopic,
     programmes,
     programmesDisponibles,
   } = useDonnees()
-  const listeCategories = useId()
 
   useTitrePage(mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet')
 
   const existant = mode === 'edit' ? topics.find((topic) => topic.id === id) : undefined
 
   const [titre, setTitre] = useState('')
-  const [categorie, setCategorie] = useState('')
+  const [categorieId, setCategorieId] = useState<string | null>(null)
   const [depart, setDepart] = useState(todayKey)
   const [programme, setProgramme] = useState<ScheduleId>(DEFAULT_SCHEDULE)
   const [soumis, setSoumis] = useState(false)
   const [enregistrement, setEnregistrement] = useState(false)
+  const [feuille, setFeuille] = useState(false)
 
-  // Les sujets arrivent de façon asynchrone : on remplit le formulaire dès
-  // que le sujet visé est disponible.
+  // Une feuille modale est ouverte : le FAB s'efface et la page ne défile plus
+  // derrière elle (section 7.3).
+  usePanneauOuvert(feuille)
+
+  /*
+   * Les sujets arrivent de façon asynchrone : on remplit le formulaire dès que
+   * le sujet visé est disponible.
+   *
+   * `existant` seul en dépendance : la liste des catégories n'entre plus dans
+   * le calcul, et l'y laisser ferait réécrire le champ à chaque création depuis
+   * la feuille — la catégorie qu'on vient de choisir serait aussitôt reperdue.
+   */
   useEffect(() => {
     if (!existant) return
     setTitre(existant.title)
-    setCategorie(
-      categories.find((candidate) => candidate.id === existant.categoryId)?.name ?? '',
-    )
+    setCategorieId(existant.categoryId)
     setDepart(existant.startDate)
     setProgramme(existant.scheduleId)
-  }, [existant, categories])
+  }, [existant])
 
   /**
    * Règle métier n°4 : l'aperçu montre les dates générées **et** la charge
@@ -83,23 +80,6 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
       charge: charge.get(date) ?? 0,
     }))
   }, [depart, programme, programmes, topics, reviews, existant?.id])
-
-  const suggestions = useMemo(
-    () => [
-      ...new Set([
-        ...categories.map((categorie) => categorie.name),
-        ...CATEGORIES_SUGGEREES,
-      ]),
-    ],
-    [categories],
-  )
-
-  /**
-   * La catégorie que la saisie désigne aujourd'hui, s'il y en a une : c'est
-   * elle que le sélecteur de couleur colore. Un nom encore inconnu n'a pas de
-   * couleur à choisir — elle se choisira une fois le sujet créé.
-   */
-  const categorieVisee = trouverCategorie(categorie, categories)
 
   const erreurTitre = titre.trim() === '' ? 'Le titre est obligatoire.' : null
   const erreurDate = depart === '' ? 'La date de départ est obligatoire.' : null
@@ -120,7 +100,7 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
     setEnregistrement(true)
     const brouillon = {
       title: titre,
-      categorie,
+      categoryId: categorieId,
       startDate: depart,
       scheduleId: programme,
     }
@@ -154,36 +134,18 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
           erreur={soumis ? erreurTitre : null}
         />
 
-        <Champ
-          label="Catégorie"
-          type="text"
-          value={categorie}
-          maxLength={60}
-          list={listeCategories}
-          autoComplete="off"
-          onChange={(event) => setCategorie(event.target.value)}
-          aide="Facultatif."
-        />
-        <datalist id={listeCategories}>
-          {suggestions.map((nom) => (
-            <option key={nom} value={nom} />
-          ))}
-        </datalist>
-
         {/*
-          La couleur appartient à la catégorie, pas au sujet : la choisir ici
-          la change partout où cette catégorie apparaît. Une catégorie qui
-          n'existe pas encore n'a rien à colorer — elle sera créée avec le
-          sujet, et sa couleur se choisira ensuite.
+          On désigne une catégorie, on ne la tape plus. La couleur, elle,
+          appartient à la catégorie et se règle là où elle vit — la poser sous
+          ce champ laisserait croire qu'elle appartient au sujet.
         */}
-        {categorieVisee && (
-          <SelecteurTeinte
-            groupe="teinte-categorie"
-            legende={`Couleur de « ${categorieVisee.name} »`}
-            valeur={teinteDe(categorieVisee)!}
-            onChange={(teinte) => definirTeinte(categorieVisee.id, teinte)}
-          />
-        )}
+        <SelecteurCategorie
+          categories={categories}
+          valeur={categorieId}
+          onChange={setCategorieId}
+          onCreer={creerCategorie}
+          onFeuille={setFeuille}
+        />
 
         <ChampDate
           label="Date de départ"

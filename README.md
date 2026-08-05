@@ -19,7 +19,7 @@ Catégorie
     └── Pratique
 ```
 
-Une **catégorie** regroupe des sujets : Mathématiques, Anglais, React, Certification AWS, Code de la route, Piano. Un **sujet** est ce qu'on veut revoir : les dérivées, les hooks React, le vocabulaire du voyage, les accords majeurs, les règles de priorité. Ses **révisions** sont les échéances que le programme calcule.
+Une **catégorie** regroupe des sujets : Mathématiques, Anglais, React, Certification AWS, Code de la route, Piano. C'est ce qu'on gère, non ce qu'on tape : elle existe avant ses sujets, qui la désignent. Un **sujet** est ce qu'on veut revoir : les dérivées, les hooks React, le vocabulaire du voyage, les accords majeurs, les règles de priorité. Ses **révisions** sont les échéances que le programme calcule.
 
 La **pratique** est le pendant des révisions : pour un cours ce sont des exercices, pour le piano c'est la répétition, pour une langue une conversation, pour le code de la route une série de questions. C'est un état — à faire, en cours, terminée — et non une date : elle vit dans la colonne du tableau de suivi et sur la fiche du sujet.
 
@@ -37,7 +37,8 @@ La **pratique** est le pendant des révisions : pour un cours ce sont des exerci
   - Poussé — J+1, J+2, J+4, J+7, J+14, J+30, J+60
   - Ultime — J+1, J+2, J+4, J+7, J+14, J+30, J+60, J+90, J+180, J+365
 - **Programmes personnalisés** : un rythme se compose en touchant des graduations, pas en tapant des nombres.
-- **Couleurs de catégorie** : huit teintes, ou n'importe quelle couleur. Une catégorie jamais configurée reçoit une teinte dérivée de son nom, identique d'un appareil à l'autre.
+- **Catégories** : elles se créent, se renomment, se recolorent et se suppriment depuis leur écran, et vivent sans aucun sujet. Six sont livrées à la première installation, chacune avec sa couleur. Sur la fiche d'un sujet, on en choisit une dans une liste — avec un raccourci pour en créer une sans quitter le formulaire. Supprimer une catégorie ne supprime aucun sujet : les siens passent « Sans catégorie ».
+- **Couleurs de catégorie** : huit teintes, ou n'importe quelle couleur. Une catégorie créée sans choix reçoit une teinte dérivée de son nom, identique d'un appareil à l'autre.
 - **Sauvegarde locale** : export et import de la totalité des données au format JSON.
 - **PWA** : installable, fonctionne hors ligne, se met à jour via Service Worker avec un toast de confirmation.
 
@@ -104,7 +105,7 @@ scripts/
 └── generate-icons.mjs   génération des icônes PNG, sans dépendance
 ```
 
-La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, le regroupement par catégorie, l'attribution des teintes, les statistiques, le modèle du tableau de suivi, la migration des anciennes données, le formatage et la validation des sauvegardes.
+La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, le regroupement par catégorie, l'attribution des teintes, les catégories proposées et le détachement des sujets d'une catégorie supprimée, les statistiques, le modèle du tableau de suivi, la migration des anciennes données, le formatage et la validation des sauvegardes.
 
 Toute décision visuelle vient de [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), et toute valeur de couleur, taille ou espacement passe par une variable de `src/styles/tokens.css`.
 
@@ -119,7 +120,7 @@ type Topic    = { id, categoryId, title, startDate, scheduleId,
 type Review   = { id, topicId, position, intervalInDays, dueDate, completedAt }
 ```
 
-`categoryId` peut être `null` : un sujet sans catégorie est un état normal, et « Sans catégorie » est un groupe d'affichage, pas une ligne de la base. Une révision est faite si et seulement si `completedAt` n'est pas nul — il n'y a pas de drapeau à côté qui pourrait le contredire. Le tableau de suivi ne stocke rien : il n'est qu'une projection des sujets et de leurs révisions.
+`categoryId` peut être `null` : un sujet sans catégorie est un état normal, et « Sans catégorie » est un groupe d'affichage, pas une ligne de la base. C'est aussi là que retombent les sujets d'une catégorie supprimée — la suppression détache, elle n'emporte rien. Symétriquement, une catégorie survit à zéro sujet : elle se prépare avant d'en avoir un, et rien ne la ramasse dans son dos. Une révision est faite si et seulement si `completedAt` n'est pas nul — il n'y a pas de drapeau à côté qui pourrait le contredire. Le tableau de suivi ne stocke rien : il n'est qu'une projection des sujets et de leurs révisions.
 
 ## Format d'export
 
@@ -148,7 +149,9 @@ L'export produit un fichier `revoir-AAAA-MM-JJ.json` :
 }
 ```
 
-À l'import, le fichier est validé champ par champ et **remplace** l'intégralité des données existantes ; une confirmation est demandée au préalable. Un sujet qui désignerait une catégorie absente du fichier, ou une révision un sujet absent, fait échouer l'import : c'est l'intégrité que le modèle plat n'avait pas à défendre.
+La version reste 4 : la forme des entités n'a pas changé. Le tableau `categories` peut en revanche contenir des catégories qu'aucun sujet ne référence — elles existent à part entière — et l'import les conserve.
+
+À l'import, le fichier est validé champ par champ et **remplace** l'intégralité des données existantes ; une confirmation est demandée au préalable. Un sujet qui désignerait une catégorie absente du fichier, ou une révision un sujet absent, fait échouer l'import : c'est l'intégrité que le modèle plat n'avait pas à défendre. La vérification va du sujet vers la catégorie, jamais l'inverse.
 
 Les sauvegardes en version 1 à 3 — qui portaient des « éléments » et une table de teintes indexée par nom — restent importables. Elles passent par la même conversion que la migration de la base, dans `src/lib/migration.ts` : une seule implémentation, deux chemins d'entrée. Deux conversions distinctes finiraient par diverger sur un cas limite, et le cas limite d'une migration, c'est la donnée de quelqu'un.
 

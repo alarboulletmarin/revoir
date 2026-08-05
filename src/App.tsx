@@ -6,6 +6,8 @@ import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
 import { SujetDetail } from './pages/SujetDetail'
 import { SujetForm } from './pages/SujetForm'
+import { CategoriesPage } from './pages/CategoriesPage'
+import { CategorieForm } from './pages/CategorieForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
@@ -40,6 +42,12 @@ export function App() {
               <Route path="/sujet/:id" element={<SujetDetail />} />
               <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
               <Route path="/reglages" element={<Settings />} />
+              <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
+              <Route
+                path="/categories/:id/modifier"
+                element={<CategorieForm mode="edit" />}
+              />
               <Route path="/programmes/nouveau" element={<ProgrammeForm mode="create" />} />
               <Route
                 path="/programmes/:id/modifier"

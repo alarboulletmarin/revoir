@@ -15,7 +15,7 @@ import type {
   Topic,
 } from '../types'
 import {
-  deleteCategory,
+  deleteCategoryDetachingTopics,
   deleteProgramme,
   deleteTopicWithReviews,
   getAllCategories,
@@ -29,7 +29,7 @@ import {
   replaceAll,
   replaceReviewsOfTopic,
 } from '../db/database'
-import { trouverCategorie, type Teinte } from '../lib/categories'
+import { detacherCategorie, type Teinte } from '../lib/categories'
 import type { ContenuSauvegarde } from '../lib/backup'
 import { newId } from '../lib/ids'
 import { revisionsDe } from '../lib/sujets'
@@ -44,8 +44,11 @@ import { todayKey, type DateKey } from '../lib/dates'
 
 export interface SujetDraft {
   title: string
-  /** Saisie libre : elle rejoint une catégorie existante ou en crée une. */
-  categorie: string
+  /**
+   * La catégorie choisie, ou null. Un identifiant et non un nom : la catégorie
+   * existe avant le sujet, le formulaire la désigne, il ne l'invente plus.
+   */
+  categoryId: string | null
   startDate: DateKey
   scheduleId: ScheduleId
 }
@@ -73,7 +76,18 @@ export interface DonneesContextValue {
   /** Message d'erreur si IndexedDB est indisponible (navigation privée, quota). */
   error: string | null
 
-  definirTeinte: (categoryId: string, teinte: Teinte) => void
+  /**
+   * Renvoie la catégorie créée : l'appelant a besoin de son identifiant pour la
+   * sélectionner aussitôt — c'est tout l'intérêt du raccourci du formulaire.
+   */
+  creerCategorie: (nom: string, teinte: Teinte | null) => Promise<Category>
+  /** Nom et couleur passent par le même point d'écriture : c'est une seule ligne. */
+  modifierCategorie: (id: string, nom: string, teinte: Teinte | null) => Promise<void>
+  /**
+   * Supprime la catégorie et détache ses sujets, qui rejoignent « Sans
+   * catégorie ». Aucun sujet n'est perdu.
+   */
+  supprimerCategorie: (id: string) => Promise<void>
 
   /** Les rythmes créés par l'utilisateur, dans l'ordre de création. */
   programmes: Programme[]
@@ -195,53 +209,69 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
   )
 
   /**
-   * La catégorie que désigne une saisie : celle qui porte déjà ce nom, à la
-   * casse près, sinon une nouvelle. Une saisie vide ne crée rien — un sujet
-   * sans catégorie est un état normal, pas une catégorie anonyme.
+   * Les trois écritures d'une catégorie.
+   *
+   * Elle ne naît plus d'une saisie et ne disparaît plus toute seule : jusqu'ici
+   * une catégorie était créée à la volée par le nom tapé dans le formulaire, et
+   * ramassée dès que plus aucun sujet ne la désignait. On ne pouvait donc ni la
+   * préparer, ni la renommer — retaper le nom en fabriquait une seconde —, ni
+   * la garder vide. C'est désormais une entité que l'on gère.
    */
-  const resoudreCategorie = useCallback(
-    (nom: string): string | null => {
-      const propre = nom.trim()
-      if (propre === '') return null
-
-      const existante = trouverCategorie(propre, categories)
-      if (existante) return existante.id
-
+  const creerCategorie = useCallback(
+    async (nom: string, teinte: Teinte | null) => {
       const maintenant = new Date().toISOString()
       const categorie: Category = {
         id: newId(),
-        name: propre,
-        tint: null,
+        name: nom.trim(),
+        tint: teinte,
         createdAt: maintenant,
         updatedAt: maintenant,
       }
       setCategories((actuelles) => [...actuelles, categorie])
       echecEcriture(putCategory(categorie))
-      return categorie.id
+      return categorie
+    },
+    [echecEcriture],
+  )
+
+  const modifierCategorie = useCallback(
+    async (id: string, nom: string, teinte: Teinte | null) => {
+      const existante = categories.find((categorie) => categorie.id === id)
+      if (!existante) return
+      const modifiee: Category = {
+        ...existante,
+        name: nom.trim(),
+        tint: teinte,
+        updatedAt: new Date().toISOString(),
+      }
+      setCategories((actuelles) =>
+        actuelles.map((categorie) => (categorie.id === id ? modifiee : categorie)),
+      )
+      echecEcriture(putCategory(modifiee))
     },
     [categories, echecEcriture],
   )
 
   /**
-   * Une catégorie que plus aucun sujet ne désigne n'a plus de raison d'être :
-   * elle ne s'affiche nulle part et encombrerait la liste des couleurs. Le
-   * ménage se fait après coup, sur l'état déjà à jour.
+   * Les sujets ne suivent pas la catégorie dans sa suppression : ils rejoignent
+   * « Sans catégorie ». La décision se prend dans `lib/`, l'écriture se fait
+   * d'un bloc — sinon une panne laisserait des sujets pointant une catégorie
+   * disparue.
    */
-  const nettoyerCategories = useCallback(
-    (sujets: Topic[]) => {
-      const portees = new Set(sujets.map((topic) => topic.categoryId))
-      setCategories((actuelles) => {
-        const gardees = actuelles.filter((categorie) => portees.has(categorie.id))
-        if (gardees.length === actuelles.length) return actuelles
-        for (const perdue of actuelles.filter(
-          (categorie) => !portees.has(categorie.id),
-        )) {
-          echecEcriture(deleteCategory(perdue.id))
-        }
-        return gardees
-      })
+  const supprimerCategorie = useCallback(
+    async (id: string) => {
+      const detaches = detacherCategorie(id, topics, new Date().toISOString())
+      const parId = new Map(detaches.map((topic) => [topic.id, topic]))
+      setTopics((actuels) => actuels.map((topic) => parId.get(topic.id) ?? topic))
+      setCategories((actuelles) => actuelles.filter((categorie) => categorie.id !== id))
+      try {
+        await deleteCategoryDetachingTopics(id, detaches)
+        setError(null)
+      } catch {
+        setError('La suppression locale a échoué.')
+      }
     },
-    [echecEcriture],
+    [topics],
   )
 
   const createTopic = useCallback(
@@ -249,7 +279,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       const maintenant = new Date().toISOString()
       const topic: Topic = {
         id: newId(),
-        categoryId: resoudreCategorie(draft.categorie),
+        categoryId: draft.categoryId,
         title: draft.title.trim(),
         startDate: draft.startDate,
         scheduleId: draft.scheduleId,
@@ -265,7 +295,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       )
       return topic
     },
-    [persistTopic, persistRevisions, programmes, resoudreCategorie],
+    [persistTopic, persistRevisions, programmes],
   )
 
   const editTopic = useCallback(
@@ -275,7 +305,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
 
       const modifie: Topic = {
         ...existant,
-        categoryId: resoudreCategorie(draft.categorie),
+        categoryId: draft.categoryId,
         title: draft.title.trim(),
         startDate: draft.startDate,
         scheduleId: draft.scheduleId,
@@ -292,25 +322,14 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
           programmes,
         ),
       )
-      nettoyerCategories(topics.map((topic) => (topic.id === id ? modifie : topic)))
     },
-    [
-      topics,
-      reviews,
-      programmes,
-      persistTopic,
-      persistRevisions,
-      resoudreCategorie,
-      nettoyerCategories,
-    ],
+    [topics, reviews, programmes, persistTopic, persistRevisions],
   )
 
   const removeTopic = useCallback(
     async (id: string) => {
-      const restants = topics.filter((topic) => topic.id !== id)
-      setTopics(restants)
+      setTopics(topics.filter((topic) => topic.id !== id))
       setReviews((actuelles) => actuelles.filter((review) => review.topicId !== id))
-      nettoyerCategories(restants)
       try {
         await deleteTopicWithReviews(id)
         setError(null)
@@ -318,7 +337,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
         setError('La suppression locale a échoué.')
       }
     },
-    [topics, nettoyerCategories],
+    [topics],
   )
 
   const setArchived = useCallback(
@@ -390,25 +409,6 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       persistRevisions(topicId, precedentes)
     },
     [persistRevisions],
-  )
-
-  const definirTeinte = useCallback(
-    (categoryId: string, teinte: Teinte) => {
-      const existante = categories.find((categorie) => categorie.id === categoryId)
-      if (!existante) return
-      const modifiee: Category = {
-        ...existante,
-        tint: teinte,
-        updatedAt: new Date().toISOString(),
-      }
-      setCategories((actuelles) =>
-        actuelles.map((categorie) =>
-          categorie.id === categoryId ? modifiee : categorie,
-        ),
-      )
-      echecEcriture(putCategory(modifiee))
-    },
-    [categories, echecEcriture],
   )
 
   const creerProgramme = useCallback(
@@ -489,7 +489,9 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
-      definirTeinte,
+      creerCategorie,
+      modifierCategorie,
+      supprimerCategorie,
       programmes,
       programmesDisponibles,
       creerProgramme,
@@ -512,7 +514,9 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
-      definirTeinte,
+      creerCategorie,
+      modifierCategorie,
+      supprimerCategorie,
       programmes,
       programmesDisponibles,
       creerProgramme,
