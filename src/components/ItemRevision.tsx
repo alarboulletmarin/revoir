@@ -8,7 +8,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ReviewEntry } from '../types'
-import { formatRelative, formatShort, type DateKey } from '../lib/dates'
+import { formatEcheance, formatRelative, formatShort, type DateKey } from '../lib/dates'
+import { progressionEntree } from '../lib/stats'
 import { IconeCoche } from './Icons'
 import { Frise } from './Frise'
 import { ChipCategorie } from './ChipCategorie'
@@ -28,8 +29,16 @@ interface ItemRevisionProps {
   onDevalider: (entry: ReviewEntry) => void
   /** Masque la date lorsque la liste est déjà groupée par jour. */
   masquerDate?: boolean
-  /** La frise miniature n'a pas sa place dans les listes très denses. */
-  frise?: boolean
+  /**
+   * Ce qui accompagne le titre :
+   *   `frise`       — la frise miniature, valeur par défaut des listes aérées ;
+   *   `progression` — « Révision 2 sur 5 · Prochaine : 8 août », en toutes
+   *                   lettres, avec une ligne resserrée : la feuille du
+   *                   calendrier n'a ni la hauteur ni le calme d'une page
+   *                   pleine pour qu'une frise s'y lise ;
+   *   `aucun`       — ni l'une ni l'autre, pour la cellule héros déjà dense.
+   */
+  detail?: 'frise' | 'progression' | 'aucun'
 }
 
 export function ItemRevision({
@@ -38,7 +47,7 @@ export function ItemRevision({
   onValider,
   onDevalider,
   masquerDate = false,
-  frise = true,
+  detail = 'frise',
 }: ItemRevisionProps) {
   const { item, review } = entry
   // Les teintes viennent du contexte plutôt que d'une prop : le composant est
@@ -68,9 +77,15 @@ export function ItemRevision({
 
   // Le retard ne se signale que par sa mention, en toutes lettres : aucune
   // bande de couleur en bord de ligne.
-  const classes = ['item-revision', coche ? 'item-revision--faite' : null]
+  const classes = [
+    'item-revision',
+    coche ? 'item-revision--faite' : null,
+    detail === 'progression' ? 'item-revision--compact' : null,
+  ]
     .filter(Boolean)
     .join(' ')
+
+  const progression = detail === 'progression' ? progressionEntree(entry) : null
 
   return (
     <li className={classes}>
@@ -102,9 +117,27 @@ export function ItemRevision({
               {formatRelative(review.date, aujourdhui)}
             </span>
           )}
+          {/*
+            Où en est le programme, écrit plutôt que tracé. La prochaine
+            échéance ne s'affiche que s'il en reste une : pas de place
+            réservée pour une information absente.
+          */}
+          {progression && (
+            <span className="item-revision__progression">
+              Révision {progression.rang} sur {progression.total}
+              {progression.suivante !== null && (
+                <>
+                  {' · Prochaine : '}
+                  <time dateTime={progression.suivante}>
+                    {formatEcheance(progression.suivante, review.date)}
+                  </time>
+                </>
+              )}
+            </span>
+          )}
         </span>
 
-        {frise && (
+        {detail === 'frise' && (
           <Frise
             origine={item.startDate}
             reviews={item.reviews}

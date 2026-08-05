@@ -62,6 +62,17 @@ export function formatCompact(key: DateKey): string {
   return format(fromKey(key), 'dd/MM', { locale: fr })
 }
 
+/**
+ * « 8 août » — la date sans son année, tant qu'elle tombe dans celle de
+ * `reference`. Un programme « Ultime » va jusqu'à J+365 : au-delà du
+ * changement d'année, l'année revient, sans quoi « 8 août » désignerait deux
+ * jours différents dans la même liste.
+ */
+export function formatEcheance(key: DateKey, reference: DateKey): string {
+  const memeAnnee = key.slice(0, 4) === reference.slice(0, 4)
+  return format(fromKey(key), memeAnnee ? 'd MMMM' : 'd MMMM yyyy', { locale: fr })
+}
+
 /** « mars 2026 » */
 export function formatMonth(date: Date): string {
   return format(date, 'MMMM yyyy', { locale: fr })

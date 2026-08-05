@@ -3,6 +3,7 @@ import {
   addDaysToKey,
   daysBetween,
   formatCompact,
+  formatEcheance,
   formatIsoDate,
   formatLong,
   formatRelative,
@@ -74,5 +75,12 @@ describe('formatage francais', () => {
   it('rejette un horodatage invalide plutôt que de planter', () => {
     expect(formatIsoDate('2026-03-14T08:30:00.000Z')).toBe('14 mars 2026')
     expect(formatIsoDate('pas une date')).toBeNull()
+  })
+
+  it('écrit une échéance sans son année, sauf si elle en change', () => {
+    expect(formatEcheance('2026-08-08', '2026-03-10')).toBe('8 août')
+    // J+365 depuis mars 2026 : sans l'année, « 8 mars » désignerait deux jours.
+    expect(formatEcheance('2027-03-08', '2026-03-10')).toBe('8 mars 2027')
+    expect(formatEcheance('2025-12-31', '2026-01-01')).toBe('31 décembre 2025')
   })
 })

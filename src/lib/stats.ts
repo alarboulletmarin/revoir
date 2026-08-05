@@ -158,6 +158,39 @@ export function computeStats(items: Item[], today: DateKey = todayKey()): Stats 
   }
 }
 
+/** Où en est une révision dans le programme de son élément. */
+export interface ProgressionEntree {
+  /** Rang dans le programme, à partir de 1 : le « 2 » de « Révision 2 sur 5 ». */
+  rang: number
+  total: number
+  /** Prochaine échéance non faite après celle-ci, sinon null. */
+  suivante: DateKey | null
+}
+
+/**
+ * La position d'une révision dans son programme, en clair.
+ *
+ * C'est ce que la frise montre graphiquement ; là où la place manque — la
+ * feuille du calendrier — c'est ce texte qui la remplace.
+ *
+ * `suivante` se calcule par le minimum plutôt que par le premier trouvé : le
+ * recalage après retard réécrit les dates, et rien ne garantit qu'elles
+ * restent croissantes dans le tableau.
+ */
+export function progressionEntree(entry: ReviewEntry): ProgressionEntree {
+  const { item, review } = entry
+  const suivantes = item.reviews
+    .filter((candidate) => !candidate.done && candidate.date > review.date)
+    .map((candidate) => candidate.date)
+    .sort()
+
+  return {
+    rang: item.reviews.findIndex((candidate) => candidate.offset === review.offset) + 1,
+    total: item.reviews.length,
+    suivante: suivantes[0] ?? null,
+  }
+}
+
 /** Progression d'un élément isolé, de 0 à 100. */
 export function itemProgress(item: Item): number {
   if (item.reviews.length === 0) return 0

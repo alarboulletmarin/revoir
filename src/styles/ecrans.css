@@ -8,6 +8,11 @@
 
 /* ============================================================ bento ===== */
 
+/*
+ * Une zone par cellule, jamais deux rangées pour une seule carte : la cellule
+ * du jour doit pouvoir ne faire que la hauteur de son unique révision. Sur
+ * mobile, chaque rangée se dimensionne sur son contenu.
+ */
 .bento {
   display: grid;
   min-width: 0;
@@ -18,50 +23,63 @@
   grid-template-columns: repeat(2, 1fr);
   grid-template-areas:
     'aujourdhui aujourdhui'
-    'aujourdhui aujourdhui'
-    'retard     restantes'
-    'charge     charge'
-    'prochaines prochaines';
+    'retard     retard'
+    'synthese   synthese';
 }
 
 /* La cellule « retard » disparaît du DOM à zéro : la grille se recompose. */
 .bento--sans-retard {
   grid-template-areas:
     'aujourdhui aujourdhui'
-    'aujourdhui aujourdhui'
-    'restantes  restantes'
-    'charge     charge'
-    'prochaines prochaines';
+    'synthese   synthese';
+}
+
+/*
+ * La cellule du jour n'a pas de plancher : une seule révision, une seule
+ * ligne. Les autres gardent les 96px de la section 7.2, qui les empêchent de
+ * se réduire à un chiffre posé sur un trait.
+ *
+ * `align-self: start` la dispense aussi de s'étirer : au-delà de 768px elle
+ * couvre trois rangées, et sans cela quatre révisions se retrouveraient au
+ * sommet de huit cents pixels de vert.
+ */
+.bento .cellule--accent {
+  min-height: 0;
+  align-self: start;
 }
 
 @media (min-width: 768px) {
   .bento {
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
-      'aujourdhui aujourdhui retard     restantes'
-      'aujourdhui aujourdhui charge     charge'
-      'prochaines prochaines calendrier calendrier'
-      'prochaines prochaines calendrier calendrier';
+      'aujourdhui aujourdhui retard     retard'
+      'aujourdhui aujourdhui synthese   synthese'
+      'aujourdhui aujourdhui calendrier calendrier';
   }
 
   .bento--sans-retard {
     grid-template-areas:
-      'aujourdhui aujourdhui restantes  restantes'
-      'aujourdhui aujourdhui charge     charge'
-      'prochaines prochaines calendrier calendrier'
-      'prochaines prochaines calendrier calendrier';
+      'aujourdhui aujourdhui synthese   synthese'
+      'aujourdhui aujourdhui calendrier calendrier';
   }
 }
 
 /* ---------------------------------------------------- cellule héros ---- */
 
-.hero__chiffre {
+/*
+ * « 3 révisions aujourd'hui » plutôt qu'un 3 de soixante-quatre pixels suivi
+ * de son étiquette. Le chiffre reste le premier mot de la phrase, mais c'est
+ * le fond --accent plein qui porte la hiérarchie de l'écran (section 3) — le
+ * texte n'a pas à la porter une seconde fois.
+ */
+.hero__titre {
   min-width: 0;
   font-family: var(--police-titre);
-  font-size: var(--t-display);
+  font-size: var(--t-xl);
   font-weight: 600;
-  line-height: var(--l-display);
+  line-height: var(--l-xl);
   font-variant-numeric: tabular-nums;
+  text-wrap: balance;
 }
 
 .hero__liste {
@@ -130,13 +148,21 @@
   background-color: var(--retard);
 }
 
-/* ------------------------------------------------ anneau restantes ----- */
+/* ------------------------------------------------ cellule synthèse ----- */
 
-.restantes {
-  display: flex;
+/*
+ * Le titre de la seconde moitié de la cellule. Il double le rôle de
+ * `.cellule__label`, mais plus bas : la carte porte deux informations, et la
+ * seconde a droit à son nom.
+ */
+.synthese__intitule {
   min-width: 0;
-  align-items: center;
-  gap: var(--e-3);
+  padding-top: var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: var(--l-sm);
 }
 
 /*
@@ -168,6 +194,13 @@
 .charge {
   display: flex;
   min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.charge__barres {
+  display: flex;
+  min-width: 0;
   align-items: flex-end;
   gap: var(--charge-gap);
   height: var(--e-7);
@@ -180,7 +213,6 @@
   flex: 1 1 0;
   flex-direction: column;
   justify-content: flex-end;
-  gap: var(--e-1);
 }
 
 .charge__barre {
@@ -190,52 +222,39 @@
   background-color: var(--accent);
 }
 
-.charge__point {
-  width: var(--charge-plancher);
-  height: var(--charge-plancher);
-  border-radius: var(--r-pilule);
-  background-color: var(--encre);
-  margin-inline: auto;
+/*
+ * Aujourd'hui est toujours la première barre. Elle porte son nom sous l'axe ;
+ * ce trait d'--encre à sa base le confirme sans dépendre de sa hauteur, qui
+ * peut être celle d'un jour vide.
+ */
+.charge__barre--jour {
+  border-bottom: 2px solid var(--encre);
 }
 
-/* Réserve la place du point sous chaque barre pour aligner les bases. */
-.charge__place {
-  height: var(--charge-plancher);
-}
-
-/* ------------------------------------------------ cellule prochaines --- */
-
-.prochaines {
+/*
+ * Trois repères seulement, aux deux bords et au milieu : `space-between` les
+ * cale sur la première et la dernière barre sans avoir à mesurer quoi que ce
+ * soit.
+ */
+.charge__reperes {
   display: flex;
   min-width: 0;
-  flex-direction: column;
+  justify-content: space-between;
   gap: var(--e-2);
 }
 
-/* Chaque ligne est un lien : elle doit faire 44px de haut comme les autres. */
-.prochaines__ligne {
-  display: flex;
-  min-height: var(--cible);
+.charge__repere {
   min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e-3);
-  font-size: var(--t-base);
-  line-height: var(--l-base);
-}
-
-.prochaines__titre {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.prochaines__date {
-  flex-shrink: 0;
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-variant-numeric: tabular-nums;
+.charge__repere--jour {
+  color: var(--encre);
+  font-weight: 500;
 }
 
 /* ------------------------------------------------- mini-calendrier ----- */
@@ -291,6 +310,19 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--e-1);
+}
+
+/*
+ * Un trait entre deux entrées plutôt qu'une carte autour de chacune : dans la
+ * feuille du jour, six cartes empilées pèsent plus que les six révisions
+ * qu'elles portent.
+ */
+.liste-revisions--separee {
+  gap: 0;
+}
+
+.liste-revisions--separee .item-revision + .item-revision {
+  border-top: var(--bordure);
 }
 
 .groupe-jour {
@@ -542,6 +574,13 @@
 /* ======================================================= calendrier ==== */
 
 .calendrier {
+  /*
+   * Sous 380px, les colonnes se touchent. Sept cases de 44px font 308px, la
+   * marge de page n'en laisse que 288 : plutôt que sept cases de 37px séparées
+   * par du vide mort, sept cases de 41px jointives, toutes cliquables.
+   */
+  --calendrier-colonnes: 0px;
+
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -549,15 +588,13 @@
   border: var(--bordure);
   border-radius: var(--r-carte);
   background-color: var(--surface);
-  /*
-   * Padding horizontal nul à 320px : 7 colonnes de 44px font 308px, la marge
-   * de page et le padding de carte ne tiennent pas en plus (section 7.4).
-   */
+  /* Même raison : à 320px, le padding de carte ne tient pas en plus. */
   padding: var(--e-4) 0;
 }
 
 @media (min-width: 380px) {
   .calendrier {
+    --calendrier-colonnes: var(--e-1);
     padding: var(--e-4);
   }
 }
@@ -598,9 +635,10 @@
 .calendrier__grille {
   display: grid;
   min-width: 0;
-  gap: var(--e-1);
-  grid-template-columns: repeat(7, 1fr);
+  gap: var(--e-1) var(--calendrier-colonnes);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
+
 
 .calendrier__jours {
   color: var(--encre-2);
@@ -608,10 +646,14 @@
   text-align: center;
 }
 
+/*
+ * La case entière est la cible, pas le chiffre. La bordure transparente est
+ * réservée pour que devenir « aujourd'hui » ne décale rien.
+ */
 .calendrier__case {
   display: flex;
+  min-height: var(--cible);
   min-width: 0;
-  aspect-ratio: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -620,11 +662,24 @@
   border-radius: var(--r-pilule);
   font-size: var(--t-sm);
   font-variant-numeric: tabular-nums;
+  transition: background-color var(--duree-court) var(--courbe);
 }
 
-@media (min-width: 380px) {
+/*
+ * Carrée dès que la colonne dépasse 44px. Plus bas — 320, 360, 390 —
+ * `aspect-ratio` reprendrait à la case la largeur que le plancher de 44px lui
+ * impose en hauteur, et la grille déborderait de la carte. Une case un peu
+ * plus haute que large s'y voit à peine ; une grille qui déborde, si.
+ */
+@media (min-width: 400px) {
   .calendrier__case {
-    min-height: var(--cible);
+    aspect-ratio: 1;
+  }
+}
+
+@media (hover: hover) {
+  .calendrier__case:hover {
+    background-color: var(--surface-survol);
   }
 }
 
@@ -633,64 +688,133 @@
   opacity: 0.5;
 }
 
+/*
+ * Deux états, deux moyens : aujourd'hui se marque d'un anneau, le jour choisi
+ * d'un disque plein. Quand les deux tombent ensemble, le disque garde son
+ * anneau, posé un cran plus loin.
+ */
 .calendrier__case--aujourdhui {
   border-color: var(--accent);
   color: var(--accent);
+  font-weight: 500;
 }
 
 .calendrier__case--choisi {
-  border-color: transparent;
+  border-color: var(--accent);
   background-color: var(--accent);
   color: var(--surface);
   font-weight: 500;
 }
 
+.calendrier__case--aujourdhui.calendrier__case--choisi {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .calendrier__case--choisi:hover {
+    background-color: var(--accent);
+  }
+}
+
+.calendrier__numero {
+  line-height: 1;
+}
+
+/*
+ * Sous le chiffre : les points, et sous eux le reste du compte. Le bloc garde
+ * la même hauteur qu'il soit plein ou vide — sans quoi les chiffres du mois
+ * ne tiendraient plus la même ligne d'une case à l'autre.
+ */
+.calendrier__indicateurs {
+  display: flex;
+  height: calc(var(--point-jour) + var(--point-jour-gap) + var(--t-xs));
+  flex-direction: column;
+  align-items: center;
+  gap: var(--point-jour-gap);
+}
+
 .calendrier__points {
   display: flex;
-  height: var(--charge-plancher);
-  gap: 1px;
+  height: var(--point-jour);
+  flex-shrink: 0;
+  gap: var(--point-jour-gap);
 }
 
+/*
+ * Teinté par la matière, comme la chip et la pastille : c'est le seul endroit
+ * de l'app où deux révisions du même jour se distinguaient d'un coup d'œil.
+ * Repli sur --accent pour un élément sans matière — la teinte dérivée d'une
+ * chaîne vide ne voudrait rien dire.
+ */
 .calendrier__point {
-  width: var(--charge-plancher);
-  height: var(--charge-plancher);
+  width: var(--point-jour);
+  height: var(--point-jour);
+  flex-shrink: 0;
   border-radius: var(--r-pilule);
-  background-color: var(--accent);
+  background-color: var(--teinte, var(--accent));
 }
 
-.calendrier__case--choisi .calendrier__point {
-  background-color: var(--surface);
-}
-
+/*
+ * Un état passe avant une identité (section 3 bis : --fait reste réservé au
+ * sien). Journée soldée : les points perdent leur matière et prennent le vert
+ * de l'état, que l'étiquette du bouton écrit aussi en toutes lettres.
+ */
 .calendrier__point--fait {
   background-color: var(--fait);
 }
 
-/* ------------------------------------------------ panneau du jour ----- */
+/*
+ * Ce que les trois points ne montrent pas. « +4 » sous un jour à sept
+ * révisions : le chiffre est celui du reste, pas du total — le total, lui,
+ * est dans l'étiquette du bouton et dans la feuille du jour.
+ */
+.calendrier__plus {
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
 
-/* Animation autorisée n°2 (section 6). */
-.panneau {
+/* Sur le disque plein, les deux repassent en clair pour rester lisibles. */
+.calendrier__case--choisi .calendrier__point {
+  background-color: var(--surface);
+}
+
+.calendrier__case--choisi .calendrier__plus {
+  color: var(--surface);
+}
+
+/* ------------------------------------------------- feuille du jour ----- */
+
+/*
+ * `<dialog>` ancré en bas. Sa hauteur suit son contenu : deux révisions
+ * occupent deux révisions de haut. Le plafond n'existe que pour laisser voir
+ * le calendrier derrière — c'est lui qui dit d'où vient la feuille.
+ */
+.feuille {
   position: fixed;
+  top: auto;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 5;
-  display: flex;
-  max-height: 70dvh;
+  max-height: 78dvh;
+  width: 100%;
   min-width: 0;
   max-width: var(--largeur-page);
-  flex-direction: column;
-  gap: var(--e-3);
-  overflow-y: auto;
+  overflow: hidden;
   margin-inline: auto;
+  border: 0;
   border-top: var(--bordure);
   border-radius: var(--r-carte) var(--r-carte) 0 0;
   background-color: var(--surface);
-  padding: var(--e-4) var(--marge-page) calc(var(--e-4) + var(--bas-securise));
-  animation: panneau-entree var(--duree-moyen) var(--courbe);
+  padding: 0;
+  color: var(--encre);
+  /* Animation autorisée n°2 (section 6). */
+  animation: feuille-entree var(--duree-moyen) var(--courbe);
 }
 
-@keyframes panneau-entree {
+@keyframes feuille-entree {
   from {
     transform: translateY(100%);
   }
@@ -699,7 +823,49 @@
   }
 }
 
-.panneau__entete {
+/* Assez sombre pour désigner la feuille, assez clair pour laisser le mois. */
+.feuille::backdrop {
+  background-color: color-mix(in srgb, var(--encre) 20%, transparent);
+}
+
+.feuille__corps {
+  display: flex;
+  max-height: 78dvh;
+  min-width: 0;
+  flex-direction: column;
+}
+
+/*
+ * En-tête fixe : c'est la prise du geste de fermeture, et le titre doit
+ * rester lisible pendant que la liste défile dessous.
+ */
+.feuille__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--e-2);
+  padding: var(--e-2) var(--marge-page) var(--e-3);
+  /* Le glissement vertical appartient à la feuille ici, pas au défilement. */
+  touch-action: none;
+}
+
+/*
+ * --trait tient à 1,2:1 sur --surface : invisible. La poignée n'est qu'un
+ * indice — la feuille se ferme aussi par le bouton, Échap et le fond — mais
+ * un indice qu'on ne voit pas n'en est pas un. Mélange des deux gris de la
+ * palette, sans en ajouter un troisième.
+ */
+.feuille__poignee {
+  width: var(--e-6);
+  height: var(--e-1);
+  flex-shrink: 0;
+  align-self: center;
+  border-radius: var(--r-pilule);
+  background-color: color-mix(in srgb, var(--encre-2) 75%, var(--surface));
+}
+
+.feuille__barre {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -707,10 +873,41 @@
   gap: var(--e-3);
 }
 
-.panneau__titre {
+.feuille__titre {
   min-width: 0;
   font-size: var(--t-md);
   line-height: var(--l-md);
+}
+
+/*
+ * Fermer est une sortie, pas une action : le libellé reste, en petit et en
+ * --encre-2. La cible, elle, garde ses 44px.
+ */
+.feuille__fermer {
+  display: flex;
+  min-height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: var(--r-carte);
+  padding-inline: var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  transition: color var(--duree-court) var(--courbe);
+}
+
+@media (hover: hover) {
+  .feuille__fermer:hover {
+    color: var(--encre);
+  }
+}
+
+/* Seul le contenu défile, et seulement s'il dépasse. */
+.feuille__contenu {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--marge-page) calc(var(--e-4) + var(--bas-securise));
 }
 
 /* Un seul conteneur scrollable par écran (section 7.4). */
@@ -857,59 +1054,58 @@ body[data-panneau='ouvert'] {
   font-variant-numeric: tabular-nums;
 }
 
-.matiere__elements {
-  display: none;
-}
-
-@media (min-width: 480px) {
-  .matiere__elements {
-    display: inline;
-  }
-}
-
 .matiere__liste {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-1);
   border-top: var(--bordure);
-  padding: var(--e-2) var(--e-4) var(--e-3);
+  padding: 0 var(--e-4) var(--e-2);
 }
 
 .matiere__element {
   min-width: 0;
 }
 
+/* Un trait entre deux éléments, pas une carte autour de chacun. */
+.matiere__element + .matiere__element {
+  border-top: var(--bordure);
+}
+
+/*
+ * Deux lignes serrées — le titre, puis quand et où on en est. La cible reste
+ * à 44px : c'est le padding qui la complète quand le texte ne suffit pas.
+ */
 .matiere__lien {
   display: flex;
   min-height: var(--cible);
   min-width: 0;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--e-1) var(--e-3);
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--e-1);
   border-radius: var(--r-carte);
-  padding-block: var(--e-1);
+  padding-block: var(--e-2);
 }
 
 .matiere__titre {
   min-width: 0;
-  flex: 1 1 100%;
   overflow: hidden;
   font-size: var(--t-base);
+  line-height: var(--l-base);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* « Demain · Révision 2 sur 5 » — une majuscule sans toucher au texte. */
 .matiere__etat {
-  flex-shrink: 0;
+  min-width: 0;
   color: var(--encre-2);
   font-size: var(--t-sm);
+  line-height: var(--l-sm);
   font-variant-numeric: tabular-nums;
 }
 
-.matiere__lien .frise {
-  flex: 1 1 var(--e-7);
-  min-width: 0;
+.matiere__etat::first-letter {
+  text-transform: uppercase;
 }
 
 /* ------------------------------------------- matières dans les réglages - */

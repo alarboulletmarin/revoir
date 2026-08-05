@@ -274,6 +274,41 @@
   color: var(--retard-texte);
 }
 
+/* « Révision 2 sur 5 · Prochaine : 8 août » — ce que la frise dit en dessin. */
+.item-revision__progression {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Variante resserrée : titre à la taille du corps de texte, case alignée sur
+ * sa première ligne plutôt que centrée sur toute la hauteur. Réservée aux
+ * contextes où la place manque — la feuille du calendrier.
+ */
+.item-revision--compact {
+  align-items: flex-start;
+  padding-right: 0;
+}
+
+/*
+ * La case garde ses 44px de cible, mais son cercle remonte se caler sur la
+ * première ligne du titre au lieu de flotter au milieu de la ligne.
+ */
+.item-revision--compact .item-revision__case {
+  align-items: flex-start;
+  padding-top: var(--e-2);
+}
+
+.item-revision--compact .item-revision__corps {
+  gap: 0;
+  padding-block: var(--e-2);
+}
+
+.item-revision--compact .item-revision__titre {
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
 .item-revision__corps .frise {
   flex: 1 1 100%;
 }
@@ -376,6 +411,11 @@
   color: var(--surface);
 }
 
+/* Sans quoi « Tout voir » s'écrit en --accent sur --accent : invisible. */
+.cellule--accent .btn--texte {
+  color: var(--surface);
+}
+
 /* ========================================================= boutons ====== */
 
 .btn {
@@ -475,10 +515,8 @@
 }
 
 /*
- * `appearance: none` est ce qui aligne les champs entre eux : sans lui,
- * Safari et Firefox donnent à `input[type="date"]` sa largeur intrinsèque —
- * celle du format de date plus le sélecteur natif — et ignorent le
- * `width: 100%`. Le champ ressort alors plus large que les champs texte.
+ * `appearance: none` d'abord : sans lui, iOS repeint le champ à sa façon —
+ * coins arrondis et ombre interne — par-dessus la bordure du design system.
  */
 .champ__saisie {
   appearance: none;
@@ -494,18 +532,6 @@
   padding-inline: var(--e-3);
   color: var(--encre);
   transition: border-color var(--duree-court) var(--courbe);
-}
-
-/* iOS centre verticalement la valeur d'un champ date et lui ajoute une
-   marge interne : les deux la désalignent du texte des autres champs. */
-.champ__saisie::-webkit-date-and-time-value {
-  margin: 0;
-  text-align: left;
-}
-
-/* Le sélecteur natif reste, mais poussé au bord droit du champ. */
-.champ__saisie::-webkit-calendar-picker-indicator {
-  margin-inline-start: auto;
 }
 
 .champ__saisie:focus-visible {
@@ -524,6 +550,96 @@
   color: var(--retard-texte);
   font-size: var(--t-sm);
   line-height: var(--l-sm);
+}
+
+/* ====================================================== champ date ====== */
+
+/*
+ * Le champ date se lit comme un bouton, pas comme une saisie : la date en
+ * toutes lettres, une icône de calendrier au bord droit, et la carte entière
+ * pour cible. Mêmes bordure, rayon, fond et padding que `.champ__saisie` —
+ * seule la hauteur descend de 48px à --cible (44px), parce qu'on n'y écrit
+ * rien. C'est le plancher tactile de la section 10 : pas un pixel de moins.
+ */
+.champ-date {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: var(--cible);
+  align-items: center;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding-inline: var(--e-3);
+  transition: border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe);
+}
+
+.champ-date__valeur {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--encre);
+  font-size: var(--t-champ);
+  line-height: var(--l-champ);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le champ est obligatoire : l'état vide ne dure que le temps de le remplir. */
+.champ-date__valeur--vide {
+  color: var(--encre-2);
+}
+
+.champ-date__icone {
+  flex-shrink: 0;
+  color: var(--encre-2);
+}
+
+/*
+ * L'input couvre la carte : toute la surface ouvre le sélecteur, et pas
+ * seulement l'indicateur natif. Il reste rendu — donc focusable au clavier,
+ * et `showPicker()` a de quoi s'ancrer — simplement transparent.
+ */
+.champ-date__saisie {
+  position: absolute;
+  /* Le positionnement absolu part de la boîte de padding : sans ce débord
+     d'un pixel, la bordure resterait hors de la cible et les 44px n'en
+     feraient que 42. */
+  inset: -1px;
+  appearance: none;
+  -webkit-appearance: none;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border: 0;
+  background: none;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/*
+ * Le focus se dessine sur la carte : l'anneau de l'input disparaîtrait avec
+ * lui. Même couple que les champs texte — bordure --accent, anneau --encre.
+ */
+.champ-date:has(.champ-date__saisie:focus-visible) {
+  border-color: var(--accent);
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+/* Survol et pression : au doigt, ils n'ont rien à montrer. */
+@media (hover: hover) {
+  .champ-date:hover {
+    background-color: var(--surface-survol);
+  }
+
+  .champ-date:active {
+    border-color: var(--encre-2);
+  }
 }
 
 /* =========================================================== toast ====== */

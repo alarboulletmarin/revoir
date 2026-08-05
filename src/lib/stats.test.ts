@@ -11,6 +11,7 @@ import {
   loadForDays,
   nextReviewDay,
   overdueEntries,
+  progressionEntree,
   todayEntries,
   upcomingEntries,
   usedCategories,
@@ -254,5 +255,38 @@ describe('nextReviewDay', () => {
     expect(
       nextReviewDay([makeItem('A', '2026-03-10', { archived: true })], TODAY),
     ).toBeNull()
+  })
+})
+
+describe('progressionEntree', () => {
+  // Programme « simple » : J+1, J+3, J+7, J+14, J+30 depuis le 1er mars.
+  const item = makeItem('Chapitre 4', '2026-03-01')
+  const rang = (offset: number) =>
+    progressionEntree({ item, review: item.reviews.find((r) => r.offset === offset)! })
+
+  it('situe la révision dans son programme', () => {
+    expect(rang(1)).toEqual({ rang: 1, total: 5, suivante: '2026-03-04' })
+    expect(rang(7)).toEqual({ rang: 3, total: 5, suivante: '2026-03-15' })
+  })
+
+  it('ne promet plus rien après la dernière échéance', () => {
+    expect(rang(30)).toEqual({ rang: 5, total: 5, suivante: null })
+  })
+
+  it('saute les échéances déjà faites', () => {
+    const avance = makeItem('Chapitre 5', '2026-03-01', { doneOffsets: [3, 7] })
+    const entree = { item: avance, review: avance.reviews[0] }
+    // J+3 et J+7 sont cochées : la prochaine à faire est J+14, le 15 mars.
+    expect(progressionEntree(entree).suivante).toBe('2026-03-15')
+  })
+
+  it('prend la plus proche des dates restantes, quel que soit leur ordre', () => {
+    // Le recalage après retard réécrit les dates : rien ne garantit qu'elles
+    // restent croissantes dans le tableau. Ici J+3 est repoussée au 20 mars,
+    // derrière J+7 : c'est le 8 mars qu'il faut annoncer, pas le 20.
+    const decale = makeItem('Chapitre 6', '2026-03-01')
+    decale.reviews[1].date = '2026-03-20'
+    const entree = { item: decale, review: decale.reviews[0] }
+    expect(progressionEntree(entree).suivante).toBe('2026-03-08')
   })
 })

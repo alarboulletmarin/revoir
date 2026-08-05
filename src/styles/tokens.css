@@ -21,7 +21,6 @@
   /* Typographie */
   --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --t-display: 40px;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;
@@ -60,20 +59,11 @@
   color-scheme: light;
 }
 
-@media (min-width: 480px) {
-  :root { --t-display: 48px; }
-}
-
-@media (min-width: 768px) {
-  :root { --t-display: 64px; }
-}
-
 /*
  * Interlignes associés à l'échelle typographique (section 4). Ils vivent ici
  * pour que `font: var(--t-x)/var(--l-x)` ne soit jamais approximé sur place.
  */
 :root {
-  --l-display: 1.05;
   --l-xl: 1.15;
   --l-lg: 1.3;
   --l-md: 1.4;
@@ -100,6 +90,14 @@
   --charge-gap: 3px;
   --charge-rayon: 2px;
   --charge-plancher: 3px;
+
+  /*
+   * Points de densité du calendrier plein écran (section 8.11). Le mini-mois
+   * du bento garde les 3px des barres de charge : il ne se touche pas. Ici,
+   * la case se vise au pouce, et un point de 3px se perd sous le doigt.
+   */
+  --point-jour: var(--e-1);
+  --point-jour-gap: 2px;
 }
 
 /*

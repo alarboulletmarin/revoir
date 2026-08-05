@@ -13,7 +13,7 @@ import { formatShort, todayKey } from '../lib/dates'
 import { chargeParDate, usedCategories } from '../lib/stats'
 import type { ScheduleId } from '../types'
 import { teinteDe } from '../lib/categories'
-import { Champ, GroupeChamp } from '../components/Champ'
+import { Champ, ChampDate, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
 import { SelecteurTeinte } from '../components/SelecteurTeinte'
@@ -153,11 +153,11 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
           />
         )}
 
-        <Champ
+        <ChampDate
           label="Date de départ"
-          type="date"
+          intitule="Choisir la date de départ"
           value={depart}
-          onChange={(event) => setDepart(event.target.value)}
+          onChange={setDepart}
           erreur={soumis ? erreurDate : null}
         />
 

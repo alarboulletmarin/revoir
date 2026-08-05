@@ -122,9 +122,9 @@ export function Settings() {
       </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">Matières</h2>
+        <h2 className="section__titre">Catégories</h2>
         {matieres.length === 0 ? (
-          <p className="discret">Aucune matière pour le moment.</p>
+          <p className="discret">Aucune catégorie pour le moment.</p>
         ) : (
           <ul className="matieres-reglage">
             {matieres.map((matiere) => (
@@ -145,7 +145,7 @@ export function Settings() {
           </ul>
         )}
         <p className="discret discret--petit">
-          Une matière sans couleur choisie en reçoit une, dérivée de son nom.
+          Une catégorie sans couleur choisie en reçoit une, dérivée de son nom.
         </p>
       </section>
 
