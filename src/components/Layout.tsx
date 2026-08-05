@@ -1,17 +1,42 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useLayoutEffect } from 'react'
+import { Link, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { NavBar } from './NavBar'
 import { IconePlus } from './Icons'
+import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
 import { useItems } from '../state/useItems'
 
 /** Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes. */
 function fabVisible(pathname: string): boolean {
-  return pathname !== '/nouveau' && !pathname.endsWith('/modifier')
+  return !pathname.endsWith('/nouveau') && !pathname.endsWith('/modifier')
+}
+
+/**
+ * Une page qui s'ouvre s'ouvre en haut.
+ *
+ * Le bouton « Créer l'élément » est en bas d'un formulaire long : sans ça, la
+ * fiche qui s'ouvre derrière hérite du défilement du formulaire et démarre au
+ * milieu de nulle part. Vaut pour toute navigation, pas seulement celle-là.
+ *
+ * `useLayoutEffect` et non `useEffect` : la remontée doit avoir lieu avant que
+ * le navigateur ne peigne la nouvelle page, sinon elle se voit.
+ *
+ * Un retour arrière est épargné — le navigateur y restaure la position, et la
+ * lui reprendre serait perdre sa place dans une longue liste.
+ */
+function useRemonterEnHaut(pathname: string) {
+  const navigation = useNavigationType()
+  useLayoutEffect(() => {
+    if (navigation === 'POP') return
+    window.scrollTo(0, 0)
+  }, [pathname, navigation])
 }
 
 export function Layout() {
   const { error } = useItems()
   const { pathname } = useLocation()
+
+  useRemonterEnHaut(pathname)
 
   return (
     <div className="appli">
@@ -22,6 +47,7 @@ export function Layout() {
       <header className="appli__entete">
         <div className="appli__barre">
           <Link to="/" className="appli__marque">
+            <Marque className="appli__signe" />
             Revoir
           </Link>
         </div>

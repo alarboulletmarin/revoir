@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Item } from '../types'
+import type { Item, Programme } from '../types'
 import { buildReviews } from './schedules'
 import { BackupError, backupFileName, parseBackup, serializeBackup } from './backup'
 
@@ -168,5 +168,99 @@ describe('normalisation', () => {
     })
     expect(item.createdAt).not.toBe('')
     expect(Number.isNaN(new Date(item.updatedAt).getTime())).toBe(false)
+  })
+})
+
+describe('couleurs de matière personnalisées', () => {
+  it('fait l’aller-retour comme les huit teintes nommées', () => {
+    const teintes = { physique: '#8a5048', langues: 'ocre' } as const
+    expect(parseBackup(serializeBackup([], teintes)).teintes).toEqual(teintes)
+  })
+
+  it('garde la couleur du fichier telle quelle', () => {
+    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: { maths: '#FF0000' } })
+    expect(parseBackup(raw).teintes.maths).toBe('#ff0000')
+  })
+
+  it('descend une couleur qui serait invisible', () => {
+    // Un fichier écrit à la main pourrait faire entrer un blanc : la pastille
+    // disparaîtrait dans le papier.
+    const raw = JSON.stringify({ app: 'revoir', items: [], teintes: { maths: '#ffffff' } })
+    expect(parseBackup(raw).teintes.maths).not.toBe('#ffffff')
+  })
+
+  it('ignore une valeur qui n’est ni une teinte ni une couleur', () => {
+    const raw = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      teintes: { maths: '#abc', langues: 'olive' },
+    })
+    expect(parseBackup(raw).teintes).toEqual({ langues: 'olive' })
+  })
+})
+
+describe('programmes personnalisés', () => {
+  const PROGRAMME: Programme = {
+    id: 'p-1',
+    label: 'Examen blanc',
+    offsets: [2, 5, 9, 20],
+    createdAt: '2026-08-05T10:00:00.000Z',
+  }
+
+  const ITEM_PERSO: Item = { ...ITEM, id: 'b2', schedule: 'p-1' }
+
+  it('fait l’aller-retour avec les éléments qui s’en servent', () => {
+    const contenu = parseBackup(serializeBackup([ITEM_PERSO], {}, [PROGRAMME]))
+    expect(contenu.programmes).toEqual([PROGRAMME])
+    expect(contenu.items[0].schedule).toBe('p-1')
+  })
+
+  it('vaut liste vide dans une sauvegarde v1 ou v2', () => {
+    const v2 = JSON.stringify({ app: 'revoir', version: 2, items: [ITEM], teintes: {} })
+    expect(parseBackup(v2).programmes).toEqual([])
+  })
+
+  it('refuse un élément dont le programme n’est pas dans le fichier', () => {
+    // Le garde-fou qui compte : sans son programme, un élément importé
+    // n’aurait plus de rythme à nommer.
+    const raw = JSON.stringify({ app: 'revoir', items: [ITEM_PERSO], programmes: [] })
+    expect(() => parseBackup(raw)).toThrow(BackupError)
+  })
+
+  it('nettoie un rythme mal formé plutôt que de le prendre tel quel', () => {
+    const raw = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      programmes: [{ id: 'p-2', label: ' Révisions ', offsets: [9, 2, 2, 0, 99999, 5] }],
+    })
+    expect(parseBackup(raw).programmes[0]).toMatchObject({
+      label: 'Révisions',
+      offsets: [2, 5, 9],
+    })
+  })
+
+  it('refuse un programme sans nom ou sans rythme exploitable', () => {
+    const sansNom = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      programmes: [{ id: 'p-3', label: '  ', offsets: [1] }],
+    })
+    expect(() => parseBackup(sansNom)).toThrow(BackupError)
+
+    const sansRythme = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      programmes: [{ id: 'p-4', label: 'Vide', offsets: [0, -3] }],
+    })
+    expect(() => parseBackup(sansRythme)).toThrow(BackupError)
+  })
+
+  it('refuse deux programmes de même identifiant', () => {
+    const raw = JSON.stringify({
+      app: 'revoir',
+      items: [],
+      programmes: [PROGRAMME, { ...PROGRAMME, label: 'Autre' }],
+    })
+    expect(() => parseBackup(raw)).toThrow(BackupError)
   })
 })

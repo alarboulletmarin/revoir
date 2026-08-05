@@ -129,17 +129,20 @@
 }
 
 /*
- * Un seul point d'entrée pour les composants : ils lisent `--teinte`, sans
- * savoir laquelle. Le repli sur --encre-2 couvre les éléments sans matière.
+ * Un seul point d'entrée pour les composants : ils lisent `--teinte` pour les
+ * surfaces et `--teinte-texte` pour l'encre, sans savoir laquelle. Les huit
+ * tiennent 5,5:1 sur le papier : les deux valent la même chose. Seule une
+ * couleur libre pâle les fait diverger. Le repli sur --encre-2 couvre les
+ * éléments sans matière.
  */
-[data-teinte='ardoise'] { --teinte: var(--cat-ardoise); }
-[data-teinte='prune'] { --teinte: var(--cat-prune); }
-[data-teinte='olive'] { --teinte: var(--cat-olive); }
-[data-teinte='terre'] { --teinte: var(--cat-terre); }
-[data-teinte='bleu'] { --teinte: var(--cat-bleu); }
-[data-teinte='teal'] { --teinte: var(--cat-teal); }
-[data-teinte='mauve'] { --teinte: var(--cat-mauve); }
-[data-teinte='ocre'] { --teinte: var(--cat-ocre); }
+[data-teinte='ardoise'] { --teinte: var(--cat-ardoise); --teinte-texte: var(--cat-ardoise); }
+[data-teinte='prune'] { --teinte: var(--cat-prune); --teinte-texte: var(--cat-prune); }
+[data-teinte='olive'] { --teinte: var(--cat-olive); --teinte-texte: var(--cat-olive); }
+[data-teinte='terre'] { --teinte: var(--cat-terre); --teinte-texte: var(--cat-terre); }
+[data-teinte='bleu'] { --teinte: var(--cat-bleu); --teinte-texte: var(--cat-bleu); }
+[data-teinte='teal'] { --teinte: var(--cat-teal); --teinte-texte: var(--cat-teal); }
+[data-teinte='mauve'] { --teinte: var(--cat-mauve); --teinte-texte: var(--cat-mauve); }
+[data-teinte='ocre'] { --teinte: var(--cat-ocre); --teinte-texte: var(--cat-ocre); }
 
 @media (min-width: 1024px) {
   :root { --marge-page: var(--e-6); }

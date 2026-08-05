@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest'
+import type { Programme } from '../types'
 import {
+  ECHELLE_RYTHME,
   SCHEDULES,
   buildReviews,
+  decrirePortee,
   getSchedule,
   isScheduleId,
+  decrireEcart,
   listerDecalages,
+  nommerEcart,
   previewDates,
   rebuildReviews,
+  tousLesProgrammes,
 } from './schedules'
 
 describe('SCHEDULES', () => {
@@ -24,7 +30,6 @@ describe('SCHEDULES', () => {
   })
 
   it('retombe sur le programme par défaut pour un identifiant inconnu', () => {
-    // @ts-expect-error on simule une donnée importée corrompue
     expect(getSchedule('inexistant').id).toBe('simple')
   })
 
@@ -135,5 +140,115 @@ describe('portée des programmes', () => {
       'sur deux mois',
       'sur une année',
     ])
+  })
+})
+
+describe('decrirePortee', () => {
+  it('décrit les trois programmes intégrés dans les mots de la spécification', () => {
+    expect(getSchedule('simple').description).toBe('sur un mois')
+    expect(getSchedule('pousse').description).toBe('sur deux mois')
+    expect(getSchedule('ultime').description).toBe('sur une année')
+  })
+
+  it('décrit un rythme court en jours plutôt que de l’arrondir au mois', () => {
+    expect(decrirePortee([1, 3, 7])).toBe('sur 7 jours')
+    expect(decrirePortee([1])).toBe('sur 1 jour')
+    expect(decrirePortee([1, 20])).toBe('sur 20 jours')
+  })
+
+  it('décrit un rythme long en mois puis en années', () => {
+    expect(decrirePortee([1, 90])).toBe('sur trois mois')
+    expect(decrirePortee([1, 730])).toBe('sur 2 années')
+  })
+})
+
+describe('programmes personnalisés', () => {
+  const PERSO: Programme = {
+    id: 'p-1',
+    label: 'Examen blanc',
+    offsets: [2, 5, 9, 20],
+    createdAt: '2026-08-05T10:00:00.000Z',
+  }
+
+  it('vient après les trois intégrés', () => {
+    expect(tousLesProgrammes([PERSO]).map((schedule) => schedule.id)).toEqual([
+      'simple',
+      'pousse',
+      'ultime',
+      'p-1',
+    ])
+  })
+
+  it('se résout comme les intégrés, et se décrit tout seul', () => {
+    const schedule = getSchedule('p-1', [PERSO])
+    expect(schedule.label).toBe('Examen blanc')
+    expect(schedule.description).toBe('sur 20 jours')
+    expect(schedule.personnel).toBe(true)
+  })
+
+  it('produit les révisions de son rythme', () => {
+    expect(buildReviews('2026-03-01', 'p-1', [PERSO]).map((r) => r.date)).toEqual([
+      '2026-03-03',
+      '2026-03-06',
+      '2026-03-10',
+      '2026-03-21',
+    ])
+  })
+
+  it("n'est pas reconnu par isScheduleId, réservé aux trois intégrés", () => {
+    expect(isScheduleId('p-1')).toBe(false)
+  })
+})
+
+describe('échelle des rythmes', () => {
+  it('ne propose que des écarts croissants, sans doublon', () => {
+    expect([...ECHELLE_RYTHME].sort((a, b) => a - b)).toEqual(ECHELLE_RYTHME)
+    expect(new Set(ECHELLE_RYTHME).size).toBe(ECHELLE_RYTHME.length)
+  })
+
+  it('ne propose que des écarts qui se disent d’un mot', () => {
+    /*
+     * C'est la raison d'être de l'échelle. Au-delà de dix jours — qu'on situe
+     * encore d'un coup d'œil —, chaque graduation doit tomber juste dans son
+     * unité : une semaine, un mois, un an. Jamais un « 45 j » que personne ne
+     * sait placer.
+     */
+    for (const jours of ECHELLE_RYTHME) {
+      if (jours <= 10) continue
+      expect(nommerEcart(jours)).not.toBe(`${jours} j`)
+    }
+  })
+
+  it('couvre les trois programmes intégrés', () => {
+    // Un rythme connu doit pouvoir être chargé puis ajusté graduation par
+    // graduation : si l'un de ses écarts manquait, il serait irreproductible.
+    for (const schedule of SCHEDULES) {
+      for (const offset of schedule.offsets) {
+        expect(ECHELLE_RYTHME).toContain(offset)
+      }
+    }
+  })
+})
+
+describe('nommerEcart', () => {
+  it('choisit l’unité naturelle de l’écart', () => {
+    expect(nommerEcart(1)).toBe('1 j')
+    expect(nommerEcart(6)).toBe('6 j')
+    expect(nommerEcart(7)).toBe('1 sem.')
+    expect(nommerEcart(14)).toBe('2 sem.')
+    expect(nommerEcart(30)).toBe('1 mois')
+    expect(nommerEcart(90)).toBe('3 mois')
+    expect(nommerEcart(365)).toBe('1 an')
+    expect(nommerEcart(730)).toBe('2 ans')
+  })
+
+  it('retombe sur les jours quand aucune unité ne tombe juste', () => {
+    expect(nommerEcart(10)).toBe('10 j')
+    expect(nommerEcart(45)).toBe('45 j')
+  })
+
+  it('s’écrit toujours en jours pour un lecteur d’écran', () => {
+    expect(decrireEcart(1)).toBe('1 jour après le départ')
+    expect(decrireEcart(30)).toBe('30 jours après le départ')
   })
 })

@@ -836,6 +836,17 @@
 }
 
 /*
+ * Même parti pris que `.dialogue__corps` : le corps prend le focus à
+ * l'ouverture pour que l'anneau ne se pose pas sur « Fermer », mais il n'est
+ * pas atteignable au clavier — son anneau cernerait la feuille entière sans
+ * rien signaler.
+ */
+.feuille__corps:focus,
+.feuille__corps:focus-visible {
+  outline: none;
+}
+
+/*
  * En-tête fixe : c'est la prise du geste de fermeture, et le titre doit
  * rester lisible pendant que la liste défile dessous.
  */
@@ -939,6 +950,162 @@ body[data-panneau='ouvert'] {
   min-width: 0;
   flex-wrap: wrap;
   gap: var(--e-2);
+}
+
+/* -------------------------------------------- programmes personnalisés -- */
+
+/*
+ * Un programme créé se présente comme les trois intégrés, sans le radio : ici
+ * on ne choisit pas, on inspecte. Même carte, mêmes règles — un rythme se lit
+ * à sa frise, pas à son nom (section 8.7).
+ */
+.rythmes {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.rythme {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3);
+}
+
+.rythme__entete {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.rythme__nom {
+  min-width: 0;
+  font-size: var(--t-md);
+  font-weight: 500;
+  line-height: var(--l-md);
+}
+
+.rythme__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.rythme__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.rythme__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/* Les trois rythmes connus, à charger d'un geste dans le compositeur. */
+.rythme__modeles {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/*
+ * Les graduations d'un rythme : une par écart proposé, touchable.
+ *
+ * C'est le cœur du compositeur — un rythme se touche, il ne se tape pas. Les
+ * écarts portent leur unité naturelle (« 1 sem. », « 3 mois »), et le libellé
+ * complet reste lisible par un lecteur d'écran.
+ */
+.jours {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/* Même langage visuel que la carte de programme, à l'échelle d'une pilule. */
+.jour {
+  position: relative;
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--trait);
+  border-radius: var(--r-pilule);
+  background-color: var(--surface);
+  padding-inline: var(--e-4);
+  color: var(--encre);
+  font-size: var(--t-base);
+  font-weight: 500;
+  line-height: var(--l-base);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.jour--actif {
+  border-color: var(--accent);
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
+
+/*
+ * La case reste focusable, elle n'est simplement pas dessinée deux fois.
+ * `pointer-events: none` laisse toute la pilule au doigt : sans lui, le
+ * pixel de la case posé au bord du contenu capte les touchers qui l'effleurent.
+ */
+.jour__case {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jour:has(.jour__case:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .jour:hover {
+    border-color: var(--encre-2);
+  }
+
+  .jour--actif:hover {
+    border-color: var(--accent);
+  }
+}
+
+/*
+ * L'aperçu du rythme figé : la même frise que la carte, quand le rythme ne
+ * peut plus être touché.
+ */
+.rythme__apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3);
 }
 
 .archive {

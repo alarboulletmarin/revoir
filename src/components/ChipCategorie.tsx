@@ -5,6 +5,7 @@
  * à côté. Elle sert de repère secondaire, pas de code à mémoriser.
  */
 import { teinteDe, type Teintes } from '../lib/categories'
+import { proprietesTeinte } from './teinte'
 
 interface ChipCategorieProps {
   categorie: string
@@ -15,7 +16,10 @@ export function ChipCategorie({ categorie, teintes }: ChipCategorieProps) {
   if (categorie.trim() === '') return null
 
   return (
-    <span className="chip chip--matiere" data-teinte={teinteDe(categorie, teintes)}>
+    <span
+      className="chip chip--matiere"
+      {...proprietesTeinte(teinteDe(categorie, teintes))}
+    >
       {categorie}
     </span>
   )
@@ -26,7 +30,7 @@ export function PastilleCategorie({ categorie, teintes }: ChipCategorieProps) {
   return (
     <span
       className="pastille"
-      data-teinte={teinteDe(categorie, teintes)}
+      {...proprietesTeinte(teinteDe(categorie, teintes))}
       aria-hidden="true"
     />
   )

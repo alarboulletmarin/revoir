@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
 import { ItemDetail } from './pages/ItemDetail'
 import { ItemForm } from './pages/ItemForm'
+import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
 import { NotFound } from './pages/NotFound'
@@ -24,6 +25,11 @@ export function App() {
               <Route path="/element/:id" element={<ItemDetail />} />
               <Route path="/element/:id/modifier" element={<ItemForm mode="edit" />} />
               <Route path="/reglages" element={<Settings />} />
+              <Route path="/programmes/nouveau" element={<ProgrammeForm mode="create" />} />
+              <Route
+                path="/programmes/:id/modifier"
+                element={<ProgrammeForm mode="edit" />}
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -1,10 +1,13 @@
-import type { Item, Review, ScheduleId } from '../types'
-import { isScheduleId } from './schedules'
-import { cleCategorie, estTeinte, type Teintes } from './categories'
+import type { Item, Programme, Review, ScheduleId } from '../types'
+import { RYTHME_MAX_JOURS, RYTHME_MAX_REVISIONS, isScheduleId } from './schedules'
+import { cleCategorie, retenirTeinte, type Teintes } from './categories'
 
 export const BACKUP_APP = 'revoir'
-/** v2 ajoute `teintes`. Les sauvegardes v1 restent importables telles quelles. */
-export const BACKUP_VERSION = 2
+/**
+ * v2 ajoute `teintes`, v3 les programmes personnalisés. Les sauvegardes plus
+ * anciennes restent importables telles quelles : ce qui manque vaut vide.
+ */
+export const BACKUP_VERSION = 3
 
 export interface Backup {
   app: typeof BACKUP_APP
@@ -12,12 +15,14 @@ export interface Backup {
   exporteLe: string
   items: Item[]
   teintes: Teintes
+  programmes: Programme[]
 }
 
 /** Ce qu'un fichier de sauvegarde restitue une fois validé. */
 export interface ContenuSauvegarde {
   items: Item[]
   teintes: Teintes
+  programmes: Programme[]
 }
 
 /** Erreur levée quand un fichier importé n'est pas une sauvegarde exploitable. */
@@ -26,17 +31,26 @@ export class BackupError extends Error {}
 export function buildBackup(
   items: Item[],
   teintes: Teintes = {},
+  programmes: Programme[] = [],
   exporteLe = new Date().toISOString(),
 ): Backup {
-  return { app: BACKUP_APP, version: BACKUP_VERSION, exporteLe, items, teintes }
+  return {
+    app: BACKUP_APP,
+    version: BACKUP_VERSION,
+    exporteLe,
+    items,
+    teintes,
+    programmes,
+  }
 }
 
 export function serializeBackup(
   items: Item[],
   teintes: Teintes = {},
+  programmes: Programme[] = [],
   exporteLe?: string,
 ): string {
-  return JSON.stringify(buildBackup(items, teintes, exporteLe), null, 2)
+  return JSON.stringify(buildBackup(items, teintes, programmes, exporteLe), null, 2)
 }
 
 /** Nom de fichier proposé au téléchargement : « revoir-2026-03-14.json ». */
@@ -71,7 +85,45 @@ function parseReview(value: unknown, index: number, itemLabel: string): Review {
   }
 }
 
-function parseItem(value: unknown, index: number): Item {
+/**
+ * Un programme personnalisé. Contrairement aux teintes, on ne peut pas
+ * l'ignorer en silence : des éléments en dépendent, et leur import échouerait
+ * plus bas sur un identifiant devenu introuvable.
+ */
+function parseProgramme(value: unknown, index: number): Programme {
+  if (!isRecord(value)) {
+    throw new BackupError(`Programme ${index + 1} invalide.`)
+  }
+  const { id, label, offsets } = value
+  if (typeof id !== 'string' || id === '') {
+    throw new BackupError(`Programme ${index + 1} : identifiant manquant.`)
+  }
+  if (typeof label !== 'string' || label.trim() === '') {
+    throw new BackupError(`Programme ${index + 1} : nom manquant.`)
+  }
+  if (!Array.isArray(offsets) || offsets.length === 0) {
+    throw new BackupError(`« ${label} » : rythme manquant.`)
+  }
+  const retenus = offsets.filter(
+    (offset): offset is number =>
+      typeof offset === 'number' &&
+      Number.isInteger(offset) &&
+      offset >= 1 &&
+      offset <= RYTHME_MAX_JOURS,
+  )
+  if (retenus.length === 0) {
+    throw new BackupError(`« ${label} » : rythme invalide.`)
+  }
+  const now = new Date().toISOString()
+  return {
+    id,
+    label: label.trim(),
+    offsets: [...new Set(retenus)].sort((a, b) => a - b).slice(0, RYTHME_MAX_REVISIONS),
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : now,
+  }
+}
+
+function parseItem(value: unknown, index: number, programmes: Set<string>): Item {
   if (!isRecord(value)) {
     throw new BackupError(`Élément ${index + 1} invalide.`)
   }
@@ -85,7 +137,12 @@ function parseItem(value: unknown, index: number): Item {
   if (typeof startDate !== 'string' || !DATE_KEY.test(startDate)) {
     throw new BackupError(`« ${title} » : date de départ invalide.`)
   }
-  if (!isScheduleId(schedule)) {
+  // Un identifiant de programme n'est plus une union fermée : il doit se
+  // résoudre contre les trois intégrés ou contre un programme du même fichier.
+  if (
+    typeof schedule !== 'string' ||
+    (!isScheduleId(schedule) && !programmes.has(schedule))
+  ) {
     throw new BackupError(`« ${title} » : configuration inconnue.`)
   }
   if (!Array.isArray(reviews)) {
@@ -109,14 +166,19 @@ function parseItem(value: unknown, index: number): Item {
  * Les teintes sont un confort, pas une donnée : une valeur inconnue est
  * ignorée plutôt que de faire échouer tout l'import. La matière retombera
  * sur sa teinte dérivée du nom.
+ *
+ * Une couleur libre est renormalisée au passage : un fichier écrit à la main,
+ * ou produit par une version future dont le registre aurait bougé, ne peut
+ * pas faire entrer une couleur illisible dans l'application.
  */
 function parseTeintes(value: unknown): Teintes {
   if (!isRecord(value)) return {}
   const teintes: Teintes = {}
-  for (const [cle, teinte] of Object.entries(value)) {
-    if (typeof cle === 'string' && cle.trim() !== '' && estTeinte(teinte)) {
-      teintes[cleCategorie(cle)] = teinte
-    }
+  for (const [cle, valeur] of Object.entries(value)) {
+    if (typeof cle !== 'string' || cle.trim() === '') continue
+    if (typeof valeur !== 'string') continue
+    const teinte = retenirTeinte(valeur)
+    if (teinte) teintes[cleCategorie(cle)] = teinte
   }
   return teintes
 }
@@ -141,11 +203,24 @@ export function parseBackup(raw: string): ContenuSauvegarde {
   if (!Array.isArray(parsed.items)) {
     throw new BackupError('Le fichier ne contient aucune liste d’éléments.')
   }
-  const items = parsed.items.map((item, index) => parseItem(item, index))
+  /*
+   * Les programmes d'abord : ce sont eux qui rendent résolubles les
+   * identifiants portés par les éléments. `programmes` est absent des
+   * sauvegardes v1 et v2, qui n'en connaissaient que trois, dans le code.
+   */
+  const programmes = Array.isArray(parsed.programmes)
+    ? parsed.programmes.map((programme, index) => parseProgramme(programme, index))
+    : []
+  const idsProgrammes = new Set(programmes.map((programme) => programme.id))
+  if (idsProgrammes.size !== programmes.length) {
+    throw new BackupError('Le fichier contient des programmes en double.')
+  }
+
+  const items = parsed.items.map((item, index) => parseItem(item, index, idsProgrammes))
   const ids = new Set(items.map((item) => item.id))
   if (ids.size !== items.length) {
     throw new BackupError('Le fichier contient des éléments en double.')
   }
   // `teintes` est absent des sauvegardes v1 : parseTeintes rend alors {}.
-  return { items, teintes: parseTeintes(parsed.teintes) }
+  return { items, teintes: parseTeintes(parsed.teintes), programmes }
 }

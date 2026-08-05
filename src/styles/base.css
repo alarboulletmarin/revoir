@@ -71,11 +71,23 @@
   min-width: 0;
   flex-shrink: 0;
   align-items: center;
+  gap: var(--e-2);
   color: var(--encre);
   font-family: var(--police-titre);
   font-size: var(--t-md);
   font-weight: 600;
   letter-spacing: 0.01em;
+}
+
+/*
+ * Le signe garde sa largeur quoi qu'il arrive : écrasé, il cesse d'être une
+ * règle graduée. Sa hauteur suit la vue du SVG — 48 × 13px.
+ */
+.appli__signe {
+  width: var(--e-7);
+  height: auto;
+  flex-shrink: 0;
+  color: var(--accent);
 }
 
 /* --------------------------------------------------------- navigation --- */

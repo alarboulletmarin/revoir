@@ -43,6 +43,12 @@ Où elle apparaît : fiche d'un élément (grande, avec libellés), item de list
 
 Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse d'en être une.
 
+### Le signe de l'en-tête
+
+Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les six icônes de la section 11.
+
+Le carré plein `--accent` de l'icône reste à l'icône. Dans l'en-tête, ce serait une seconde surface pleine sur un écran qui en compte déjà une (section 3) : le signe se pose à même le papier, tracé en `--accent`, 48px de large. Sous 32px les deux premières graduations se confondent — c'est le plancher, pas une valeur à ajuster à vue.
+
 ---
 
 ## 3. Couleurs
@@ -91,6 +97,8 @@ Sur fond `--accent` plein, le texte est `--surface` (4,6:1) : réservé au poids
 
 Huit teintes, dans le même registre que la palette : désaturées, aucun rouge. `--retard` et `--fait` restent réservés à leurs états et n'entrent pas dans ce jeu.
 
+Ces huit sont ce que l'application **propose**. Elles ne bornent pas ce que l'utilisateur peut choisir : voir « Couleurs libres » plus bas.
+
 ```css
 --cat-ardoise: #4A6572;   --cat-prune: #6B5B7B;
 --cat-olive:   #5A6B3C;   --cat-terre: #7A5B45;
@@ -108,6 +116,27 @@ Trois règles, sans exception :
 3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de matière y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
 
 Une matière sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable.
+
+#### Couleurs libres
+
+Le sélecteur propose un neuvième cercle, marqué d'un « + », qui ouvre le sélecteur de couleurs du système. **La couleur choisie est la couleur retenue.** Elle n'est ni assombrie ni désaturée pour ressembler aux huit : un jaune pâle reste un jaune pâle, sur sa pastille comme dans le sélecteur. Les huit sont ce que l'app *propose* ; une couleur choisie appartient à l'utilisateur.
+
+Deux garde-fous seulement, et aucun n'est affaire de goût — ce sont ceux sans lesquels l'écran cesse de fonctionner.
+
+**Le libellé doit se lire.** La teinte sert d'encre au texte de la chip : un jaune pâle y serait illisible. Les composants lisent donc **deux variables** :
+
+| Variable | Porte | Garantie |
+|---|---|---|
+| `--teinte` | pastilles, points du calendrier, bordures, pastille du sélecteur | la couleur choisie, telle quelle |
+| `--teinte-texte` | libellé de la chip, anneau de sélection | ≥ 4,5:1 sur `--papier` |
+
+Pour les huit intégrées, les deux valent la même chose : elles tiennent déjà 5,5:1. Seule une couleur libre pâle les fait diverger — un rose `#ffb6c1` garde sa bordure rose et écrit son nom en `#a2606c`.
+
+L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et la chroma sont conservées, seule la clarté descend, **et du minimum**. Un rose pâle donne un rose foncé, jamais un brun quelconque.
+
+**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la matière est toujours écrit à côté (règle 2 ci-dessus).
+
+`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `retenirTeinte` dans `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
 
 ---
 
@@ -346,7 +375,34 @@ Fond `--surface`, 1px `--trait`, `--r-carte`, hauteur 48px, padding `--e-3`. Foc
 
 ### 8.7 Sélecteur de programme
 
-Trois cartes empilées (Simple / Poussé / Ultime), chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
+Des cartes empilées, chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
+
+Les trois programmes intégrés (Simple / Poussé / Ultime) viennent en premier, puis les programmes créés par l'utilisateur, dans l'ordre de création.
+
+#### Programmes personnalisés
+
+Un programme est un nom et une suite d'écarts. Il se compose sur son propre écran, `/programmes/nouveau`, comme un élément se crée sur le sien.
+
+**Un rythme ne se tape pas, il se touche.** Une grille de graduations, une par écart proposé, chacune basculable d'un doigt. Demander « 1 3 7 14 30 » dans un champ texte suppose de savoir déjà ce qu'est un rythme de répétition espacée — c'est exactement ce que l'écran doit apprendre.
+
+L'échelle proposée : `1 2 3 4 5 6 7 10 14 21 30 60 90 120 180 270 365`. Ce ne sont pas des nombres ronds au hasard — **au-delà de dix jours, chaque valeur tombe juste dans son unité** et porte ce nom sur sa graduation : « 1 sem. », « 3 sem. », « 1 mois », « 9 mois », « 1 an ». Jamais un « 45 j » que personne ne sait situer. Le libellé complet — « 30 jours après le départ » — reste lu par les lecteurs d'écran, en jours, la seule unité qui ne demande aucune conversion.
+
+`J+n` n'apparaît nulle part sur cet écran. C'est la notation de l'app, pas celle d'un débutant ; elle revient sur la carte du programme, une fois créé.
+
+Trois appuis complètent la grille :
+
+- **Partir d'un rythme connu** — Simple, Poussé, Ultime chargent le leur d'un geste. L'écran s'ouvre d'ailleurs sur celui de Simple, jamais sur du vide : personne n'invente un rythme depuis rien, on part de ce qui marche et on l'ajuste. Corollaire tenu par un test : **tout écart des trois programmes intégrés figure dans l'échelle**, sans quoi l'un d'eux serait chargeable mais irreproductible.
+- **La frise**, redessinée à chaque geste — c'est elle qui montre l'espacement, ce qu'une liste de nombres ne dit pas.
+- **Le compte et la portée** en une ligne : « 7 révisions · sur trois mois ».
+
+La portée est dérivée du dernier écart, dans les mêmes mots que les trois intégrés. En deçà de 25 jours elle s'écrit en jours : vingt jours ne sont pas un mois.
+
+Deux règles tiennent le modèle :
+
+1. **Le nom se change toujours, le rythme seulement tant qu'il est libre.** Les révisions d'un élément sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. Dès qu'un élément suit le programme, la grille cède la place à la frise du rythme figé et à son explication — le champ du nom, lui, reste ouvert.
+2. **Un programme suivi ne se supprime pas.** Sa carte l'annonce — « Suivi par 3 éléments » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
+
+Un rythme venu d'un import peut porter un écart absent de l'échelle : sa graduation vient se ranger à sa place plutôt que de le rendre immodifiable.
 
 ### 8.8 Barres de charge
 
@@ -389,6 +445,18 @@ Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou 
 
 Les révisions y sont listées en `.item-revision--compact` : trait de séparation plutôt que carte, et la position dans le programme écrite — « Révision 2 sur 5 · Prochaine : 8 août » — plutôt que la frise. C'est la seule liste où la frise cède la place : sur 44px de haut, quatre traits verticaux ne se lisent pas.
 
+### 8.12 Boîte de confirmation
+
+`<dialog>` centré (`.dialogue`), 400px au plus, `::backdrop` à 40 % de `--encre`. Deux emplois, pas un de plus : supprimer un élément, et remplacer les données par un import. Le reste s'annule, ne se confirme pas (section 1).
+
+Le reset pose `* { margin: 0 }`, qui écrase le `margin: auto` du navigateur : **`inset: 0` et `margin: auto` sont écrits explicitement**, sans quoi la boîte se colle en haut de l'écran. Sa hauteur est plafonnée à `calc(100dvh - var(--e-6))` et son contenu défile — un titre d'élément très long ne doit pas pousser les boutons hors écran.
+
+Les deux boutons se partagent la largeur à parts égales sous 480px, puis reprennent leur largeur naturelle, alignés à droite. Ils ne se replient jamais l'un sous l'autre. « Annuler » est toujours à gauche.
+
+`showModal()` viserait « Annuler », qui s'ouvrirait cerclé de son anneau de focus alors que personne n'a tabulé : c'est le corps, `tabindex="-1"`, qui prend le focus — le lecteur d'écran lit le titre par `aria-labelledby`, et la première tabulation mène aux boutons. Ces réceptacles — celui-ci et celui de la feuille du calendrier — sont les deux seuls éléments du projet à porter `outline: none` : ils ne sont pas atteignables au clavier, leur anneau ne signalerait donc aucun parcours.
+
+Trois sorties, toutes non destructrices : le bouton « Annuler », Échap et un clic sur le fond. C'est l'état de la page qui referme, jamais le navigateur seul. Et comme toute surface modale, elle efface le FAB (section 7.3).
+
 ---
 
 ## 9. Écriture
@@ -430,6 +498,7 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 - [ ] Les compteurs qui changent sont dans une région `aria-live="polite"`
 - [ ] La validation d'une révision est annulable pendant 5 secondes
 - [ ] `env(safe-area-inset-*)` appliqué sur le FAB et la barre de navigation
+- [ ] Une navigation remonte en haut de page — sauf le retour arrière, où le navigateur restaure la position
 - [ ] Aucune ombre portée dans le CSS produit
 
 ---

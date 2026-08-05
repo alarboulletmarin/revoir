@@ -11,8 +11,11 @@ import {
 } from '../lib/backup'
 import { archivedItems, usedCategories } from '../lib/stats'
 import { teinteDe } from '../lib/categories'
+import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
+import { todayKey } from '../lib/dates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { Bouton } from '../components/Bouton'
+import { Bouton, LienBouton } from '../components/Bouton'
+import { Frise } from '../components/Frise'
 import { SelecteurTeinte } from '../components/SelecteurTeinte'
 import { ChipCategorie, PastilleCategorie } from '../components/ChipCategorie'
 
@@ -20,7 +23,16 @@ type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
 export function Settings() {
   useTitrePage('Réglages')
-  const { items, teintes, definirTeinte, importItems, setArchived } = useItems()
+  const {
+    items,
+    teintes,
+    definirTeinte,
+    importItems,
+    setArchived,
+    programmes,
+    supprimerProgramme,
+    compterUsages,
+  } = useItems()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
@@ -28,9 +40,15 @@ export function Settings() {
   const archives = archivedItems(items)
   const matieres = usedCategories(items)
 
+  const supprimer = (id: string, label: string) => {
+    void supprimerProgramme(id).then((fait) => {
+      if (fait) setRetour({ ton: 'ok', message: `Programme « ${label} » supprimé.` })
+    })
+  }
+
   const exporter = () => {
     // Les éléments archivés font partie de l'export (règle métier n°5).
-    const blob = new Blob([serializeBackup(items, teintes)], {
+    const blob = new Blob([serializeBackup(items, teintes, programmes)], {
       type: 'application/json',
     })
     const url = URL.createObjectURL(blob)
@@ -72,7 +90,7 @@ export function Settings() {
   const confirmerImport = () => {
     if (!enAttente) return
     const nombre = enAttente.items.length
-    void importItems(enAttente.items, enAttente.teintes).then(() => {
+    void importItems(enAttente.items, enAttente.teintes, enAttente.programmes).then(() => {
       setRetour({
         ton: 'ok',
         message: `${nombre} élément${nombre > 1 ? 's' : ''} importé${nombre > 1 ? 's' : ''}.`,
@@ -147,6 +165,77 @@ export function Settings() {
         <p className="discret discret--petit">
           Une catégorie sans couleur choisie en reçoit une, dérivée de son nom.
         </p>
+      </section>
+
+      <section className="reglages__bloc">
+        <h2 className="section__titre">Programmes</h2>
+        <p className="discret">
+          Les trois programmes intégrés — Simple, Poussé, Ultime — couvrent la
+          plupart des besoins. Vous pouvez composer les vôtres.
+        </p>
+
+        {programmes.length > 0 && (
+          <ul className="rythmes">
+            {programmes.map((programme) => {
+              const usages = compterUsages(programme.id)
+              return (
+                <li key={programme.id} className="rythme">
+                  <div className="rythme__entete">
+                    <span className="rythme__nom">{programme.label}</span>
+                    <span className="rythme__compte">
+                      {programme.offsets.length} révision
+                      {programme.offsets.length > 1 ? 's' : ''} ·{' '}
+                      {decrirePortee(programme.offsets)}
+                    </span>
+                  </div>
+                  <Frise
+                    origine={todayKey()}
+                    reviews={reviewsDepuisOffsets(todayKey(), programme.offsets)}
+                    aujourdhui={todayKey()}
+                    variante="mini"
+                    intitule={`Programme ${programme.label}`}
+                  />
+                  <span className="rythme__jours">
+                    {listerDecalages(programme.offsets)}
+                  </span>
+                  {/*
+                    Le nom se renomme toujours ; le rythme et la suppression
+                    tombent dès qu'un élément suit le programme.
+                  */}
+                  <div className="rythme__actions">
+                    <LienBouton
+                      vers={`/programmes/${programme.id}/modifier`}
+                      variante="discret"
+                    >
+                      {usages > 0 ? 'Renommer' : 'Modifier'}
+                    </LienBouton>
+                    {usages === 0 && (
+                      <Bouton
+                        variante="danger"
+                        onClick={() => supprimer(programme.id, programme.label)}
+                      >
+                        Supprimer
+                      </Bouton>
+                    )}
+                  </div>
+                  {usages > 0 && (
+                    <p className="discret discret--petit">
+                      {usages > 1
+                        ? `Suivi par ${usages} éléments : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
+                        : 'Suivi par un élément : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+
+        <div className="reglages__actions">
+          <LienBouton vers="/programmes/nouveau" variante="discret">
+            Créer un programme
+          </LienBouton>
+        </div>
       </section>
 
       <section className="reglages__bloc">

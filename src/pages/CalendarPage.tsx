@@ -24,6 +24,7 @@ import { ItemRevision } from '../components/ItemRevision'
 import { FeuilleBas } from '../components/FeuilleBas'
 import { Bouton } from '../components/Bouton'
 import { IconeChevron } from '../components/Icons'
+import { proprietesTeinte } from '../components/teinte'
 
 export function CalendarPage() {
   useTitrePage('Calendrier')
@@ -185,11 +186,9 @@ export function CalendarPage() {
                         }
                         // Un élément sans matière garde le point --accent : la
                         // teinte par défaut de la chaîne vide ne veut rien dire.
-                        data-teinte={
-                          categorie.trim() === ''
-                            ? undefined
-                            : teinteDe(categorie, teintes)
-                        }
+                        {...(categorie.trim() === ''
+                          ? {}
+                          : proprietesTeinte(teinteDe(categorie, teintes)))}
                       />
                     ))}
                   </span>
