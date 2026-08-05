@@ -917,3 +917,79 @@
   outline: 2px solid var(--encre);
   outline-offset: 2px;
 }
+
+/* ========================================================= pratique ==== */
+
+/*
+ * Le statut de pratique d'un sujet : trois choix affichés, jamais un cycle au
+ * toucher. Des radios natifs — les flèches naviguent, l'état est annoncé.
+ */
+.pratique {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 0;
+  padding: 0;
+}
+
+.pratique__choix {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-2);
+}
+
+.pratique__option {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  border: var(--bordure);
+  border-radius: var(--r-pilule);
+  padding-inline: var(--e-3);
+  background-color: var(--surface);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.pratique__option--actif {
+  border-width: 1.5px;
+  border-color: var(--accent);
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
+
+/* Pas de radio visible, mais il reste focusable — l'anneau vient sur la carte. */
+.pratique__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pratique__option:has(.pratique__radio:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .pratique__option:hover {
+    background-color: var(--surface-survol);
+    color: var(--encre);
+  }
+
+  .pratique__option--actif:hover {
+    background-color: var(--accent-doux);
+    color: var(--accent);
+  }
+}

@@ -9,6 +9,7 @@ import { SujetForm } from './pages/SujetForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
+import { Suivi } from './pages/Suivi'
 import { NotFound } from './pages/NotFound'
 
 /**
@@ -34,6 +35,7 @@ export function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/revisions/:filtre" element={<ReviewList />} />
               <Route path="/calendrier" element={<CalendarPage />} />
+              <Route path="/suivi" element={<Suivi />} />
               <Route path="/nouveau" element={<SujetForm mode="create" />} />
               <Route path="/sujet/:id" element={<SujetDetail />} />
               <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />

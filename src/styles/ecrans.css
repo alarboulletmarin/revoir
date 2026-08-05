@@ -1150,132 +1150,7 @@ body[data-panneau='ouvert'] {
   align-items: flex-start;
 }
 
-/* ================================ éléments regroupés par matière ======== */
-
-.matieres {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--e-2);
-}
-
-.matiere {
-  min-width: 0;
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-}
-
-/*
- * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
- * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
- */
-.matiere__entete {
-  display: flex;
-  min-height: var(--cible);
-  min-width: 0;
-  align-items: center;
-  gap: var(--e-2);
-  padding: var(--e-2) var(--e-4);
-  cursor: pointer;
-  list-style: none;
-}
-
-.matiere__entete::-webkit-details-marker {
-  display: none;
-}
-
-.matiere__entete:hover {
-  background-color: var(--surface-survol);
-  border-radius: var(--r-carte);
-}
-
-/*
- * Le chevron bascule sans transition : la section 6 n'autorise que trois
- * animations, et celle-ci n'en fait pas partie.
- */
-.matiere__chevron {
-  flex-shrink: 0;
-  color: var(--encre-2);
-}
-
-/* Replié : le chevron pointe à droite. Déplié : vers le bas. */
-.matiere[open] .matiere__chevron {
-  transform: rotate(90deg);
-}
-
-.matiere__nom {
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
-  font-size: var(--t-base);
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.matiere__compte {
-  flex-shrink: 0;
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-variant-numeric: tabular-nums;
-}
-
-.matiere__liste {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  border-top: var(--bordure);
-  padding: 0 var(--e-4) var(--e-2);
-}
-
-.matiere__element {
-  min-width: 0;
-}
-
-/* Un trait entre deux éléments, pas une carte autour de chacun. */
-.matiere__element + .matiere__element {
-  border-top: var(--bordure);
-}
-
-/*
- * Deux lignes serrées — le titre, puis quand et où on en est. La cible reste
- * à 44px : c'est le padding qui la complète quand le texte ne suffit pas.
- */
-.matiere__lien {
-  display: flex;
-  min-height: var(--cible);
-  min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--e-1);
-  border-radius: var(--r-carte);
-  padding-block: var(--e-2);
-}
-
-.matiere__titre {
-  min-width: 0;
-  overflow: hidden;
-  font-size: var(--t-base);
-  line-height: var(--l-base);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* « Demain · Révision 2 sur 5 » — une majuscule sans toucher au texte. */
-.matiere__etat {
-  min-width: 0;
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  line-height: var(--l-sm);
-  font-variant-numeric: tabular-nums;
-}
-
-.matiere__etat::first-letter {
-  text-transform: uppercase;
-}
-
-/* ------------------------------------------- matières dans les réglages - */
+/* ================================== catégories dans les réglages ======= */
 
 .categories-reglage {
   display: flex;
@@ -1299,4 +1174,401 @@ body[data-panneau='ouvert'] {
   font-size: var(--t-base);
   font-weight: 500;
   overflow-wrap: anywhere;
+}
+
+/* ========================================================== suivi ====== */
+
+/*
+ * Le tableau de suivi (section 8.13).
+ *
+ * Il reste un tableau sur un téléphone. Le transformer en cartes ferait
+ * perdre la comparaison verticale entre sujets et horizontale entre étapes,
+ * qui est toute la raison d'être de la vue. La réponse au petit écran n'est
+ * pas de supprimer le défilement horizontal, c'est de le rendre lisible.
+ */
+
+.suivi__reglages {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.suivi__filtre {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.suivi__mode {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+  border: 0;
+  padding: 0;
+}
+
+.suivi__bascule {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-2);
+}
+
+@media (min-width: 480px) {
+  .suivi__reglages {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .suivi__filtre {
+    min-width: 0;
+    flex: 1 1 auto;
+    max-width: 320px;
+  }
+
+  .suivi__mode {
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------------------------- groupe repliable ---- */
+
+/*
+ * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
+ * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
+ */
+.suivi__groupe {
+  min-width: 0;
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+}
+
+.suivi__entete-groupe {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  padding: var(--e-2) var(--e-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.suivi__entete-groupe::-webkit-details-marker {
+  display: none;
+}
+
+.suivi__entete-groupe:hover {
+  background-color: var(--surface-survol);
+  border-radius: var(--r-carte);
+}
+
+/*
+ * Le chevron bascule sans transition : la section 6 n'autorise que trois
+ * animations, et celle-ci n'en fait pas partie.
+ */
+.suivi__chevron {
+  flex-shrink: 0;
+  color: var(--encre-2);
+}
+
+/* Replié : le chevron pointe à droite. Déplié : vers le bas. */
+.suivi__groupe[open] .suivi__chevron {
+  transform: rotate(90deg);
+}
+
+.suivi__nom {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--t-base);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Trois chiffres, et rien d'autre. Ils passent à la ligne plutôt que de
+ * tronquer le nom de la catégorie : c'est lui qu'on cherche d'abord.
+ */
+.suivi__resume {
+  min-width: 0;
+  margin-inline-start: auto;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------- le tableau ---- */
+
+/*
+ * `position: relative` crée un contexte d'empilement local : sans lui, le
+ * `z-index` de la cellule d'angle passerait devant l'en-tête de l'application,
+ * qui est lui aussi collant.
+ *
+ * `body` porte `overflow-x: hidden`, propagé au viewport : un tableau mal
+ * contraint ne provoque pas de barre de défilement, il **rogne**. D'où le
+ * `min-width: 0` sur tous ses ancêtres — c'est la règle n°1 de la section 7.4,
+ * et ici elle décide entre « défile » et « disparaît en silence ».
+ *
+ * Le plafond de hauteur n'est pas décoratif, il est structurel. Dès qu'un
+ * élément défile horizontalement, il devient sa propre zone de défilement dans
+ * les deux sens : `overflow-y: visible` n'existe plus, il vaut `auto`. Un
+ * `<thead>` collant s'y cale donc sur ce cadre et non sur la page — sans
+ * plafond, il se poserait 69px plus bas que le haut du tableau, c'est-à-dire
+ * par-dessus la deuxième ligne.
+ *
+ * Le plafond règle les deux : l'en-tête colle à `top: 0`, donc au haut du
+ * tableau, et il ne se déclenche que pour un tableau plus haut qu'un écran.
+ * En deçà — le cas courant, une catégorie ouverte à la fois — le cadre ne
+ * défile pas verticalement du tout, et la page reste le seul conteneur qui
+ * défile (section 7.4).
+ */
+.suivi__cadre {
+  position: relative;
+  z-index: 0;
+  min-width: 0;
+  max-height: calc(100dvh - var(--h-entete) - var(--e-5));
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  border-top: var(--bordure);
+  /* Une barre visible sur ordinateur : aucune colonne ne se masque en silence. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--trait) transparent;
+}
+
+/*
+ * `separate` est obligatoire : avec `collapse`, les bordures des cellules
+ * collantes ne se peignent pas au défilement. Chaque cellule ne porte alors
+ * qu'un trait bas — et la colonne figée, un trait droit —, sans quoi deux
+ * bordures voisines feraient 2px.
+ */
+.suivi__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.suivi__entete,
+.suivi__case,
+.suivi__sujet {
+  border-bottom: var(--bordure);
+  background-color: var(--surface);
+  text-align: center;
+}
+
+.suivi__entete {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-width: var(--cible);
+  padding: var(--e-2) var(--e-1);
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * La colonne du sujet reste visible pendant le défilement horizontal. Sans
+ * elle, glisser vers la droite fait perdre la ligne qu'on lisait.
+ */
+.suivi__sujet {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: var(--suivi-sujet);
+  min-width: var(--suivi-sujet);
+  max-width: var(--suivi-sujet);
+  border-right: var(--bordure);
+  padding: 0 var(--e-3) 0 var(--e-4);
+  text-align: start;
+  font-weight: 400;
+}
+
+/* L'angle est collant dans les deux sens : il passe donc au-dessus des deux. */
+.suivi__entete.suivi__sujet {
+  z-index: 3;
+}
+
+.suivi__lien {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  overflow: hidden;
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suivi__case {
+  min-width: var(--cible);
+  padding: 0;
+}
+
+/*
+ * La marque mesure 20px, sa cible en fait 44 : c'est la cellule entière qui
+ * se touche, pas le symbole.
+ */
+.suivi__marque {
+  display: flex;
+  min-height: var(--cible);
+  min-width: var(--cible);
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.suivi__marque--action {
+  cursor: pointer;
+  border-radius: var(--r-carte);
+  transition: background-color var(--duree-court) var(--courbe);
+}
+
+/*
+ * L'anneau de focus global se pose 2px **à l'extérieur** : dans un conteneur
+ * qui défile, il serait rogné. Il rentre ici, entier. C'est un déplacement,
+ * pas une suppression — la section 10 interdit la seconde.
+ */
+.suivi__marque--action:focus-visible,
+.suivi__pratique:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .suivi__marque--action:hover {
+    background-color: var(--surface-survol);
+  }
+}
+
+.suivi__case--pratique {
+  min-width: 88px;
+  padding-inline: var(--e-2);
+}
+
+.suivi__entete--pratique {
+  min-width: 88px;
+}
+
+.suivi__pratique {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-carte);
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duree-court) var(--courbe);
+}
+
+@media (hover: hover) {
+  .suivi__pratique:hover {
+    background-color: var(--surface-survol);
+    color: var(--encre);
+  }
+}
+
+/*
+ * Le défilement se dit avec des mots (section 11 : ni ombre, ni dégradé).
+ * La phrase ne s'affiche que si le tableau déborde vraiment — le composant
+ * le mesure plutôt que de le supposer.
+ */
+.suivi__astuce {
+  padding: var(--e-2) var(--e-4) 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/* ------------------------------------------------------ les marques ---- */
+
+/*
+ * Cinq états, cinq formes. Elles doivent se distinguer en niveaux de gris :
+ * la couleur ne porte jamais l'information seule.
+ */
+.marque {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+}
+
+/* ✓ Le disque coché de l'item de révision (section 8.2), à l'identique. */
+.marque--faite {
+  background-color: var(--fait);
+  border-color: var(--fait);
+}
+
+.marque__coche {
+  width: 12px;
+  height: 12px;
+  color: var(--surface);
+}
+
+/* ○ Un anneau, comme le jour « aujourd'hui » du calendrier (section 8.11). */
+.marque--aujourdhui {
+  border-color: var(--accent);
+}
+
+/* ⊙ Le même anneau, un point plein au centre : une forme, pas une alarme. */
+.marque--retard {
+  border-color: var(--retard);
+}
+
+.marque--retard::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--retard);
+}
+
+/* · Le point de densité du calendrier, à la même taille. */
+.marque--avenir::before {
+  content: '';
+  width: var(--point-jour);
+  height: var(--point-jour);
+  border-radius: 50%;
+  background-color: var(--encre-2);
+}
+
+/* — Un filet : l'étape n'est pas au programme de ce sujet. */
+.marque--hors-programme::before {
+  content: '';
+  width: 8px;
+  height: 1px;
+  background-color: var(--trait);
+}
+
+/* ------------------------------------------- panneau d'une cellule ----- */
+
+.panneau__etat {
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.panneau__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+  padding-top: var(--e-3);
 }

@@ -98,6 +98,35 @@
    */
   --point-jour: var(--e-1);
   --point-jour-gap: 2px;
+
+  /*
+   * Hauteur de l'en-tête de l'application, qui est collant (`base.css`).
+   * L'en-tête du tableau de suivi s'y décale, sinon il se glisse dessous.
+   *
+   * C'est de l'arithmétique sur le gabarit de l'en-tête, pas une mesure : sous
+   * 480px il empile la marque et la navigation, au-delà il les met sur une
+   * ligne. Si ce gabarit change, cette valeur change avec lui — et rien ne le
+   * signalera d'autre que l'écran.
+   */
+  --h-entete: calc(
+    var(--e-3) + var(--haut-securise) + var(--cible) + var(--e-3) + var(--cible) +
+      var(--e-3) + 1px
+  );
+
+  /*
+   * Largeur de la colonne figée du tableau de suivi. À 320px, elle laisse
+   * 180px au défilement — deux colonnes et demie, donc une suite visible.
+   */
+  --suivi-sujet: 120px;
+}
+
+@media (min-width: 480px) {
+  :root {
+    --h-entete: calc(
+      var(--e-3) + var(--haut-securise) + var(--cible) + var(--e-3) + 1px
+    );
+    --suivi-sujet: 180px;
+  }
 }
 
 /*

@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react'
-import { Link, Outlet, useLocation, useNavigationType } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { NavBar } from './NavBar'
 import { IconePlus } from './Icons'
 import { Marque } from './Marque'
@@ -50,6 +50,19 @@ export function Layout() {
             <Marque className="appli__signe" />
             Revoir
           </Link>
+          {/*
+            « Réglages » se tient ici, face à la marque, et non dans la
+            navigation : celle-ci porte les trois vues, et à 320px un
+            quatrième libellé la ferait déborder de l'écran.
+          */}
+          <NavLink
+            to="/reglages"
+            className={({ isActive }) =>
+              isActive ? 'appli__reglages appli__reglages--actif' : 'appli__reglages'
+            }
+          >
+            Réglages
+          </NavLink>
         </div>
         <NavBar />
       </header>

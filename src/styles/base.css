@@ -349,3 +349,36 @@ body[data-panneau='ouvert'] .fab {
   border-color: var(--fait);
   color: var(--fait-texte);
 }
+
+/*
+ * « Réglages » face à la marque, et non dans la navigation : celle-ci porte
+ * les trois vues, et à 320px un quatrième libellé la ferait déborder.
+ * `.appli__barre` est déjà en `space-between` : il se place tout seul.
+ */
+.appli__reglages {
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: var(--r-pilule);
+  padding-inline: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition:
+    color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe);
+}
+
+.appli__reglages:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+.appli__reglages--actif {
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
