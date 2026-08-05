@@ -29,9 +29,24 @@ La **pratique** est le pendant des révisions : pour un cours ce sont des exerci
 - **Calendrier** — la répartition dans le temps : nombre de révisions par jour lu en un à trois points, navigation au clavier, et le détail du jour dans une feuille glissant du bas.
 - **Suivi** — un tableau par catégorie : les sujets en lignes, les étapes de révision en colonnes, la pratique en dernière colonne.
 
+Plus deux écrans qui ne sont pas des vues : les **réglages**, et une page d'**aide** — le vocabulaire, les programmes, le recalage, la lecture du tableau, le sort de vos données. Elle s'ouvre par le « ? » de l'en-tête et fonctionne hors ligne, comme le reste.
+
+Tant qu'aucun sujet n'existe, « Aujourd'hui » présente le projet plutôt qu'une grille de zéros : la question, la frise en grand, trois temps, et ce que Revoir ne fait pas.
+
+## Les six règles
+
+Le code s'y réfère par leur numéro ; les voici en toutes lettres.
+
+1. **Le recalage après retard.** Valider une révision en retard recale les échéances suivantes sur la date réelle de validation, en conservant les écarts du programme.
+2. **On annule, on ne confirme pas.** Valider se fait en un tap, sans confirmation ; un toast propose « Annuler » pendant cinq secondes.
+3. **La suppression est la seule exception** : elle demande une confirmation, et elle seule.
+4. **L'aperçu montre la charge.** Avant de créer un sujet, on voit combien de révisions sont déjà prévues sur chacune des dates générées.
+5. **Un sujet archivé reste dans l'export.** Archiver n'est pas supprimer.
+6. **Reporter ne déplace que l'échéance visée.** Un report ne dit rien du rythme réel — il dit « pas aujourd'hui ».
+
 ## Fonctionnalités
 
-- **Fiche d'un sujet** : la frise en grand, liste complète des échéances, progression, pratique, modification, archivage, suppression.
+- **Fiche d'un sujet** : la frise en grand, liste complète des échéances, progression, pratique, duplication, modification, archivage, suppression.
 - **Trois programmes** de répétition espacée :
   - Simple — J+1, J+3, J+7, J+14, J+30
   - Poussé — J+1, J+2, J+4, J+7, J+14, J+30, J+60
@@ -39,6 +54,8 @@ La **pratique** est le pendant des révisions : pour un cours ce sont des exerci
 - **Programmes personnalisés** : un rythme se compose en touchant des graduations, pas en tapant des nombres.
 - **Catégories** : elles se créent, se renomment, se recolorent et se suppriment depuis leur écran, et vivent sans aucun sujet. Six sont livrées à la première installation, chacune avec sa couleur. Sur la fiche d'un sujet, on en choisit une dans une liste — avec un raccourci pour en créer une sans quitter le formulaire. Supprimer une catégorie ne supprime aucun sujet : les siens passent « Sans catégorie ».
 - **Couleurs de catégorie** : huit teintes, ou n'importe quelle couleur. Une catégorie créée sans choix reçoit une teinte dérivée de son nom, identique d'un appareil à l'autre.
+- **Report d'une échéance** : « pas aujourd'hui, demain ». Voir plus bas.
+- **Duplication d'un sujet** : le formulaire de création s'ouvre avec la catégorie, le programme et le titre du sujet d'origine, la date au jour. Rien n'est écrit tant qu'il n'est pas soumis.
 - **Sauvegarde locale** : export et import de la totalité des données au format JSON.
 - **PWA** : installable, fonctionne hors ligne, se met à jour via Service Worker avec un toast de confirmation.
 
@@ -57,6 +74,12 @@ Cinq états, cinq formes : effectuée, à effectuer aujourd'hui, en retard, à v
 ### Recalage après retard
 
 Valider une révision en retard recale les échéances suivantes sur la date réelle de validation, en conservant les écarts du programme : une J+7 validée avec trois jours de retard place la J+14 sept jours après la validation, pas quatre. Sans ce recalage, rattraper une semaine de retard ferait tomber toutes les échéances suivantes le même jour.
+
+### Reporter, qui n'est pas recaler
+
+Une échéance peut reculer d'un jour — depuis la fiche d'un sujet ou depuis le panneau d'une cellule du tableau. **Elle seule bouge.** Le recalage déplace les suivantes parce qu'une validation dit quelque chose du rythme réel : elle a eu lieu, et le programme repart de là. Un report ne dit rien de tel, il dit « pas aujourd'hui » — le programme n'a pas changé, les échéances suivantes non plus.
+
+Une révision en retard se reporte à demain, et non au lendemain de sa date passée : sinon le report ne ferait que déplacer le retard d'un jour.
 
 ### Valider, puis annuler
 
@@ -87,7 +110,8 @@ npm run preview
 | `npm run preview` | Sert le build de production (Service Worker actif) |
 | `npm run typecheck` | Vérification TypeScript seule |
 | `npm test` | Tests unitaires de la logique métier (Vitest) |
-| `npm run icons` | Régénère les icônes PNG de `public/` |
+| `npm run icons` | Régénère les icônes PNG et l'image de partage de `public/` |
+| `npm run notices` | Régénère `public/THIRD-PARTY.txt`, joué par `build` |
 
 ## Structure
 
@@ -102,7 +126,8 @@ src/
 ├── state/        contextes React (données, toast) et hooks partagés
 └── styles/       tokens.css, reset.css, base.css, composants.css, ecrans.css
 scripts/
-└── generate-icons.mjs   génération des icônes PNG, sans dépendance
+├── generate-icons.mjs     icônes PNG et image de partage, sans dépendance
+└── generate-notices.mjs   licences des composants tiers, sans dépendance
 ```
 
 La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, le regroupement par catégorie, l'attribution des teintes, les catégories proposées et le détachement des sujets d'une catégorie supprimée, les statistiques, le modèle du tableau de suivi, la migration des anciennes données, le formatage et la validation des sauvegardes.
@@ -165,8 +190,22 @@ React 19, TypeScript, Vite, vite-plugin-pwa, React Router, IndexedDB via `idb`, 
 
 Une seule dépendance d'interface, et elle est *headless* : [TanStack Table](https://tanstack.com/table) fournit le modèle du tableau de suivi — colonnes, lignes, cellules — et pas une règle de style. Le balisage, le CSS et l'accessibilité sont écrits dans le projet. Aucune bibliothèque de graphiques : les sept icônes sont des composants SVG écrits à la main.
 
+Aucune police téléchargée : la pile système, et rien d'autre. Aucun CDN, aucun appel réseau à l'exécution — une application qui promet que rien ne quitte l'appareil ne peut pas aller chercher une police ailleurs.
+
 > Note sur les dépendances : `react-router-dom` est maintenu en dernière version. `npm audit` y signale un avis concernant le mode RSC, que cette application n'utilise pas — c'est une SPA statique, sans action serveur. Les versions antérieures cumulent bien plus d'avis réellement applicables.
+
+## Contribuer
+
+Les contributions sont bienvenues. [`CONTRIBUTING.md`](CONTRIBUTING.md) dit ce qu'il faut savoir avant d'écrire une ligne — en particulier ce que le projet refuse par principe, qui ne se devine pas : gamification, notifications, algorithme adaptatif, thème sombre, mesure d'audience, stockage du contenu à apprendre.
+
+Toute décision visuelle vient de [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), qui est la référence et non un document d'intention.
+
+Pour signaler une faille de sécurité, ne passez pas par une issue publique : voir [`SECURITY.md`](SECURITY.md). Les échanges dans le projet suivent le [code de conduite](CODE_OF_CONDUCT.md).
+
+Le journal des versions est dans [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Licence
 
-MIT — voir [LICENSE](LICENSE).
+MIT — voir [LICENSE](LICENSE). Copyright (c) 2026 Andréa Larboullet Marin.
+
+Les bibliothèques embarquées dans le build sont elles aussi sous licence libre, et leurs mentions voyagent avec l'application : `public/THIRD-PARTY.txt` est régénéré à chaque build par `scripts/generate-notices.mjs`, servi en ligne et hors ligne, et accessible depuis les réglages. La MIT demande que sa mention de copyright accompagne toute portion substantielle du logiciel : le bundle contient leur code, il doit donc contenir leurs licences.

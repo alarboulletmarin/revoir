@@ -21,6 +21,9 @@ import { ChipCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
+/** Le dépôt : seule adresse extérieure de toute l'application. */
+const DEPOT = 'https://github.com/alarboulletmarin/revoir'
+
 export function Settings() {
   useTitrePage('Réglages')
   const {
@@ -289,6 +292,26 @@ export function Settings() {
           Effacer les données du site depuis votre navigateur supprime donc toutes vos
           révisions. Pensez à exporter régulièrement.
         </p>
+        {/*
+          La licence dans l'application, pas seulement dans le dépôt : c'est ce
+          qui rend le projet trouvable depuis le produit. Les notices des
+          composants tiers sont servies en fichier statique et précachées — la
+          MIT demande que leurs mentions accompagnent le code distribué, et ce
+          code est dans le bundle.
+        */}
+        <p className="discret">
+          Logiciel libre sous licence MIT.{' '}
+          <a className="lien" href={DEPOT} target="_blank" rel="noreferrer noopener">
+            Code source
+          </a>{' '}
+          ·{' '}
+          <a className="lien" href="/THIRD-PARTY.txt">
+            Licences des composants tiers
+          </a>
+        </p>
+        <div className="reglages__actions">
+          <LienBouton vers="/aide">Comment ça marche</LienBouton>
+        </div>
       </section>
 
       <ConfirmDialog

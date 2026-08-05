@@ -1113,3 +1113,28 @@
     color: var(--accent);
   }
 }
+
+/* ========================================================== liens ====== */
+
+/*
+ * Lien dans du texte courant. Le seul de l'application : partout ailleurs on
+ * navigue par un bouton ou une ligne entière.
+ *
+ * Souligné, et pas seulement coloré : la couleur ne porte jamais l'information
+ * seule (section 3 bis). L'`underline-offset` le décolle des jambages, sinon le
+ * trait passe au milieu des « p » et des « g ».
+ *
+ * `padding-block` élargit la zone touchable sans toucher à la hauteur de ligne
+ * — un lien dans un paragraphe ne peut pas faire 44px de haut sans disloquer le
+ * paragraphe qui le porte.
+ */
+.lien {
+  padding-block: var(--e-1);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.lien:hover {
+  color: var(--encre);
+}

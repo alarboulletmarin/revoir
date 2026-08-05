@@ -149,14 +149,18 @@ L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et l
 Deux rôles, deux familles.
 
 ```css
---police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+--police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 --police-ui:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 ```
 
-- **Instrument Sans** (variable, woff2 sous-ensemble latin, ~25 ko, auto-hébergée dans `/public/fonts`) : chiffres du bento, titres de page, titres de sujets. Grotesque légèrement condensée, chiffres tabulaires très lisibles en grand.
-- **Pile système** : tout le reste. Zéro octet, rendu natif, et l'app reste utilisable si la police ne charge pas (`font-display: swap`).
+- **`--police-titre`** : chiffres du bento, titres de page, titres de sujets.
+- **`--police-ui`** : tout le reste.
 
-Si tu veux zéro dépendance de police, retire Instrument Sans et passe tout en pile système : le design tient, il perd juste un peu de caractère dans les grands chiffres.
+**Deux rôles, une seule famille : la pile système.** Zéro octet téléchargé, rendu natif, aucune bascule au chargement.
+
+Cette section a longtemps décrit une autre réalité — « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé : aucun `@font-face`, aucun lien, aucun fichier. Tous les titres tombaient déjà sur la pile système, et la spécification décrivait une police que l'application n'a jamais servie. Elle dit maintenant ce qui se passe.
+
+Les deux variables restent distinctes, bien qu'elles vaillent la même chose : les rôles n'ont pas fusionné. Une police de titres se réintroduit ici, en un seul endroit — auto-hébergée, jamais appelée à un CDN, et sa licence versée à `THIRD-PARTY.txt` comme celle de toute autre dépendance.
 
 ### Échelle
 

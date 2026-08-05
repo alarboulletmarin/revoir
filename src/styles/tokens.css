@@ -18,8 +18,20 @@
   --fait: #6A8F6B;
   --fait-texte: #4F6E50;
 
-  /* Typographie */
-  --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  /*
+   * Typographie — pile système, zéro octet téléchargé.
+   *
+   * `--police-titre` nommait « Instrument Sans » sans que personne ne la
+   * charge : ni `@font-face`, ni fichier dans `/public`, ni lien. Tous les
+   * titres tombaient donc déjà sur la pile système, et la spécification
+   * décrivait une police que l'application n'a jamais servie. Entre embarquer
+   * un woff2 et dire ce qui se passe vraiment, la section 4 tranche pour la
+   * seconde : « le design tient, il perd juste un peu de caractère ».
+   *
+   * Les deux variables restent distinctes : les rôles n'ont pas fusionné, et
+   * une police de titres se réintroduira ici, à un seul endroit.
+   */
+  --police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --t-champ: 16px;
   --t-xl: 28px;
