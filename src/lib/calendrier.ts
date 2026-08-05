@@ -27,6 +27,12 @@ export interface JourCalendrier {
   dansLeMois: boolean
   total: number
   restantes: number
+  /**
+   * Matières des révisions du jour, dans l'ordre où la feuille les listera.
+   * Le calendrier n'en teinte que les trois premiers points, mais c'est la
+   * liste complète qui sert à nommer les matières du jour.
+   */
+  categories: string[]
 }
 
 export function grilleDuMois(items: Item[], mois: Date): JourCalendrier[] {
@@ -42,6 +48,7 @@ export function grilleDuMois(items: Item[], mois: Date): JourCalendrier[] {
       dansLeMois: isSameMonth(date, mois),
       total: entrees.length,
       restantes: entrees.filter((entree) => !entree.review.done).length,
+      categories: entrees.map((entree) => entree.item.category),
     }
   })
 }

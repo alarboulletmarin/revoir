@@ -7,14 +7,14 @@ import { densite, deplacementClavier, grilleDuMois } from './calendrier'
 function makeItem(
   title: string,
   startDate: string,
-  options: { schedule?: ScheduleId; doneOffsets?: number[] } = {},
+  options: { schedule?: ScheduleId; doneOffsets?: number[]; category?: string } = {},
 ): Item {
   const schedule = options.schedule ?? 'simple'
   const done = new Set(options.doneOffsets ?? [])
   return {
     id: title,
     title,
-    category: 'Études',
+    category: options.category ?? 'Études',
     startDate,
     schedule,
     reviews: buildReviews(startDate, schedule).map((review) =>
@@ -48,6 +48,26 @@ describe('grilleDuMois', () => {
       (candidat) => candidat.cle === '2026-03-04',
     )
     expect(jour).toMatchObject({ total: 2, restantes: 1 })
+  })
+
+  it('rend les matières du jour dans l’ordre de la liste', () => {
+    // allEntries trie par date puis par titre : Anatomie avant Barème.
+    const items = [
+      makeItem('Barème fiscal', '2026-03-01', { category: 'Travail' }),
+      makeItem('Anatomie', '2026-03-01', { category: 'Études' }),
+      makeItem('Sonate', '2026-03-01', { category: '' }),
+    ]
+    const jour = grilleDuMois(items, fromKey('2026-03-01')).find(
+      (candidat) => candidat.cle === '2026-03-04',
+    )
+    // Une matière vide reste une chaîne vide : c'est à l'affichage de décider
+    // qu'elle ne se teinte pas, pas à la grille de l'effacer.
+    expect(jour?.categories).toEqual(['Études', 'Travail', ''])
+  })
+
+  it('laisse les catégories vides quand le jour n’a rien', () => {
+    const jour = grilleDuMois([], fromKey('2026-03-01'))[0]
+    expect(jour.categories).toEqual([])
   })
 })
 

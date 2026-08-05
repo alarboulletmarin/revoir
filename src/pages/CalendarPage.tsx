@@ -12,11 +12,13 @@ import { useValidation } from '../state/useValidation'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import { formatLong, formatMonth, fromKey, toKey, todayKey, type DateKey } from '../lib/dates'
 import { entriesForDate } from '../lib/stats'
+import { teinteDe } from '../lib/categories'
 import {
   JOURS_SEMAINE,
   densite,
   deplacementClavier,
   grilleDuMois,
+  type JourCalendrier,
 } from '../lib/calendrier'
 import { ItemRevision } from '../components/ItemRevision'
 import { FeuilleBas } from '../components/FeuilleBas'
@@ -25,7 +27,7 @@ import { IconeChevron } from '../components/Icons'
 
 export function CalendarPage() {
   useTitrePage('Calendrier')
-  const { items } = useItems()
+  const { items, teintes } = useItems()
   const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = todayKey()
 
@@ -163,7 +165,7 @@ export function CalendarPage() {
                 // le focus d'une case à l'autre.
                 tabIndex={jour.cle === ancre ? 0 : -1}
                 aria-pressed={estChoisi}
-                aria-label={etiquetteJour(jour.cle, estAujourdhui, jour.total, toutesFaites)}
+                aria-label={etiquetteJour(jour, estAujourdhui, toutesFaites)}
                 onClick={() => choisir(jour.cle)}
                 onFocus={() => setAncre(jour.cle)}
                 onKeyDown={(event) => surTouche(event, jour.cle)}
@@ -172,7 +174,7 @@ export function CalendarPage() {
                   {jour.numero}
                 </span>
                 <span className="calendrier__points" aria-hidden="true">
-                  {Array.from({ length: densite(jour.total) }, (_, index) => (
+                  {jour.categories.slice(0, densite(jour.total)).map((categorie, index) => (
                     <span
                       key={index}
                       className={
@@ -180,8 +182,23 @@ export function CalendarPage() {
                           ? 'calendrier__point calendrier__point--fait'
                           : 'calendrier__point'
                       }
+                      // Un élément sans matière garde le point --accent : la
+                      // teinte par défaut de la chaîne vide ne veut rien dire.
+                      data-teinte={
+                        categorie.trim() === ''
+                          ? undefined
+                          : teinteDe(categorie, teintes)
+                      }
                     />
                   ))}
+                  {/*
+                    Trois points au plus, mais on ne peut pas laisser croire
+                    qu'un jour à sept révisions en porte trois. Le compte exact
+                    est dans l'étiquette du bouton, et dans la feuille.
+                  */}
+                  {jour.total > densite(jour.total) && (
+                    <span className="calendrier__plus">+</span>
+                  )}
                 </span>
               </button>
             )
@@ -228,20 +245,34 @@ export function CalendarPage() {
 }
 
 
+/** Matières distinctes d'un jour, dans l'ordre d'apparition, trois au plus. */
+function matieresDuJour(categories: string[]): string[] {
+  const distinctes = new Set(
+    categories.map((categorie) => categorie.trim()).filter((nom) => nom !== ''),
+  )
+  return [...distinctes].slice(0, 3)
+}
+
 /**
- * « 6 août 2026, aujourd'hui, 3 révisions, toutes faites ». Le nombre réel
- * est annoncé même au-delà de trois points, et l'état « fait » n'est pas
- * porté par la seule couleur des points.
+ * « 6 août 2026, aujourd'hui, 7 révisions, Études, Langues ».
+ *
+ * Le nombre réel est annoncé même quand les points s'arrêtent à trois, et ni
+ * l'état « fait » ni la matière ne reposent sur la seule couleur d'un point
+ * de 4px — la section 3 bis l'interdit explicitement.
  */
 function etiquetteJour(
-  cle: DateKey,
+  jour: JourCalendrier,
   estAujourdhui: boolean,
-  total: number,
   toutesFaites: boolean,
 ): string {
-  const parties = [formatLong(cle)]
+  const parties = [formatLong(jour.cle)]
   if (estAujourdhui) parties.push("aujourd'hui")
-  parties.push(total === 0 ? 'aucune révision' : `${total} révision${total > 1 ? 's' : ''}`)
+  parties.push(
+    jour.total === 0
+      ? 'aucune révision'
+      : `${jour.total} révision${jour.total > 1 ? 's' : ''}`,
+  )
   if (toutesFaites) parties.push('toutes faites')
+  parties.push(...matieresDuJour(jour.categories))
   return parties.join(', ')
 }

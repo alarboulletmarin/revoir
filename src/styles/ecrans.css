@@ -703,30 +703,59 @@
 }
 
 /*
- * Réservés même à zéro point : sans cette hauteur, les chiffres des jours
- * vides ne s'aligneraient pas sur ceux des jours chargés.
+ * Réservée même à zéro point : sans cette hauteur, les chiffres des jours
+ * vides ne s'aligneraient pas sur ceux des jours chargés. Elle tient la
+ * hauteur du « + », qui est le plus haut des deux contenus possibles.
  */
 .calendrier__points {
   display: flex;
-  height: var(--point-jour);
+  height: var(--e-3);
+  align-items: center;
+  justify-content: center;
   gap: var(--point-jour-gap);
 }
 
+/*
+ * Teinté par la matière, comme la chip et la pastille : c'est le seul endroit
+ * de l'app où deux révisions du même jour se distinguaient d'un coup d'œil.
+ * Repli sur --accent pour un élément sans matière — la teinte dérivée d'une
+ * chaîne vide ne voudrait rien dire.
+ */
 .calendrier__point {
   width: var(--point-jour);
   height: var(--point-jour);
+  flex-shrink: 0;
   border-radius: var(--r-pilule);
-  background-color: var(--accent);
+  background-color: var(--teinte, var(--accent));
 }
 
-/* Sur le disque plein, les points repassent en clair pour rester lisibles. */
+/*
+ * Un état passe avant une identité (section 3 bis : --fait reste réservé au
+ * sien). Journée soldée : les points perdent leur matière et prennent le vert
+ * de l'état, que l'étiquette du bouton écrit aussi en toutes lettres.
+ */
+.calendrier__point--fait {
+  background-color: var(--fait);
+}
+
+/*
+ * Au-delà de trois révisions, les points s'arrêtent mais ne mentent pas. Le
+ * compte exact vit dans l'étiquette du bouton et dans la feuille du jour :
+ * ici, un signe suffit à dire qu'il y en a davantage.
+ */
+.calendrier__plus {
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: 1;
+}
+
+/* Sur le disque plein, les deux repassent en clair pour rester lisibles. */
 .calendrier__case--choisi .calendrier__point {
   background-color: var(--surface);
 }
 
-/* La journée est soldée. L'étiquette du bouton le dit aussi en toutes lettres. */
-.calendrier__point--fait {
-  background-color: var(--fait);
+.calendrier__case--choisi .calendrier__plus {
+  color: var(--surface);
 }
 
 /* ------------------------------------------------- feuille du jour ----- */

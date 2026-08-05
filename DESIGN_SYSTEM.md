@@ -373,7 +373,11 @@ Ancré en bas, au-dessus du FAB, largeur limitée à 480px. Fond `--encre`, text
 
 ### 8.11 Calendrier
 
-Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions) ; le nombre réel est dans l'étiquette du bouton, avec la date et, s'il y a lieu, « aujourd'hui » et « toutes faites ». Points `--accent`, `--fait` quand la journée est soldée.
+Cases de 44px minimum — la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), suivis d'un `+` en `--t-xs` `--encre-2` au-delà : trois points ne doivent pas laisser croire qu'il y a trois révisions.
+
+Chaque point prend la teinte de sa matière, comme la chip et la pastille (section 3 bis) — c'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un élément sans matière. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
+
+La couleur ne porte rien seule : l'étiquette du bouton donne la date, « aujourd'hui » s'il y a lieu, le nombre **réel** de révisions, « toutes faites », puis les matières du jour — trois au plus.
 
 Deux états, deux moyens : **aujourd'hui** se marque d'un anneau `--accent`, le **jour sélectionné** d'un disque `--accent` plein. Les deux ensemble : le disque, plus un anneau posé à 2px. La bordure transparente est réservée sur toutes les cases pour qu'aucun changement d'état ne décale la grille.
 
