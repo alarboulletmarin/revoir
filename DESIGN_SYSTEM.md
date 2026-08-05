@@ -43,6 +43,12 @@ Où elle apparaît : fiche d'un élément (grande, avec libellés), item de list
 
 Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse d'en être une.
 
+### Le signe de l'en-tête
+
+Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les six icônes de la section 11.
+
+Le carré plein `--accent` de l'icône reste à l'icône. Dans l'en-tête, ce serait une seconde surface pleine sur un écran qui en compte déjà une (section 3) : le signe se pose à même le papier, tracé en `--accent`, 48px de large. Sous 32px les deux premières graduations se confondent — c'est le plancher, pas une valeur à ajuster à vue.
+
 ---
 
 ## 3. Couleurs

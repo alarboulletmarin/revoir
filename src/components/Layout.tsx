@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { NavBar } from './NavBar'
 import { IconePlus } from './Icons'
+import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
 import { useItems } from '../state/useItems'
 
@@ -22,6 +23,7 @@ export function Layout() {
       <header className="appli__entete">
         <div className="appli__barre">
           <Link to="/" className="appli__marque">
+            <Marque className="appli__signe" />
             Revoir
           </Link>
         </div>
