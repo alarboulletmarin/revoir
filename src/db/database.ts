@@ -6,7 +6,7 @@ import {
   type StoreNames,
 } from 'idb'
 import type { Category, Programme, Review, Topic } from '../types'
-import type { Teinte } from '../lib/categories'
+import { categoriesProposees, type Teinte } from '../lib/categories'
 import {
   normaliserV3,
   type ItemLegacy,
@@ -99,9 +99,38 @@ function getDB(): Promise<IDBPDatabase<RevoirDB>> {
       if (oldVersion > 0 && db.objectStoreNames.contains(ITEMS_V3)) {
         void migrerVersV4(db, tx)
       }
+
+      /*
+       * Le semis, et le seul moment où l'application a le droit d'écrire des
+       * catégories que personne ne lui a demandées : une base neuve.
+       *
+       * Une base qui existait déjà — v1 à v4 — a `oldVersion > 0` et n'est
+       * jamais semée : ses catégories sont celles de son propriétaire, et lui
+       * en ajouter six serait s'inviter dans ses données. L'écran des
+       * catégories les lui propose, il ne les lui impose pas.
+       *
+       * C'est aussi pourquoi `DB_VERSION` ne bouge pas. `upgrade` tourne déjà
+       * pour une base neuve, quel que soit le numéro visé ; l'incrémenter
+       * n'ajouterait qu'une transaction `versionchange` sur toutes les bases
+       * existantes, qui reste bloquée tant qu'un autre onglet tient la sienne
+       * ouverte. Un semis qui ne concerne que les bases neuves n'a pas à faire
+       * attendre celles des autres.
+       */
+      if (oldVersion === 0) {
+        void semerCategories(tx)
+      }
     },
   })
   return dbPromise
+}
+
+/** Les six catégories livrées, écrites dans la transaction de création. */
+function semerCategories(tx: Transaction) {
+  const maintenant = new Date().toISOString()
+  const categories = tx.objectStore(CATEGORIES)
+  return Promise.all(
+    categoriesProposees(maintenant).map((categorie) => categories.put(categorie)),
+  )
 }
 
 /**
@@ -155,9 +184,29 @@ export async function putCategory(categorie: Category): Promise<void> {
   await db.put(CATEGORIES, categorie)
 }
 
-export async function deleteCategory(id: string): Promise<void> {
+/**
+ * Supprime une catégorie et détache ses sujets, dans une seule transaction.
+ *
+ * Séparées, les deux opérations laisseraient à la moindre panne des sujets
+ * désignant une catégorie disparue — précisément l'intégrité référentielle que
+ * le modèle normalisé est là pour défendre, et que l'import refuse déjà de
+ * franchir (« catégorie inconnue »).
+ *
+ * `detaches` vient de `detacherCategorie` : la décision se prend dans `lib/`,
+ * où elle se teste ; ici, on ne fait plus qu'écrire.
+ */
+export async function deleteCategoryDetachingTopics(
+  categoryId: string,
+  detaches: Topic[],
+): Promise<void> {
   const db = await getDB()
-  await db.delete(CATEGORIES, id)
+  const tx = db.transaction([CATEGORIES, TOPICS], 'readwrite')
+  const topics = tx.objectStore(TOPICS)
+  await Promise.all([
+    ...detaches.map((topic) => topics.put(topic)),
+    tx.objectStore(CATEGORIES).delete(categoryId),
+  ])
+  await tx.done
 }
 
 /* ---------------------------------------------------------------- sujets -- */

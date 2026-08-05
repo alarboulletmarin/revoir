@@ -6,9 +6,14 @@ import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
 import { useDonnees } from '../state/useDonnees'
 
-/** Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes. */
+/**
+ * Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes.
+ *
+ * « nouvelle » au féminin pour la catégorie : le mot suit son objet, et une
+ * seule des deux formes laisserait le bouton flotter sur un formulaire.
+ */
 function fabVisible(pathname: string): boolean {
-  return !pathname.endsWith('/nouveau') && !pathname.endsWith('/modifier')
+  return !/\/(nouveau|nouvelle|modifier)$/.test(pathname)
 }
 
 /**

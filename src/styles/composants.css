@@ -642,6 +642,126 @@
   }
 }
 
+/* ====================================================== champ choix ===== */
+
+/*
+ * Un select natif, habillé (section 8.6). Le contrôle du système reste : liste
+ * roulante iOS, clavier, recherche à la frappe — même parti pris que le champ
+ * date et que la pipette du sélecteur de teinte.
+ *
+ * `appearance: none` est nécessaire — sans lui, iOS repeint le champ à sa
+ * façon par-dessus la bordure du design system —, mais il emporte la flèche
+ * native au passage. Elle est donc redessinée avec le chevron des sept icônes,
+ * pivoté : aucun signe nouveau (section 11).
+ *
+ * Aucun `font-size` ici : le reset pose --t-champ sur tous les select, et le
+ * plancher anti-zoom iOS ne se redéclare jamais plus bas.
+ */
+.champ-select {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.champ-select__saisie {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--e-7);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  /* À droite, la place du chevron. */
+  padding-inline: var(--e-3) var(--e-7);
+  color: var(--encre);
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: border-color var(--duree-court) var(--courbe);
+}
+
+/* La pastille prend sa place à gauche : --e-3 de marge, --e-2 de pastille,
+   --e-2 pour la séparer du texte. */
+.champ-select--pastille .champ-select__saisie {
+  padding-inline-start: calc(var(--e-3) + var(--e-2) + var(--e-2));
+}
+
+.champ-select__saisie:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Peints par-dessus le champ : c'est le select entier qui reste la cible. */
+.champ-select__pastille,
+.champ-select__chevron {
+  position: absolute;
+  pointer-events: none;
+}
+
+.champ-select__pastille {
+  display: flex;
+  inset-inline-start: var(--e-3);
+}
+
+.champ-select__chevron {
+  inset-inline-end: var(--e-3);
+  color: var(--encre-2);
+  transform: rotate(90deg);
+}
+
+@media (hover: hover) {
+  .champ-select__saisie:hover {
+    background-color: var(--surface-survol);
+  }
+}
+
+/* ------------------------------------------ sélecteur de catégorie ----- */
+
+/*
+ * Le champ et son raccourci. Le bouton se pose sous le champ plutôt que dans
+ * la liste : une option qui n'est pas une valeur est annoncée comme une
+ * valeur, et laisserait le champ incohérent si l'on renonce.
+ */
+.selecteur-categorie {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  align-items: flex-start;
+}
+
+.selecteur-categorie > .champ {
+  width: 100%;
+}
+
+.selecteur-categorie__ajout {
+  gap: var(--e-2);
+}
+
+/* Un cercle vide, pour que le champ ne saute pas latéralement au premier
+   choix — et pour que « Sans catégorie » soit une absence, pas un oubli. */
+.pastille--vide {
+  border: 1.5px solid var(--trait);
+  background-color: transparent;
+}
+
+.champs-categorie__apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  align-items: flex-start;
+}
+
+/* Une feuille de saisie respire moins qu'une page : elle est plafonnée à
+   78dvh, et --e-5 entre chaque champ y pousserait les boutons hors du cadre. */
+.formulaire--feuille {
+  gap: var(--e-4);
+  padding-block-end: var(--e-2);
+}
+
 /* =========================================================== toast ====== */
 
 .toast {

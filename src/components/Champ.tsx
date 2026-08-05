@@ -10,9 +10,11 @@ import {
   type InputHTMLAttributes,
   type MouseEvent,
   type ReactNode,
+  type Ref,
+  type SelectHTMLAttributes,
 } from 'react'
 import { formatLong } from '../lib/dates'
-import { IconeCalendrier } from './Icons'
+import { IconeCalendrier, IconeChevron } from './Icons'
 
 /** Identifiants des messages reliés au champ par `aria-describedby`. */
 function decrire(id: string, erreur?: string | null, aide?: ReactNode) {
@@ -23,8 +25,14 @@ function decrire(id: string, erreur?: string | null, aide?: ReactNode) {
   )
 }
 
-/** Coquille commune : le label au-dessus, l'aide ou l'erreur en dessous. */
-function Coquille({
+/**
+ * Coquille commune : le label au-dessus, l'aide ou l'erreur en dessous.
+ *
+ * Exportée pour que tout champ écrit ailleurs — le sélecteur de catégorie —
+ * porte exactement le même gabarit que ceux d'ici. Un label recomposé à la main
+ * finit toujours par diverger d'un pixel ou d'un `aria-describedby`.
+ */
+export function Coquille({
   id,
   label,
   erreur,
@@ -63,20 +71,95 @@ interface ChampProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   erreur?: string | null
   /** Précision affichée sous le champ quand il n'y a pas d'erreur. */
   aide?: ReactNode
+  /**
+   * La feuille de création rapide vise ce champ à l'ouverture : `autoFocus`
+   * n'y suffit pas, le `<dialog>` est monté bien avant de s'ouvrir.
+   */
+  ref?: Ref<HTMLInputElement>
 }
 
-export function Champ({ label, erreur, aide, className, ...props }: ChampProps) {
+export function Champ({ label, erreur, aide, className, ref, ...props }: ChampProps) {
   const id = useId()
 
   return (
     <Coquille id={id} label={label} erreur={erreur} aide={aide}>
       <input
         id={id}
+        ref={ref}
         className={['champ__saisie', className].filter(Boolean).join(' ')}
         aria-invalid={erreur ? true : undefined}
         aria-describedby={decrire(id, erreur, aide)}
         {...props}
       />
+    </Coquille>
+  )
+}
+
+interface ChampSelectProps
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id'> {
+  label: string
+  erreur?: string | null
+  aide?: ReactNode
+  /**
+   * Pastille peinte dans le champ, à gauche de la valeur. Un nœud quelconque :
+   * ce composant ne sait pas ce qu'est une teinte, c'est l'appelant qui la
+   * connaît.
+   */
+  pastille?: ReactNode
+  ref?: Ref<HTMLSelectElement>
+  /** Les `<option>`. */
+  children: ReactNode
+}
+
+/**
+ * Champ de choix (section 8.6) : un `<select>` natif, habillé.
+ *
+ * Le contrôle du système reste — liste roulante iOS, clavier, recherche à la
+ * frappe —, comme le champ date garde son `input[type=date]` et le sélecteur
+ * de teinte sa pipette. Un composant maison ne se justifie pas davantage ici.
+ *
+ * `appearance: none` est nécessaire pour qu'iOS ne repeigne pas le champ
+ * par-dessus la bordure du design system, mais il emporte la flèche native au
+ * passage. Elle est donc redessinée avec le chevron des sept icônes, pivoté —
+ * aucun signe nouveau (section 11). C'est ce que le filtre du suivi n'avait
+ * pas : une boîte de 48px sans le moindre indice qu'elle s'ouvre.
+ */
+export function ChampSelect({
+  label,
+  erreur,
+  aide,
+  pastille,
+  className,
+  ref,
+  children,
+  ...props
+}: ChampSelectProps) {
+  const id = useId()
+
+  return (
+    <Coquille id={id} label={label} erreur={erreur} aide={aide}>
+      <div
+        className={['champ-select', pastille ? 'champ-select--pastille' : null]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {pastille && (
+          <span className="champ-select__pastille" aria-hidden="true">
+            {pastille}
+          </span>
+        )}
+        <select
+          id={id}
+          ref={ref}
+          className={['champ-select__saisie', className].filter(Boolean).join(' ')}
+          aria-invalid={erreur ? true : undefined}
+          aria-describedby={decrire(id, erreur, aide)}
+          {...props}
+        >
+          {children}
+        </select>
+        <IconeChevron className="champ-select__chevron" width="18" height="18" />
+      </div>
     </Coquille>
   )
 }

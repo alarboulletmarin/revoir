@@ -9,7 +9,15 @@
  * Elle se ferme de quatre façons : le bouton, Échap, un clic sur le
  * `::backdrop`, et le glissement vers le bas.
  */
-import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 
 /** Course au-delà de laquelle le geste ferme au lieu de revenir en place. */
 const SEUIL_FERMETURE = 96
@@ -18,10 +26,25 @@ interface FeuilleBasProps {
   ouverte: boolean
   titre: string
   onFermer: () => void
+  /**
+   * Ce que le focus vise à l'ouverture, à la place du corps.
+   *
+   * Une feuille qu'on lit vise son corps : l'anneau ne doit pas se poser sur
+   * « Fermer », qui est une sortie et non une action. L'argument tombe pour une
+   * feuille qui n'existe que pour qu'on y écrive — l'y laisser imposerait un
+   * geste de plus avant d'atteindre le premier champ.
+   */
+  cibleFocus?: RefObject<HTMLElement | null>
   children: ReactNode
 }
 
-export function FeuilleBas({ ouverte, titre, onFermer, children }: FeuilleBasProps) {
+export function FeuilleBas({
+  ouverte,
+  titre,
+  onFermer,
+  cibleFocus,
+  children,
+}: FeuilleBasProps) {
   const reference = useRef<HTMLDialogElement>(null)
   const corps = useRef<HTMLDivElement>(null)
   const depart = useRef<number | null>(null)
@@ -35,11 +58,14 @@ export function FeuilleBas({ ouverte, titre, onFermer, children }: FeuilleBasPro
       // `showModal` viserait le premier élément focalisable — le bouton
       // « Fermer », annoncé avant la date et cerclé d'un anneau de focus dès
       // l'ouverture. On prend la feuille elle-même : le lecteur d'écran lit
-      // son intitulé, et la première tabulation mène au bouton.
-      corps.current?.focus()
+      // son intitulé, et la première tabulation mène au bouton. Sauf si
+      // l'appelant désigne un champ : la visée doit alors avoir lieu ici,
+      // après `showModal` — `autoFocus` a tiré à blanc au montage, bien avant
+      // que la feuille ne s'ouvre.
+      ;(cibleFocus?.current ?? corps.current)?.focus()
     }
     if (!ouverte && feuille.open) feuille.close()
-  }, [ouverte])
+  }, [ouverte, cibleFocus])
 
   // Une feuille rouverte repart du bas, jamais de la position où le geste
   // précédent l'avait laissée.

@@ -124,19 +124,24 @@ export function Suivi() {
       <div className="suivi__reglages">
         <label className="suivi__filtre" htmlFor={champFiltre}>
           <span className="champ__label">Catégorie</span>
-          <select
-            id={champFiltre}
-            className="champ__saisie"
-            value={filtre}
-            onChange={(event) => setFiltre(event.target.value)}
-          >
-            <option value={TOUTES}>Toutes les catégories</option>
-            {groupes.map((groupe) => (
-              <option key={groupe.cle} value={groupe.cle}>
-                {groupe.nom}
-              </option>
-            ))}
-          </select>
+          {/* Même gabarit que le champ de choix du formulaire : `appearance:
+              none` emporte la flèche native, on la redessine. */}
+          <div className="champ-select">
+            <select
+              id={champFiltre}
+              className="champ-select__saisie"
+              value={filtre}
+              onChange={(event) => setFiltre(event.target.value)}
+            >
+              <option value={TOUTES}>Toutes les catégories</option>
+              {groupes.map((groupe) => (
+                <option key={groupe.cle} value={groupe.cle}>
+                  {groupe.nom}
+                </option>
+              ))}
+            </select>
+            <IconeChevron className="champ-select__chevron" width="18" height="18" />
+          </div>
         </label>
 
         <fieldset className="suivi__mode">

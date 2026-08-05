@@ -10,14 +10,12 @@ import {
   type ContenuSauvegarde,
 } from '../lib/backup'
 import { archivedTopics, categoriesTriees } from '../lib/sujets'
-import { teinteDe } from '../lib/categories'
 import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
-import { SelecteurTeinte } from '../components/SelecteurTeinte'
-import { ChipCategorie, PastilleCategorie } from '../components/ChipCategorie'
+import { ChipCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
@@ -27,7 +25,6 @@ export function Settings() {
     categories,
     topics,
     reviews,
-    definirTeinte,
     importer,
     setArchived,
     programmes,
@@ -141,32 +138,28 @@ export function Settings() {
         )}
       </section>
 
+      {/*
+        Un aperçu et un lien, pas la gestion elle-même : renommer, recolorer et
+        supprimer tiennent sur leur propre écran, et les Réglages sont déjà
+        longs. Les chips disent d'un coup d'œil ce qu'il y a, ce qu'une liste
+        d'éditeurs empilés dirait moins bien.
+      */}
       <section className="reglages__bloc">
         <h2 className="section__titre">Catégories</h2>
         {rangees.length === 0 ? (
           <p className="discret">Aucune catégorie pour le moment.</p>
         ) : (
-          <ul className="categories-reglage">
+          <ul className="reglages__apercu">
             {rangees.map((categorie) => (
-              <li key={categorie.id} className="categorie-reglage">
-                <span className="categorie-reglage__nom">
-                  <PastilleCategorie categorie={categorie} />
-                  {categorie.name}
-                </span>
-                <SelecteurTeinte
-                  groupe={`categorie-${categorie.id}`}
-                  legende={`Couleur de ${categorie.name}`}
-                  legendeMasquee
-                  valeur={teinteDe(categorie)!}
-                  onChange={(teinte) => definirTeinte(categorie.id, teinte)}
-                />
+              <li key={categorie.id}>
+                <ChipCategorie categorie={categorie} />
               </li>
             ))}
           </ul>
         )}
-        <p className="discret discret--petit">
-          Une catégorie sans couleur choisie en reçoit une, dérivée de son nom.
-        </p>
+        <div className="reglages__actions">
+          <LienBouton vers="/categories">Gérer les catégories</LienBouton>
+        </div>
       </section>
 
       <section className="reglages__bloc">
