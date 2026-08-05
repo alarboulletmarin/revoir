@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useItems } from '../state/useItems'
 import { useTitrePage } from '../state/useTitrePage'
@@ -11,17 +11,10 @@ import {
 } from '../lib/backup'
 import { archivedItems, usedCategories } from '../lib/stats'
 import { teinteDe } from '../lib/categories'
-import {
-  RYTHME_MAX_REVISIONS,
-  listerDecalages,
-  normaliserRythme,
-  reviewsDepuisOffsets,
-  decrirePortee,
-} from '../lib/schedules'
+import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { Bouton } from '../components/Bouton'
-import { Champ } from '../components/Champ'
+import { Bouton, LienBouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
 import { SelecteurTeinte } from '../components/SelecteurTeinte'
 import { ChipCategorie, PastilleCategorie } from '../components/ChipCategorie'
@@ -37,48 +30,15 @@ export function Settings() {
     importItems,
     setArchived,
     programmes,
-    creerProgramme,
     supprimerProgramme,
     compterUsages,
   } = useItems()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
-  const [nomRythme, setNomRythme] = useState('')
-  const [saisieRythme, setSaisieRythme] = useState('')
-  const [soumis, setSoumis] = useState(false)
 
   const archives = archivedItems(items)
   const matieres = usedCategories(items)
-
-  const offsets = useMemo(() => normaliserRythme(saisieRythme), [saisieRythme])
-
-  const erreurNom =
-    nomRythme.trim() === ''
-      ? 'Le nom est obligatoire.'
-      : programmes.some(
-            (programme) =>
-              programme.label.toLocaleLowerCase('fr') ===
-              nomRythme.trim().toLocaleLowerCase('fr'),
-          )
-        ? 'Un programme porte déjà ce nom.'
-        : null
-
-  const erreurRythme =
-    offsets.length === 0 ? 'Indiquez au moins un jour, par exemple 1 3 7 14 30.' : null
-
-  const creer = (event: FormEvent) => {
-    event.preventDefault()
-    setSoumis(true)
-    if (erreurNom || erreurRythme) return
-    const nom = nomRythme.trim()
-    void creerProgramme(nom, offsets).then(() => {
-      setNomRythme('')
-      setSaisieRythme('')
-      setSoumis(false)
-      setRetour({ ton: 'ok', message: `Programme « ${nom} » créé.` })
-    })
-  }
 
   const supprimer = (id: string, label: string) => {
     void supprimerProgramme(id).then((fait) => {
@@ -211,8 +171,7 @@ export function Settings() {
         <h2 className="section__titre">Programmes</h2>
         <p className="discret">
           Les trois programmes intégrés — Simple, Poussé, Ultime — couvrent la
-          plupart des besoins. Vous pouvez créer les vôtres : un nom, et les jours
-          où la révision revient.
+          plupart des besoins. Vous pouvez composer les vôtres.
         </p>
 
         {programmes.length > 0 && (
@@ -239,20 +198,32 @@ export function Settings() {
                   <span className="rythme__jours">
                     {listerDecalages(programme.offsets)}
                   </span>
-                  {usages > 0 ? (
-                    <p className="discret discret--petit">
-                      Utilisé par {usages} élément{usages > 1 ? 's' : ''} : ses
-                      révisions sont déjà planifiées, il ne peut pas être supprimé.
-                    </p>
-                  ) : (
-                    <div className="rythme__actions">
+                  {/*
+                    Le nom se renomme toujours ; le rythme et la suppression
+                    tombent dès qu'un élément suit le programme.
+                  */}
+                  <div className="rythme__actions">
+                    <LienBouton
+                      vers={`/programmes/${programme.id}/modifier`}
+                      variante="discret"
+                    >
+                      {usages > 0 ? 'Renommer' : 'Modifier'}
+                    </LienBouton>
+                    {usages === 0 && (
                       <Bouton
                         variante="danger"
                         onClick={() => supprimer(programme.id, programme.label)}
                       >
                         Supprimer
                       </Bouton>
-                    </div>
+                    )}
+                  </div>
+                  {usages > 0 && (
+                    <p className="discret discret--petit">
+                      {usages > 1
+                        ? `Suivi par ${usages} éléments : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
+                        : 'Suivi par un élément : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}
+                    </p>
                   )}
                 </li>
               )
@@ -260,61 +231,11 @@ export function Settings() {
           </ul>
         )}
 
-        <form className="formulaire" onSubmit={creer} noValidate>
-          <Champ
-            label="Nom du programme"
-            type="text"
-            value={nomRythme}
-            maxLength={40}
-            autoComplete="off"
-            onChange={(event) => setNomRythme(event.target.value)}
-            erreur={soumis ? erreurNom : null}
-          />
-          <Champ
-            label="Rythme"
-            type="text"
-            inputMode="numeric"
-            value={saisieRythme}
-            maxLength={120}
-            autoComplete="off"
-            onChange={(event) => setSaisieRythme(event.target.value)}
-            aide={`Les jours après le départ, séparés par des espaces. ${RYTHME_MAX_REVISIONS} au plus.`}
-            erreur={soumis ? erreurRythme : null}
-          />
-
-          {/*
-            Ce que le champ a retenu, écrit noir sur blanc : les doublons et
-            les valeurs hors bornes tombent, et il n'y a qu'ici qu'on peut
-            s'en apercevoir. On choisit un rythme, pas un mot (section 8.7) —
-            d'où la frise.
-          */}
-          {offsets.length > 0 && (
-            <div className="rythme__apercu">
-              <Frise
-                origine={todayKey()}
-                reviews={reviewsDepuisOffsets(todayKey(), offsets)}
-                aujourdhui={todayKey()}
-                variante="mini"
-                intitule="Aperçu du rythme"
-              />
-              <span className="rythme__jours">
-                {offsets.length} révision{offsets.length > 1 ? 's' : ''} ·{' '}
-                {decrirePortee(offsets)} · {listerDecalages(offsets)}
-              </span>
-            </div>
-          )}
-
-          {/*
-            Discret, pas primaire : « Exporter les données » tient déjà ce rôle
-            plus haut, et il n'y a qu'une surface --accent pleine par écran
-            (sections 3 et 8.4).
-          */}
-          <div className="formulaire__actions">
-            <Bouton variante="discret" type="submit">
-              Créer le programme
-            </Bouton>
-          </div>
-        </form>
+        <div className="reglages__actions">
+          <LienBouton vers="/programmes/nouveau" variante="discret">
+            Créer un programme
+          </LienBouton>
+        </div>
       </section>
 
       <section className="reglages__bloc">

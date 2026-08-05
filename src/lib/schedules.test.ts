@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { Programme } from '../types'
 import {
-  RYTHME_MAX_REVISIONS,
+  ECHELLE_RYTHME,
   SCHEDULES,
   buildReviews,
   decrirePortee,
   getSchedule,
   isScheduleId,
+  decrireEcart,
   listerDecalages,
-  normaliserRythme,
+  nommerEcart,
   previewDates,
   rebuildReviews,
   tousLesProgrammes,
@@ -142,36 +143,6 @@ describe('portée des programmes', () => {
   })
 })
 
-describe('normaliserRythme', () => {
-  it('lit une suite de jours quel que soit le séparateur', () => {
-    expect(normaliserRythme('1 3 7 14 30')).toEqual([1, 3, 7, 14, 30])
-    expect(normaliserRythme('1,3,7')).toEqual([1, 3, 7])
-    expect(normaliserRythme('J+1 · J+3 · J+7')).toEqual([1, 3, 7])
-    expect(normaliserRythme('7;3;1')).toEqual([1, 3, 7])
-  })
-
-  it('trie et déduplique', () => {
-    expect(normaliserRythme('30 1 7 1 3 30')).toEqual([1, 3, 7, 30])
-  })
-
-  it('écarte zéro, le négatif et le trop lointain', () => {
-    // Le signe n'est pas lu : « -5 » donne 5. Un décalage est un nombre de
-    // jours après le départ, il n'y a rien avant.
-    expect(normaliserRythme('0 1 4000')).toEqual([1])
-    expect(normaliserRythme('-5 10')).toEqual([5, 10])
-  })
-
-  it('plafonne le nombre de révisions', () => {
-    const saisie = Array.from({ length: 30 }, (_, index) => index + 1).join(' ')
-    expect(normaliserRythme(saisie)).toHaveLength(RYTHME_MAX_REVISIONS)
-  })
-
-  it('rend une liste vide pour une saisie sans nombre', () => {
-    expect(normaliserRythme('')).toEqual([])
-    expect(normaliserRythme('bientôt')).toEqual([])
-  })
-})
-
 describe('decrirePortee', () => {
   it('décrit les trois programmes intégrés dans les mots de la spécification', () => {
     expect(getSchedule('simple').description).toBe('sur un mois')
@@ -226,5 +197,58 @@ describe('programmes personnalisés', () => {
 
   it("n'est pas reconnu par isScheduleId, réservé aux trois intégrés", () => {
     expect(isScheduleId('p-1')).toBe(false)
+  })
+})
+
+describe('échelle des rythmes', () => {
+  it('ne propose que des écarts croissants, sans doublon', () => {
+    expect([...ECHELLE_RYTHME].sort((a, b) => a - b)).toEqual(ECHELLE_RYTHME)
+    expect(new Set(ECHELLE_RYTHME).size).toBe(ECHELLE_RYTHME.length)
+  })
+
+  it('ne propose que des écarts qui se disent d’un mot', () => {
+    /*
+     * C'est la raison d'être de l'échelle. Au-delà de dix jours — qu'on situe
+     * encore d'un coup d'œil —, chaque graduation doit tomber juste dans son
+     * unité : une semaine, un mois, un an. Jamais un « 45 j » que personne ne
+     * sait placer.
+     */
+    for (const jours of ECHELLE_RYTHME) {
+      if (jours <= 10) continue
+      expect(nommerEcart(jours)).not.toBe(`${jours} j`)
+    }
+  })
+
+  it('couvre les trois programmes intégrés', () => {
+    // Un rythme connu doit pouvoir être chargé puis ajusté graduation par
+    // graduation : si l'un de ses écarts manquait, il serait irreproductible.
+    for (const schedule of SCHEDULES) {
+      for (const offset of schedule.offsets) {
+        expect(ECHELLE_RYTHME).toContain(offset)
+      }
+    }
+  })
+})
+
+describe('nommerEcart', () => {
+  it('choisit l’unité naturelle de l’écart', () => {
+    expect(nommerEcart(1)).toBe('1 j')
+    expect(nommerEcart(6)).toBe('6 j')
+    expect(nommerEcart(7)).toBe('1 sem.')
+    expect(nommerEcart(14)).toBe('2 sem.')
+    expect(nommerEcart(30)).toBe('1 mois')
+    expect(nommerEcart(90)).toBe('3 mois')
+    expect(nommerEcart(365)).toBe('1 an')
+    expect(nommerEcart(730)).toBe('2 ans')
+  })
+
+  it('retombe sur les jours quand aucune unité ne tombe juste', () => {
+    expect(nommerEcart(10)).toBe('10 j')
+    expect(nommerEcart(45)).toBe('45 j')
+  })
+
+  it('s’écrit toujours en jours pour un lecteur d’écran', () => {
+    expect(decrireEcart(1)).toBe('1 jour après le départ')
+    expect(decrireEcart(30)).toBe('30 jours après le départ')
   })
 })

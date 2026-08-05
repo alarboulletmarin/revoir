@@ -61,6 +61,12 @@ export interface ItemsContextValue {
   programmesDisponibles: Schedule[]
   creerProgramme: (label: string, offsets: number[]) => Promise<Programme>
   /**
+   * Le nom se change toujours ; le rythme, seulement tant qu'aucun élément ne
+   * suit le programme — sinon les révisions déjà planifiées ne correspondraient
+   * plus à ce que la fiche annonce.
+   */
+  modifierProgramme: (id: string, label: string, offsets: number[]) => Promise<void>
+  /**
    * Refuse de supprimer un programme encore porté par un élément — ses
    * révisions sont déjà écrites, mais sa fiche et son formulaire n'auraient
    * plus de rythme à nommer.
@@ -269,6 +275,29 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
     return programme
   }, [])
 
+  const modifierProgramme = useCallback(
+    async (id: string, label: string, offsets: number[]) => {
+      const existant = programmes.find((programme) => programme.id === id)
+      if (!existant) return
+      const fige = items.some((item) => item.schedule === id)
+      const modifie: Programme = {
+        ...existant,
+        label: label.trim(),
+        offsets: fige ? existant.offsets : offsets,
+      }
+      setProgrammes((actuels) =>
+        actuels.map((programme) => (programme.id === id ? modifie : programme)),
+      )
+      try {
+        await putProgramme(modifie)
+        setError(null)
+      } catch {
+        setError("L'enregistrement local a échoué.")
+      }
+    },
+    [items, programmes],
+  )
+
   const compterUsages = useCallback(
     (id: ScheduleId) => items.filter((item) => item.schedule === id).length,
     [items],
@@ -321,6 +350,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       programmes,
       programmesDisponibles,
       creerProgramme,
+      modifierProgramme,
       supprimerProgramme,
       compterUsages,
       loading,
@@ -341,6 +371,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       programmes,
       programmesDisponibles,
       creerProgramme,
+      modifierProgramme,
       supprimerProgramme,
       compterUsages,
       loading,

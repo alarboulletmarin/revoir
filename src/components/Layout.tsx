@@ -8,7 +8,7 @@ import { useItems } from '../state/useItems'
 
 /** Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes. */
 function fabVisible(pathname: string): boolean {
-  return pathname !== '/nouveau' && !pathname.endsWith('/modifier')
+  return !pathname.endsWith('/nouveau') && !pathname.endsWith('/modifier')
 }
 
 /**

@@ -373,16 +373,28 @@ Les trois programmes intégrés (Simple / Poussé / Ultime) viennent en premier,
 
 #### Programmes personnalisés
 
-Un programme est un nom et une suite de jours. Il se crée dans les réglages : un champ pour le nom, un champ pour le rythme, et la frise de ce qui sera créé juste en dessous.
+Un programme est un nom et une suite d'écarts. Il se compose sur son propre écran, `/programmes/nouveau`, comme un élément se crée sur le sien.
 
-Le champ de rythme est permissif — « 1 3 7 14 30 », « 1,3,7 » et « J+1 · J+3 » se valent — puis normalisé : trié, dédupliqué, borné à 20 révisions et 3650 jours. **Ce qui a été écarté doit se voir** : l'aperçu écrit la suite retenue en toutes lettres, sinon un nombre disparaîtrait en silence.
+**Un rythme ne se tape pas, il se touche.** Une grille de graduations, une par écart proposé, chacune basculable d'un doigt. Demander « 1 3 7 14 30 » dans un champ texte suppose de savoir déjà ce qu'est un rythme de répétition espacée — c'est exactement ce que l'écran doit apprendre.
 
-La portée (« sur un mois », « sur deux mois », « sur une année ») est dérivée du dernier décalage, dans les mêmes mots que les trois intégrés. En deçà de 25 jours elle s'écrit en jours : vingt jours ne sont pas un mois.
+L'échelle proposée : `1 2 3 4 5 6 7 10 14 21 30 60 90 120 180 270 365`. Ce ne sont pas des nombres ronds au hasard — **au-delà de dix jours, chaque valeur tombe juste dans son unité** et porte ce nom sur sa graduation : « 1 sem. », « 3 sem. », « 1 mois », « 9 mois », « 1 an ». Jamais un « 45 j » que personne ne sait situer. Le libellé complet — « 30 jours après le départ » — reste lu par les lecteurs d'écran, en jours, la seule unité qui ne demande aucune conversion.
+
+`J+n` n'apparaît nulle part sur cet écran. C'est la notation de l'app, pas celle d'un débutant ; elle revient sur la carte du programme, une fois créé.
+
+Trois appuis complètent la grille :
+
+- **Partir d'un rythme connu** — Simple, Poussé, Ultime chargent le leur d'un geste. L'écran s'ouvre d'ailleurs sur celui de Simple, jamais sur du vide : personne n'invente un rythme depuis rien, on part de ce qui marche et on l'ajuste. Corollaire tenu par un test : **tout écart des trois programmes intégrés figure dans l'échelle**, sans quoi l'un d'eux serait chargeable mais irreproductible.
+- **La frise**, redessinée à chaque geste — c'est elle qui montre l'espacement, ce qu'une liste de nombres ne dit pas.
+- **Le compte et la portée** en une ligne : « 7 révisions · sur trois mois ».
+
+La portée est dérivée du dernier écart, dans les mêmes mots que les trois intégrés. En deçà de 25 jours elle s'écrit en jours : vingt jours ne sont pas un mois.
 
 Deux règles tiennent le modèle :
 
-1. **Un programme ne se modifie pas.** Les révisions d'un élément sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. On crée, on supprime.
-2. **Un programme utilisé ne se supprime pas.** Sa carte l'annonce — « Utilisé par 3 éléments » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
+1. **Le nom se change toujours, le rythme seulement tant qu'il est libre.** Les révisions d'un élément sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. Dès qu'un élément suit le programme, la grille cède la place à la frise du rythme figé et à son explication — le champ du nom, lui, reste ouvert.
+2. **Un programme suivi ne se supprime pas.** Sa carte l'annonce — « Suivi par 3 éléments » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
+
+Un rythme venu d'un import peut porter un écart absent de l'échelle : sa graduation vient se ranger à sa place plutôt que de le rendre immodifiable.
 
 ### 8.8 Barres de charge
 

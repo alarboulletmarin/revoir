@@ -1013,9 +1013,90 @@ body[data-panneau='ouvert'] {
   gap: var(--e-2);
 }
 
+/* Les trois rythmes connus, à charger d'un geste dans le compositeur. */
+.rythme__modeles {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
 /*
- * L'aperçu du rythme en cours de saisie : la même frise que la carte, pour
- * qu'on voie ce que le champ a retenu avant de valider.
+ * Les graduations d'un rythme : une par écart proposé, touchable.
+ *
+ * C'est le cœur du compositeur — un rythme se touche, il ne se tape pas. Les
+ * écarts portent leur unité naturelle (« 1 sem. », « 3 mois »), et le libellé
+ * complet reste lisible par un lecteur d'écran.
+ */
+.jours {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/* Même langage visuel que la carte de programme, à l'échelle d'une pilule. */
+.jour {
+  position: relative;
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--trait);
+  border-radius: var(--r-pilule);
+  background-color: var(--surface);
+  padding-inline: var(--e-4);
+  color: var(--encre);
+  font-size: var(--t-base);
+  font-weight: 500;
+  line-height: var(--l-base);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.jour--actif {
+  border-color: var(--accent);
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
+
+/*
+ * La case reste focusable, elle n'est simplement pas dessinée deux fois.
+ * `pointer-events: none` laisse toute la pilule au doigt : sans lui, le
+ * pixel de la case posé au bord du contenu capte les touchers qui l'effleurent.
+ */
+.jour__case {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jour:has(.jour__case:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .jour:hover {
+    border-color: var(--encre-2);
+  }
+
+  .jour--actif:hover {
+    border-color: var(--accent);
+  }
+}
+
+/*
+ * L'aperçu du rythme figé : la même frise que la carte, quand le rythme ne
+ * peut plus être touché.
  */
 .rythme__apercu {
   display: flex;

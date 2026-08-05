@@ -17,9 +17,49 @@ export function listerDecalages(offsets: number[]): string {
   return offsets.map((offset) => `J+${offset}`).join(' · ')
 }
 
-/** Bornes d'un rythme saisi à la main. Au-delà, il ne se lit plus. */
+/** Bornes d'un rythme. Au-delà, il ne se lit plus. */
 export const RYTHME_MAX_REVISIONS = 20
 export const RYTHME_MAX_JOURS = 3650
+
+/**
+ * Les échéances proposées à la construction d'un rythme.
+ *
+ * Ce n'est pas une liste de nombres arbitraires : ce sont les écarts qui se
+ * disent en français d'un mot — six jours, une semaine, dix jours, deux
+ * semaines, un mois, trois mois, un an. Un rythme se compose en touchant des
+ * graduations, comme on lit une règle ; personne n'a à taper « 1 3 7 14 30 ».
+ *
+ * Un rythme importé peut porter un écart absent de cette échelle : il reste
+ * modifiable, sa graduation vient simplement s'ajouter à sa place.
+ */
+export const ECHELLE_RYTHME = [
+  1, 2, 3, 4, 5, 6, 7, 10, 14, 21, 30, 60, 90, 120, 180, 270, 365,
+]
+
+/**
+ * L'écart en toutes lettres, dans son unité naturelle : « 1 sem. » plutôt que
+ * « 7 j », « 3 mois » plutôt que « 90 j ». C'est le libellé des graduations.
+ */
+export function nommerEcart(jours: number): string {
+  if (jours >= 365 && jours % 365 === 0) {
+    const annees = jours / 365
+    return annees === 1 ? '1 an' : `${annees} ans`
+  }
+  if (jours >= 30 && jours % 30 === 0) return `${jours / 30} mois`
+  if (jours >= 7 && jours % 7 === 0) {
+    const semaines = jours / 7
+    return semaines === 1 ? '1 sem.' : `${semaines} sem.`
+  }
+  return `${jours} j`
+}
+
+/**
+ * Le même écart, écrit en entier pour les lecteurs d'écran. Toujours en jours :
+ * c'est l'unité qui ne demande aucune conversion mentale.
+ */
+export function decrireEcart(jours: number): string {
+  return `${jours} jour${jours > 1 ? 's' : ''} après le départ`
+}
 
 const MOIS_EN_LETTRES = [
   '',
@@ -52,26 +92,6 @@ export function decrirePortee(offsets: number[]): string {
   if (mois < 12) return `sur ${MOIS_EN_LETTRES[mois]} mois`
   const annees = Math.round(dernier / 365)
   return annees <= 1 ? 'sur une année' : `sur ${annees} années`
-}
-
-/**
- * Nettoie un rythme saisi librement : « 1 3 7 14 30 », « 1,3,7 » et
- * « J+1 · J+3 » donnent tous la même chose. Les nombres hors bornes et les
- * doublons tombent, le reste est trié — un programme se lit dans l'ordre.
- *
- * Le formulaire affiche le résultat sous le champ : ce qui a été écarté se
- * voit, plutôt que de disparaître en silence.
- */
-export function normaliserRythme(saisie: string): number[] {
-  const nombres = saisie.match(/\d+/g) ?? []
-  const retenus = new Set<number>()
-  for (const brut of nombres) {
-    const jour = Number(brut)
-    if (Number.isInteger(jour) && jour >= 1 && jour <= RYTHME_MAX_JOURS) {
-      retenus.add(jour)
-    }
-  }
-  return [...retenus].sort((a, b) => a - b).slice(0, RYTHME_MAX_REVISIONS)
 }
 
 /** Les trois programmes de la spécification. Ils ne sont jamais stockés. */
