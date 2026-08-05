@@ -6,6 +6,7 @@ import {
   DEFAULT_SCHEDULE,
   SCHEDULES,
   buildReviews,
+  listerDecalages,
   previewDates,
 } from '../lib/schedules'
 import { formatShort, todayKey } from '../lib/dates'
@@ -180,7 +181,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
                 <span className="programme__entete">
                   <span className="programme__nom">{option.label}</span>
                   <span className="programme__compte">
-                    {option.offsets.length} révisions
+                    {option.offsets.length} révisions · {option.description}
                   </span>
                 </span>
                 {/* On choisit un rythme, pas un mot (section 8.7). */}
@@ -191,6 +192,13 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
                   variante="mini"
                   intitule={`Programme ${option.label}`}
                 />
+                {/*
+                  Les jours écrits sous la frise : sous 480px elle n'a pas de
+                  libellés, et c'est alors la seule façon de lire le rythme.
+                */}
+                <span className="programme__jours">
+                  {listerDecalages(option.offsets)}
+                </span>
               </label>
             ))}
           </div>

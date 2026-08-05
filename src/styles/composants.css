@@ -466,9 +466,19 @@
   line-height: var(--l-sm);
 }
 
+/*
+ * `appearance: none` est ce qui aligne les champs entre eux : sans lui,
+ * Safari et Firefox donnent à `input[type="date"]` sa largeur intrinsèque —
+ * celle du format de date plus le sélecteur natif — et ignorent le
+ * `width: 100%`. Le champ ressort alors plus large que les champs texte.
+ */
 .champ__saisie {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   height: var(--e-7);
   border: var(--bordure);
   border-radius: var(--r-carte);
@@ -476,6 +486,18 @@
   padding-inline: var(--e-3);
   color: var(--encre);
   transition: border-color var(--duree-court) var(--courbe);
+}
+
+/* iOS centre verticalement la valeur d'un champ date et lui ajoute une
+   marge interne : les deux la désalignent du texte des autres champs. */
+.champ__saisie::-webkit-date-and-time-value {
+  margin: 0;
+  text-align: left;
+}
+
+/* Le sélecteur natif reste, mais poussé au bord droit du champ. */
+.champ__saisie::-webkit-calendar-picker-indicator {
+  margin-inline-start: auto;
 }
 
 .champ__saisie:focus-visible {

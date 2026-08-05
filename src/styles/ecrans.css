@@ -385,6 +385,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Le rythme en clair. Il enroule : « Ultime » fait dix décalages. */
+.programme__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Pas de radio natif visible (section 8.7), mais il reste focusable. */
 .programme__radio {
   position: absolute;
