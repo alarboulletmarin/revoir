@@ -1,19 +1,20 @@
 /**
- * Teintes de matière.
+ * Catégories et teintes.
  *
- * Une catégorie n'est pas une entité : c'est une chaîne libre portée par
- * chaque élément. La couleur, elle, doit être commune à tous les éléments
- * d'une même matière — elle vit donc à part, dans sa propre table.
+ * Une catégorie est une entité : elle a un identifiant, un nom, et sa couleur
+ * lui appartient en propre. Les sujets la désignent, ils ne la répètent pas —
+ * la renommer une fois la renomme partout.
  *
- * Aucune couleur n'est obligatoire : une matière jamais configurée reçoit une
- * teinte dérivée de son nom. Deux appareils qui n'ont jamais échangé
- * affichent ainsi « Mathématiques » de la même couleur, et la table ne
- * contient que les choix explicites de l'utilisateur.
+ * Aucune couleur n'est obligatoire : une catégorie jamais configurée reçoit
+ * une teinte dérivée de son nom. Deux appareils qui n'ont jamais échangé
+ * affichent ainsi « Mathématiques » de la même couleur, et `tint` ne porte que
+ * les choix explicites de l'utilisateur.
  *
- * Une matière peut aussi porter n'importe quelle couleur, en dehors des huit.
- * Elle est retenue telle quelle : `lib/couleurs.ts` ne fait qu'écarter
+ * Une catégorie peut aussi porter n'importe quelle couleur, en dehors des
+ * huit. Elle est retenue telle quelle : `lib/couleurs.ts` ne fait qu'écarter
  * l'invisible et dériver la couleur d'encre qui rendra le libellé lisible.
  */
+import type { Category } from '../types'
 import {
   couleurRetenue,
   estCouleurPersonnalisee,
@@ -34,7 +35,7 @@ export const TEINTES = [
 /** Une des huit teintes de la palette, désignée par son nom. */
 export type TeinteNommee = (typeof TEINTES)[number]
 
-/** Ce qu'une matière peut porter : une des huit, ou une couleur libre. */
+/** Ce qu'une catégorie peut porter : une des huit, ou une couleur libre. */
 export type Teinte = TeinteNommee | CouleurPersonnalisee
 
 /** Libellés affichés dans le sélecteur, pour que la couleur soit nommable. */
@@ -77,11 +78,25 @@ export function retenirTeinte(valeur: string): Teinte | null {
 }
 
 /**
- * Deux matières écrites différemment (« maths », « Maths ») sont la même.
+ * Deux catégories écrites différemment (« maths », « Maths ») sont la même.
  * La casse d'origine reste affichée, seule la clé est normalisée.
+ *
+ * C'est ce que le formulaire emprunte pour rattacher une saisie à une
+ * catégorie existante plutôt que d'en créer une deuxième, et ce dont la
+ * migration se sert pour rassembler les anciennes chaînes libres.
  */
 export function cleCategorie(nom: string): string {
   return nom.trim().toLocaleLowerCase('fr')
+}
+
+/** Les sujets sans catégorie ne sont pas perdus : ils forment leur propre groupe. */
+export const SANS_CATEGORIE = 'Sans catégorie'
+
+/** La catégorie portant ce nom, à la casse près, ou null. */
+export function trouverCategorie(nom: string, categories: Category[]): Category | null {
+  const cle = cleCategorie(nom)
+  if (cle === '') return null
+  return categories.find((categorie) => cleCategorie(categorie.name) === cle) ?? null
 }
 
 /**
@@ -99,9 +114,11 @@ export function teinteParDefaut(nom: string): TeinteNommee {
   return TEINTES[hachage % TEINTES.length]
 }
 
-/** Choix explicites de l'utilisateur, indexés par clé de catégorie. */
-export type Teintes = Record<string, Teinte>
-
-export function teinteDe(nom: string, teintes: Teintes): Teinte {
-  return teintes[cleCategorie(nom)] ?? teinteParDefaut(nom)
+/**
+ * La teinte d'une catégorie : son choix explicite, sinon celle que son nom lui
+ * vaut. `null` couvre les sujets sans catégorie, qui retombent sur `--accent`.
+ */
+export function teinteDe(categorie: Category | null): Teinte | null {
+  if (categorie === null) return null
+  return categorie.tint ?? teinteParDefaut(categorie.name)
 }

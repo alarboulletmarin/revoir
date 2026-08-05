@@ -105,17 +105,17 @@
   line-height: var(--l-base);
 }
 
-.cellule--accent .item-revision__titre,
-.cellule--accent .item-revision__date {
+.cellule--accent .ligne-revision__titre,
+.cellule--accent .ligne-revision__date {
   color: var(--surface);
 }
 
-.cellule--accent .item-revision__meta {
+.cellule--accent .ligne-revision__meta {
   color: var(--surface);
 }
 
 /* Tout le jeu de couleurs de la case bascule d'un bloc (voir composants.css). */
-.cellule--accent .item-revision {
+.cellule--accent .ligne-revision {
   --cercle-trait: var(--surface);
   --cercle-survol: var(--surface);
   --cercle-fait: var(--surface);
@@ -321,7 +321,7 @@
   gap: 0;
 }
 
-.liste-revisions--separee .item-revision + .item-revision {
+.liste-revisions--separee .ligne-revision + .ligne-revision {
   border-top: var(--bordure);
 }
 
@@ -1277,21 +1277,21 @@ body[data-panneau='ouvert'] {
 
 /* ------------------------------------------- matières dans les réglages - */
 
-.matieres-reglage {
+.categories-reglage {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--e-4);
 }
 
-.matiere-reglage {
+.categorie-reglage {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--e-2);
 }
 
-.matiere-reglage__nom {
+.categorie-reglage__nom {
   display: flex;
   min-width: 0;
   align-items: center;

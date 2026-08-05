@@ -7,9 +7,10 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { addMonths, startOfMonth, subMonths } from 'date-fns'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
+import type { Category } from '../types'
 import { formatLong, formatMonth, fromKey, toKey, todayKey, type DateKey } from '../lib/dates'
 import { entriesForDate } from '../lib/stats'
 import { teinteDe } from '../lib/categories'
@@ -20,7 +21,7 @@ import {
   grilleDuMois,
   type JourCalendrier,
 } from '../lib/calendrier'
-import { ItemRevision } from '../components/ItemRevision'
+import { LigneRevision } from '../components/LigneRevision'
 import { FeuilleBas } from '../components/FeuilleBas'
 import { Bouton } from '../components/Bouton'
 import { IconeChevron } from '../components/Icons'
@@ -28,7 +29,7 @@ import { proprietesTeinte } from '../components/teinte'
 
 export function CalendarPage() {
   useTitrePage('Calendrier')
-  const { items, teintes } = useItems()
+  const { topics, reviews, categories } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = todayKey()
 
@@ -46,10 +47,13 @@ export function CalendarPage() {
 
   usePanneauOuvert(choisi !== null)
 
-  const jours = useMemo(() => grilleDuMois(items, mois), [items, mois])
+  const jours = useMemo(
+    () => grilleDuMois(topics, reviews, categories, mois),
+    [topics, reviews, categories, mois],
+  )
   const entrees = useMemo(
-    () => (choisi ? entriesForDate(items, choisi) : []),
-    [items, choisi],
+    () => (choisi ? entriesForDate(topics, reviews, choisi) : []),
+    [topics, reviews, choisi],
   )
 
   // Le focus suit le jour visé, y compris quand l'atteindre a changé de mois
@@ -184,11 +188,9 @@ export function CalendarPage() {
                             ? 'calendrier__point calendrier__point--fait'
                             : 'calendrier__point'
                         }
-                        // Un élément sans matière garde le point --accent : la
-                        // teinte par défaut de la chaîne vide ne veut rien dire.
-                        {...(categorie.trim() === ''
-                          ? {}
-                          : proprietesTeinte(teinteDe(categorie, teintes)))}
+                        // Un sujet sans catégorie garde le point --accent :
+                        // il n'y a pas de teinte à en tirer.
+                        {...teinteDuPoint(categorie)}
                       />
                     ))}
                   </span>
@@ -230,8 +232,8 @@ export function CalendarPage() {
         ) : (
           <ul className="liste-revisions liste-revisions--separee">
             {entrees.map((entree) => (
-              <ItemRevision
-                key={`${entree.item.id}-${entree.review.offset}`}
+              <LigneRevision
+                key={entree.review.id}
                 entry={entree}
                 aujourdhui={aujourdhui}
                 onValider={validerEntree}
@@ -248,10 +250,16 @@ export function CalendarPage() {
 }
 
 
-/** Matières distinctes d'un jour, dans l'ordre d'apparition, trois au plus. */
-function matieresDuJour(categories: string[]): string[] {
+/** Les propriétés de teinte d'un point, ou rien pour un sujet sans catégorie. */
+function teinteDuPoint(categorie: Category | null) {
+  const teinte = teinteDe(categorie)
+  return teinte === null ? {} : proprietesTeinte(teinte)
+}
+
+/** Catégories distinctes d'un jour, dans l'ordre d'apparition, trois au plus. */
+function categoriesDuJour(categories: (Category | null)[]): string[] {
   const distinctes = new Set(
-    categories.map((categorie) => categorie.trim()).filter((nom) => nom !== ''),
+    categories.filter((categorie) => categorie !== null).map((categorie) => categorie.name),
   )
   return [...distinctes].slice(0, 3)
 }
@@ -260,7 +268,7 @@ function matieresDuJour(categories: string[]): string[] {
  * « 6 août 2026, aujourd'hui, 7 révisions, Études, Langues ».
  *
  * Le nombre réel est annoncé même quand les points s'arrêtent à trois, et ni
- * l'état « fait » ni la matière ne reposent sur la seule couleur d'un point
+ * l'état « fait » ni la catégorie ne reposent sur la seule couleur d'un point
  * de 4px — la section 3 bis l'interdit explicitement.
  */
 function etiquetteJour(
@@ -276,6 +284,6 @@ function etiquetteJour(
       : `${jour.total} révision${jour.total > 1 ? 's' : ''}`,
   )
   if (toutesFaites) parties.push('toutes faites')
-  parties.push(...matieresDuJour(jour.categories))
+  parties.push(...categoriesDuJour(jour.categories))
   return parties.join(', ')
 }

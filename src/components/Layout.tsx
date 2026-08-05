@@ -4,7 +4,7 @@ import { NavBar } from './NavBar'
 import { IconePlus } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 
 /** Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes. */
 function fabVisible(pathname: string): boolean {
@@ -14,7 +14,7 @@ function fabVisible(pathname: string): boolean {
 /**
  * Une page qui s'ouvre s'ouvre en haut.
  *
- * Le bouton « Créer l'élément » est en bas d'un formulaire long : sans ça, la
+ * Le bouton « Créer le sujet » est en bas d'un formulaire long : sans ça, la
  * fiche qui s'ouvre derrière hérite du défilement du formulaire et démarre au
  * milieu de nulle part. Vaut pour toute navigation, pas seulement celle-là.
  *
@@ -33,7 +33,7 @@ function useRemonterEnHaut(pathname: string) {
 }
 
 export function Layout() {
-  const { error } = useItems()
+  const { error } = useDonnees()
   const { pathname } = useLocation()
 
   useRemonterEnHaut(pathname)
@@ -64,7 +64,7 @@ export function Layout() {
       </main>
 
       {fabVisible(pathname) && (
-        <Link to="/nouveau" className="fab" aria-label="Ajouter un élément">
+        <Link to="/nouveau" className="fab" aria-label="Ajouter un sujet">
           <IconePlus width="24" height="24" strokeWidth="1.8" />
         </Link>
       )}

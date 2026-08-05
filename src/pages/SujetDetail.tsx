@@ -1,45 +1,53 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
 import { useTitrePage } from '../state/useTitrePage'
 import { getSchedule } from '../lib/schedules'
 import { formatIsoDate, formatLong, formatRelative, todayKey } from '../lib/dates'
-import { itemProgress } from '../lib/stats'
+import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
 import { Frise } from '../components/Frise'
 import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { IconeArchive, IconeCoche, IconeCorbeille } from '../components/Icons'
 import { ChipCategorie } from '../components/ChipCategorie'
+import { SelecteurPratique } from '../components/SelecteurPratique'
 
-export function ItemDetail() {
+export function SujetDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const {
-    items,
-    teintes,
+    topics,
+    reviews,
+    categories,
     loading,
     valider,
     devalider,
-    restaurer,
+    restaurerRevisions,
     setArchived,
-    removeItem,
+    definirPratique,
+    removeTopic,
     programmes,
-  } = useItems()
+  } = useDonnees()
   const { afficherToast } = useToast()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
   const aujourdhui = todayKey()
 
-  const item = items.find((candidat) => candidat.id === id)
-  useTitrePage(item?.title ?? 'Élément')
+  const topic = topics.find((candidat) => candidat.id === id)
+  useTitrePage(topic?.title ?? 'Sujet')
 
-  if (!item) {
+  const revisions = useMemo(
+    () => (topic ? revisionsDe(topic.id, reviews) : []),
+    [topic, reviews],
+  )
+
+  if (!topic) {
     return loading ? (
       <p className="discret">Chargement…</p>
     ) : (
       <div className="etat-vide">
-        <p className="discret">Cet élément n'existe pas ou plus.</p>
+        <p className="discret">Ce sujet n'existe pas ou plus.</p>
         <LienBouton vers="/" variante="discret">
           Retour au tableau de bord
         </LienBouton>
@@ -47,32 +55,38 @@ export function ItemDetail() {
     )
   }
 
-  const programme = getSchedule(item.schedule, programmes)
-  const faites = item.reviews.filter((review) => review.done).length
-  const restantes = item.reviews.length - faites
-  const creeLe = formatIsoDate(item.createdAt)
+  const categorie = categories.find((candidat) => candidat.id === topic.categoryId) ?? null
+  const programme = getSchedule(topic.scheduleId, programmes)
+  const faites = revisions.filter(estFaite).length
+  const restantes = revisions.length - faites
+  const progression = topicProgress(revisions)
+  const creeLe = formatIsoDate(topic.createdAt)
+  const archive = topic.status === 'archived'
 
-  const basculer = (offset: number, faite: boolean) => {
+  const basculer = (reviewId: string, faite: boolean) => {
     if (faite) {
-      devalider(item.id, offset)
+      devalider(reviewId)
       return
     }
-    const effet = valider(item.id, offset)
+    const effet = valider(reviewId)
     if (!effet) return
     afficherToast({
       texte: 'Révision enregistrée',
       detail: effet.deplacees > 0 ? 'Prochaines dates ajustées' : undefined,
-      action: { libelle: 'Annuler', onAction: () => restaurer(effet.precedent) },
+      action: {
+        libelle: 'Annuler',
+        onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
+      },
     })
   }
 
   const archiver = () => {
-    setArchived(item.id, !item.archived)
+    setArchived(topic.id, !archive)
     afficherToast({
-      texte: item.archived ? 'Élément désarchivé' : 'Élément archivé',
+      texte: archive ? 'Sujet désarchivé' : 'Sujet archivé',
       action: {
         libelle: 'Annuler',
-        onAction: () => setArchived(item.id, item.archived),
+        onAction: () => setArchived(topic.id, archive),
       },
     })
   }
@@ -80,11 +94,11 @@ export function ItemDetail() {
   return (
     <>
       <div className="fiche__entete">
-        <h1 className="page__titre">{item.title}</h1>
+        <h1 className="page__titre">{topic.title}</h1>
         <div className="fiche__badges">
-          <ChipCategorie categorie={item.category} teintes={teintes} />
+          <ChipCategorie categorie={categorie} />
           <span className="chip chip--accent">{programme.label}</span>
-          {item.archived && <span className="chip chip--retard">Archivé</span>}
+          {archive && <span className="chip chip--retard">Archivé</span>}
         </div>
         {creeLe && <p className="page__intro">Créé le {creeLe}</p>}
       </div>
@@ -93,16 +107,16 @@ export function ItemDetail() {
       <section className="fiche__bloc">
         <h2 className="section__titre">Programme</h2>
         <Frise
-          origine={item.startDate}
-          reviews={item.reviews}
+          origine={topic.startDate}
+          reviews={revisions}
           aujourdhui={aujourdhui}
           libelles="decalage"
-          intitule={item.title}
+          intitule={topic.title}
         />
         <div className="restantes">
           <AnneauProgression
-            part={itemProgress(item) / 100}
-            label={`Progression : ${itemProgress(item)} %`}
+            part={progression / 100}
+            label={`Progression : ${progression} %`}
           />
           <p className="discret discret--petit chiffres" aria-live="polite">
             {faites} révision{faites > 1 ? 's' : ''} effectuée{faites > 1 ? 's' : ''} ·{' '}
@@ -111,49 +125,60 @@ export function ItemDetail() {
         </div>
       </section>
 
+      {/*
+        La pratique n'a pas d'échéance : c'est un état, pas une date. Elle vit
+        donc ici et dans la colonne du tableau de suivi, et nulle part dans les
+        listes du jour — sans date, elle y serait toujours en retard.
+      */}
+      <section className="fiche__bloc">
+        <h2 className="section__titre">Pratique</h2>
+        <SelecteurPratique
+          valeur={topic.practiceStatus}
+          legende="Où en est la pratique de ce sujet"
+          onChange={(statut) => definirPratique(topic.id, statut)}
+        />
+      </section>
+
       <section className="fiche__bloc">
         <h2 className="section__titre">Échéances</h2>
-        <p className="discret discret--petit">
-          Départ le {formatLong(item.startDate)}
-        </p>
+        <p className="discret discret--petit">Départ le {formatLong(topic.startDate)}</p>
         <ul className="liste-revisions">
-          {item.reviews.map((review) => {
-            const enRetard = !review.done && review.date < aujourdhui
-            const classes = ['echeance', review.done ? 'echeance--faite' : null]
+          {revisions.map((review) => {
+            const faite = estFaite(review)
+            const enRetard = !faite && review.dueDate < aujourdhui
+            const classes = ['echeance', faite ? 'echeance--faite' : null]
               .filter(Boolean)
               .join(' ')
 
             return (
-              <li key={review.offset} className={classes}>
+              <li key={review.id} className={classes}>
                 <button
                   type="button"
-                  className="item-revision__case"
+                  className="ligne-revision__case"
                   role="checkbox"
-                  aria-checked={review.done}
-                  aria-label={`${review.done ? 'Décocher' : 'Marquer comme revu'} la révision J+${review.offset}`}
-                  onClick={() => basculer(review.offset, review.done)}
+                  aria-checked={faite}
+                  aria-label={`${faite ? 'Décocher' : 'Marquer comme revu'} la révision J+${review.intervalInDays}`}
+                  onClick={() => basculer(review.id, faite)}
                 >
-                  <span className="item-revision__cercle">
-                    {review.done && <IconeCoche className="item-revision__coche" />}
+                  <span className="ligne-revision__cercle">
+                    {faite && <IconeCoche className="ligne-revision__coche" />}
                   </span>
                 </button>
 
                 <div className="echeance__corps">
                   <span className="echeance__titre">
-                    J+{review.offset} · {formatLong(review.date)}
+                    J+{review.intervalInDays} · {formatLong(review.dueDate)}
                   </span>
                   <span
                     className={
-                      review.done
+                      faite
                         ? 'echeance__etat echeance__etat--fait'
                         : enRetard
                           ? 'echeance__etat echeance__etat--retard'
                           : 'echeance__etat'
                     }
                   >
-                    {review.done
-                      ? 'effectuée'
-                      : formatRelative(review.date, aujourdhui)}
+                    {faite ? 'effectuée' : formatRelative(review.dueDate, aujourdhui)}
                   </span>
                 </div>
               </li>
@@ -165,12 +190,12 @@ export function ItemDetail() {
       <section className="fiche__bloc">
         <h2 className="section__titre">Actions</h2>
         <div className="fiche__actions">
-          <LienBouton vers={`/element/${item.id}/modifier`} variante="discret">
+          <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="discret">
             Modifier
           </LienBouton>
           <Bouton variante="discret" onClick={archiver}>
             <IconeArchive width="18" height="18" />
-            {item.archived ? 'Désarchiver' : 'Archiver'}
+            {archive ? 'Désarchiver' : 'Archiver'}
           </Bouton>
           <Bouton variante="danger" onClick={() => setConfirmerSuppression(true)}>
             <IconeCorbeille width="18" height="18" />
@@ -178,8 +203,8 @@ export function ItemDetail() {
           </Bouton>
         </div>
         <p className="discret discret--petit">
-          Un élément archivé sort du tableau de bord et du calendrier. Il reste dans
-          l'export.
+          Un sujet archivé sort du tableau de bord, du calendrier et du suivi. Il reste
+          dans l'export.
         </p>
       </section>
 
@@ -190,14 +215,14 @@ export function ItemDetail() {
       */}
       <ConfirmDialog
         open={confirmerSuppression}
-        title="Supprimer cet élément ?"
-        message={`« ${item.title} » et ses ${item.reviews.length} révisions seront définitivement supprimés.`}
+        title="Supprimer ce sujet ?"
+        message={`« ${topic.title} » et ses ${revisions.length} révisions seront définitivement supprimés.`}
         confirmLabel="Supprimer"
         danger
         onCancel={() => setConfirmerSuppression(false)}
         onConfirm={() => {
           setConfirmerSuppression(false)
-          void removeItem(item.id).then(() => navigate('/', { replace: true }))
+          void removeTopic(topic.id).then(() => navigate('/', { replace: true }))
         }}
       />
     </>

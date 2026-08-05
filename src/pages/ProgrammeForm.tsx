@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   ECHELLE_RYTHME,
@@ -32,15 +32,15 @@ const RYTHME_INITIAL = SCHEDULES[0].offsets
  * personne n'invente un rythme de répétition espacée depuis rien, on part de
  * ce qui marche et on l'ajuste.
  *
- * Le nom se change toujours ; le rythme, seulement tant qu'aucun élément ne
- * s'en sert. Les révisions d'un élément sont écrites à sa création : les
+ * Le nom se change toujours ; le rythme, seulement tant qu'aucun sujet ne
+ * s'en sert. Les révisions d'un sujet sont écrites à sa création : les
  * rejouer déplacerait des échéances déjà en tête.
  */
 export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { programmes, creerProgramme, modifierProgramme, compterUsages, loading } =
-    useItems()
+    useDonnees()
 
   useTitrePage(mode === 'edit' ? 'Modifier le programme' : 'Nouveau programme')
 
@@ -53,7 +53,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
   const [soumis, setSoumis] = useState(false)
   const [enregistrement, setEnregistrement] = useState(false)
 
-  // Les programmes arrivent de façon asynchrone, comme les éléments.
+  // Les programmes arrivent de façon asynchrone, comme les sujets.
   useEffect(() => {
     if (!existant) return
     setNom(existant.label)
@@ -140,7 +140,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             <div className="rythme__apercu">
               <Frise
                 origine={todayKey()}
-                reviews={reviewsDepuisOffsets(todayKey(), existant!.offsets)}
+                reviews={reviewsDepuisOffsets('apercu', todayKey(), existant!.offsets)}
                 aujourdhui={todayKey()}
                 intitule="Rythme du programme"
               />
@@ -153,8 +153,8 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             </div>
             <p className="discret discret--petit">
               {usages > 1
-                ? `${usages} éléments suivent ce programme : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
-                : 'Un élément suit ce programme : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}{' '}
+                ? `${usages} sujets suivent ce programme : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
+                : 'Un sujet suit ce programme : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}{' '}
               Le nom, lui, se modifie librement.
             </p>
           </GroupeChamp>
@@ -211,7 +211,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
                 <h2 className="section__titre">Le rythme obtenu</h2>
                 <Frise
                   origine={todayKey()}
-                  reviews={reviewsDepuisOffsets(todayKey(), jours)}
+                  reviews={reviewsDepuisOffsets('apercu', todayKey(), jours)}
                   aujourdhui={todayKey()}
                   libelles="decalage"
                   intitule="Aperçu du rythme"

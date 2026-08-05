@@ -1,5 +1,6 @@
 import type { Programme, Review, ScheduleId } from '../types'
 import { addDaysToKey, type DateKey } from './dates'
+import { newId, type NouvelId } from './ids'
 
 export interface Schedule {
   id: ScheduleId
@@ -143,7 +144,7 @@ export function getScheduleLabel(id: ScheduleId, personnels: Programme[] = []): 
   return getSchedule(id, personnels).label
 }
 
-/** Les dates que produirait un programme, sans créer d'élément (prévisualisation). */
+/** Les dates que produirait un programme, sans créer de sujet (prévisualisation). */
 export function previewDates(
   startDate: DateKey,
   id: ScheduleId,
@@ -157,41 +158,68 @@ export function previewDates(
 /**
  * Les révisions que produit une suite de décalages. Séparée de `buildReviews`
  * pour que le formulaire de création d'un programme puisse prévisualiser un
- * rythme qui n'existe pas encore.
+ * rythme qui n'existe pas encore — d'où le sujet fictif que la
+ * prévisualisation lui passe.
+ *
+ * `position` vient du rang dans le rythme, pas du décalage : c'est lui qui
+ * ordonne les révisions une fois qu'elles vivent dans leur propre table, où
+ * rien ne garantit l'ordre de lecture.
  */
-export function reviewsDepuisOffsets(startDate: DateKey, offsets: number[]): Review[] {
-  return offsets.map((offset) => ({
-    offset,
-    date: addDaysToKey(startDate, offset),
-    done: false,
-    doneAt: null,
+export function reviewsDepuisOffsets(
+  topicId: string,
+  startDate: DateKey,
+  offsets: number[],
+  nouvelId: NouvelId = newId,
+): Review[] {
+  return offsets.map((intervalInDays, index) => ({
+    id: nouvelId(),
+    topicId,
+    position: index + 1,
+    intervalInDays,
+    dueDate: addDaysToKey(startDate, intervalInDays),
+    completedAt: null,
   }))
 }
 
-/** Construit la liste complète des révisions d'un élément. */
+/** Construit la liste complète des révisions d'un sujet. */
 export function buildReviews(
+  topicId: string,
   startDate: DateKey,
   id: ScheduleId,
   personnels: Programme[] = [],
+  nouvelId: NouvelId = newId,
 ): Review[] {
-  return reviewsDepuisOffsets(startDate, getSchedule(id, personnels).offsets)
+  return reviewsDepuisOffsets(
+    topicId,
+    startDate,
+    getSchedule(id, personnels).offsets,
+    nouvelId,
+  )
 }
 
 /**
- * Reconstruit les révisions après modification d'un élément, en conservant
- * l'état « effectuée » des révisions dont le décalage existe encore dans le
- * nouveau programme.
+ * Reconstruit les révisions après modification d'un sujet, en conservant la
+ * validation des révisions dont le décalage existe encore dans le nouveau
+ * programme.
+ *
+ * Leur identifiant est conservé avec elles : une révision qui traverse une
+ * modification reste la même ligne, et les écrans qui la désignaient ne
+ * pointent pas dans le vide.
  */
 export function rebuildReviews(
+  topicId: string,
   startDate: DateKey,
   id: ScheduleId,
   previous: Review[],
   personnels: Programme[] = [],
+  nouvelId: NouvelId = newId,
 ): Review[] {
-  const byOffset = new Map(previous.map((review) => [review.offset, review]))
-  return buildReviews(startDate, id, personnels).map((review) => {
-    const kept = byOffset.get(review.offset)
-    if (!kept?.done) return review
-    return { ...review, done: true, doneAt: kept.doneAt }
+  const parIntervalle = new Map(
+    previous.map((review) => [review.intervalInDays, review]),
+  )
+  return buildReviews(topicId, startDate, id, personnels, nouvelId).map((review) => {
+    const gardee = parIntervalle.get(review.intervalInDays)
+    if (!gardee) return review
+    return { ...review, id: gardee.id, completedAt: gardee.completedAt }
   })
 }

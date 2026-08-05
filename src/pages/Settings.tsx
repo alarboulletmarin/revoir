@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   BackupError,
@@ -9,7 +9,7 @@ import {
   serializeBackup,
   type ContenuSauvegarde,
 } from '../lib/backup'
-import { archivedItems, usedCategories } from '../lib/stats'
+import { archivedTopics, categoriesTriees } from '../lib/sujets'
 import { teinteDe } from '../lib/categories'
 import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
@@ -24,21 +24,22 @@ type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 export function Settings() {
   useTitrePage('Réglages')
   const {
-    items,
-    teintes,
+    categories,
+    topics,
+    reviews,
     definirTeinte,
-    importItems,
+    importer,
     setArchived,
     programmes,
     supprimerProgramme,
     compterUsages,
-  } = useItems()
+  } = useDonnees()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
 
-  const archives = archivedItems(items)
-  const matieres = usedCategories(items)
+  const archives = archivedTopics(topics)
+  const rangees = categoriesTriees(categories)
 
   const supprimer = (id: string, label: string) => {
     void supprimerProgramme(id).then((fait) => {
@@ -47,10 +48,11 @@ export function Settings() {
   }
 
   const exporter = () => {
-    // Les éléments archivés font partie de l'export (règle métier n°5).
-    const blob = new Blob([serializeBackup(items, teintes, programmes)], {
-      type: 'application/json',
-    })
+    // Les sujets archivés font partie de l'export (règle métier n°5).
+    const blob = new Blob(
+      [serializeBackup({ categories, topics, reviews, programmes })],
+      { type: 'application/json' },
+    )
     const url = URL.createObjectURL(blob)
     const lien = document.createElement('a')
     lien.href = url
@@ -63,7 +65,7 @@ export function Settings() {
     setTimeout(() => URL.revokeObjectURL(url), 0)
     setRetour({
       ton: 'ok',
-      message: `${items.length} élément${items.length > 1 ? 's' : ''} exporté${items.length > 1 ? 's' : ''}.`,
+      message: `${topics.length} sujet${topics.length > 1 ? 's' : ''} exporté${topics.length > 1 ? 's' : ''}.`,
     })
   }
 
@@ -89,11 +91,11 @@ export function Settings() {
 
   const confirmerImport = () => {
     if (!enAttente) return
-    const nombre = enAttente.items.length
-    void importItems(enAttente.items, enAttente.teintes, enAttente.programmes).then(() => {
+    const nombre = enAttente.topics.length
+    void importer(enAttente).then(() => {
       setRetour({
         ton: 'ok',
-        message: `${nombre} élément${nombre > 1 ? 's' : ''} importé${nombre > 1 ? 's' : ''}.`,
+        message: `${nombre} sujet${nombre > 1 ? 's' : ''} importé${nombre > 1 ? 's' : ''}.`,
       })
     })
     setEnAttente(null)
@@ -108,7 +110,7 @@ export function Settings() {
         <p className="discret">
           Vos données restent sur cet appareil. L'export produit un fichier JSON que
           vous pouvez conserver puis réimporter, ici ou sur un autre appareil. Les
-          éléments archivés y figurent.
+          sujets archivés y figurent.
         </p>
         <div className="reglages__actions">
           <Bouton variante="primaire" onClick={exporter}>
@@ -141,22 +143,22 @@ export function Settings() {
 
       <section className="reglages__bloc">
         <h2 className="section__titre">Catégories</h2>
-        {matieres.length === 0 ? (
+        {rangees.length === 0 ? (
           <p className="discret">Aucune catégorie pour le moment.</p>
         ) : (
-          <ul className="matieres-reglage">
-            {matieres.map((matiere) => (
-              <li key={matiere} className="matiere-reglage">
-                <span className="matiere-reglage__nom">
-                  <PastilleCategorie categorie={matiere} teintes={teintes} />
-                  {matiere}
+          <ul className="categories-reglage">
+            {rangees.map((categorie) => (
+              <li key={categorie.id} className="categorie-reglage">
+                <span className="categorie-reglage__nom">
+                  <PastilleCategorie categorie={categorie} />
+                  {categorie.name}
                 </span>
                 <SelecteurTeinte
-                  groupe="matiere"
-                  legende={`Couleur de ${matiere}`}
+                  groupe={`categorie-${categorie.id}`}
+                  legende={`Couleur de ${categorie.name}`}
                   legendeMasquee
-                  valeur={teinteDe(matiere, teintes)}
-                  onChange={(teinte) => definirTeinte(matiere, teinte)}
+                  valeur={teinteDe(categorie)!}
+                  onChange={(teinte) => definirTeinte(categorie.id, teinte)}
                 />
               </li>
             ))}
@@ -190,7 +192,11 @@ export function Settings() {
                   </div>
                   <Frise
                     origine={todayKey()}
-                    reviews={reviewsDepuisOffsets(todayKey(), programme.offsets)}
+                    reviews={reviewsDepuisOffsets(
+                      'apercu',
+                      todayKey(),
+                      programme.offsets,
+                    )}
                     aujourdhui={todayKey()}
                     variante="mini"
                     intitule={`Programme ${programme.label}`}
@@ -200,7 +206,7 @@ export function Settings() {
                   </span>
                   {/*
                     Le nom se renomme toujours ; le rythme et la suppression
-                    tombent dès qu'un élément suit le programme.
+                    tombent dès qu'un sujet suit le programme.
                   */}
                   <div className="rythme__actions">
                     <LienBouton
@@ -221,8 +227,8 @@ export function Settings() {
                   {usages > 0 && (
                     <p className="discret discret--petit">
                       {usages > 1
-                        ? `Suivi par ${usages} éléments : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
-                        : 'Suivi par un élément : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}
+                        ? `Suivi par ${usages} sujets : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
+                        : 'Suivi par un sujet : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}
                     </p>
                   )}
                 </li>
@@ -239,18 +245,23 @@ export function Settings() {
       </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">Éléments archivés</h2>
+        <h2 className="section__titre">Sujets archivés</h2>
         {archives.length === 0 ? (
-          <p className="discret">Aucun élément archivé.</p>
+          <p className="discret">Aucun sujet archivé.</p>
         ) : (
           <ul className="liste-revisions">
-            {archives.map((item) => (
-              <li key={item.id} className="archive">
-                <Link to={`/element/${item.id}`} className="archive__corps">
-                  <span className="archive__titre">{item.title}</span>
-                  <ChipCategorie categorie={item.category} teintes={teintes} />
+            {archives.map((topic) => (
+              <li key={topic.id} className="archive">
+                <Link to={`/sujet/${topic.id}`} className="archive__corps">
+                  <span className="archive__titre">{topic.title}</span>
+                  <ChipCategorie
+                    categorie={
+                      categories.find((candidat) => candidat.id === topic.categoryId) ??
+                      null
+                    }
+                  />
                 </Link>
-                <Bouton variante="discret" onClick={() => setArchived(item.id, false)}>
+                <Bouton variante="discret" onClick={() => setArchived(topic.id, false)}>
                   Désarchiver
                 </Bouton>
               </li>
@@ -277,7 +288,7 @@ export function Settings() {
         title="Remplacer les données actuelles ?"
         message={
           enAttente
-            ? `L'import de ${enAttente.items.length} élément${enAttente.items.length > 1 ? 's' : ''} remplacera vos ${items.length} élément${items.length > 1 ? 's' : ''} actuel${items.length > 1 ? 's' : ''}.`
+            ? `L'import de ${enAttente.topics.length} sujet${enAttente.topics.length > 1 ? 's' : ''} remplacera vos ${topics.length} sujet${topics.length > 1 ? 's' : ''} actuel${topics.length > 1 ? 's' : ''}.`
             : ''
         }
         confirmLabel="Importer"
