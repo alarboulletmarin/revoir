@@ -718,9 +718,20 @@
  * <dialog> natif : focus piégé, Échap géré, arrière-plan inerte sans code.
  */
 .dialogue {
+  /*
+   * `inset` + `margin: auto` centrent la boîte. Les deux sont indispensables :
+   * le reset pose `* { margin: 0 }`, qui écrase le `margin: auto` de la
+   * feuille de style du navigateur et collait la boîte en haut de l'écran.
+   */
+  inset: 0;
+  margin: auto;
   width: calc(100% - var(--e-6));
   max-width: 400px;
+  /* Un titre d'élément très long ne doit pas pousser les boutons hors écran. */
+  max-height: calc(100dvh - var(--e-6));
   min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: var(--bordure);
   border-radius: var(--r-carte);
   background-color: var(--surface);
@@ -739,6 +750,19 @@
   gap: var(--e-3);
 }
 
+/*
+ * Le corps reçoit le focus à l'ouverture pour que l'anneau ne se pose pas
+ * d'emblée sur « Annuler ». Il n'est pas atteignable au clavier (tabindex=-1)
+ * et ne mène nulle part : son propre anneau ne signalerait aucun parcours, il
+ * ne ferait que cerner la boîte entière. La règle « jamais d'outline: none
+ * sans remplacement » (section 8.4) vise les cibles ; ce réceptacle n'en est
+ * pas une, et la première tabulation rend la main aux boutons.
+ */
+.dialogue__corps:focus,
+.dialogue__corps:focus-visible {
+  outline: none;
+}
+
 .dialogue__titre {
   min-width: 0;
   font-size: var(--t-md);
@@ -755,9 +779,26 @@
 .dialogue__actions {
   display: flex;
   min-width: 0;
-  flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--e-2);
+  /* La décision se détache du texte qui l'explique. */
+  padding-top: var(--e-1);
+}
+
+/*
+ * À 320px, deux libellés alignés à droite se replient l'un sous l'autre et la
+ * boîte se termine sur un escalier. Ils partagent la largeur à parts égales,
+ * et ne reprennent leur largeur naturelle qu'une fois la place trouvée.
+ */
+.dialogue__action {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+@media (min-width: 480px) {
+  .dialogue__action {
+    flex: 0 0 auto;
+  }
 }
 
 /* ================================================ teintes de matière ==== */

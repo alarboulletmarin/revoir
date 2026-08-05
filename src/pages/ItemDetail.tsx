@@ -174,11 +174,15 @@ export function ItemDetail() {
         </p>
       </section>
 
-      {/* La seule action qui demande une confirmation (règle métier n°3). */}
+      {/*
+        La seule action qui demande une confirmation (règle métier n°3).
+        Les guillemets tiennent leur titre par une espace fine insécable :
+        sans elle, un titre long renvoie le guillemet fermant seul à la ligne.
+      */}
       <ConfirmDialog
         open={confirmerSuppression}
         title="Supprimer cet élément ?"
-        message={`« ${item.title} » et ses ${item.reviews.length} révisions seront définitivement supprimés.`}
+        message={`« ${item.title} » et ses ${item.reviews.length} révisions seront définitivement supprimés.`}
         confirmLabel="Supprimer"
         danger
         onCancel={() => setConfirmerSuppression(false)}

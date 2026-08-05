@@ -836,6 +836,17 @@
 }
 
 /*
+ * Même parti pris que `.dialogue__corps` : le corps prend le focus à
+ * l'ouverture pour que l'anneau ne se pose pas sur « Fermer », mais il n'est
+ * pas atteignable au clavier — son anneau cernerait la feuille entière sans
+ * rien signaler.
+ */
+.feuille__corps:focus,
+.feuille__corps:focus-visible {
+  outline: none;
+}
+
+/*
  * En-tête fixe : c'est la prise du geste de fermeture, et le titre doit
  * rester lisible pendant que la liste défile dessous.
  */
