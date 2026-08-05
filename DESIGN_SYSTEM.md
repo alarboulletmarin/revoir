@@ -320,7 +320,7 @@ Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le c
 - Cible de validation : **44 × 44px minimum**, séparée de la zone qui ouvre la fiche.
 - Case : cercle 20px, bordure 1,5px. Coché : fond `--fait`, coche `--surface`.
 - Ligne de métadonnées : catégorie en `--encre-2` + frise miniature.
-- État en retard : bordure gauche 2px `--retard` + mention « il y a 3 jours » en `--retard-texte`.
+- État en retard : mention « il y a 3 jours » en `--retard-texte`, et rien d'autre. **Aucune bande de couleur en bord de ligne** — elle alourdit la liste sans rien dire que la mention ne dise déjà, et la section 1 demande que le retard n'accuse pas.
 - Validation : mise à jour optimiste immédiate, ligne barrée 200ms, puis retrait de la liste. Toast avec « Annuler ».
 
 ### 8.3 Frise

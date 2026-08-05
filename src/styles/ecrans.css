@@ -501,11 +501,6 @@
   min-width: 0;
   align-items: flex-start;
   gap: var(--e-2);
-  border-left: 2px solid transparent;
-}
-
-.echeance--retard {
-  border-left-color: var(--retard);
 }
 
 .echeance__corps {

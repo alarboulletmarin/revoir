@@ -66,11 +66,9 @@ export function ItemRevision({
     minuteur.current = window.setTimeout(() => onValider(entry), DUREE_SORTIE)
   }
 
-  const classes = [
-    'item-revision',
-    enRetard ? 'item-revision--retard' : null,
-    coche ? 'item-revision--faite' : null,
-  ]
+  // Le retard ne se signale que par sa mention, en toutes lettres : aucune
+  // bande de couleur en bord de ligne.
+  const classes = ['item-revision', coche ? 'item-revision--faite' : null]
     .filter(Boolean)
     .join(' ')
 

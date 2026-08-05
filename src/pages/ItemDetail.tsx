@@ -110,11 +110,7 @@ export function ItemDetail() {
         <ul className="liste-revisions">
           {item.reviews.map((review) => {
             const enRetard = !review.done && review.date < aujourdhui
-            const classes = [
-              'echeance',
-              enRetard ? 'echeance--retard' : null,
-              review.done ? 'echeance--faite' : null,
-            ]
+            const classes = ['echeance', review.done ? 'echeance--faite' : null]
               .filter(Boolean)
               .join(' ')
 

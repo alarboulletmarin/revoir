@@ -156,16 +156,9 @@
   min-width: 0;
   align-items: flex-start;
   gap: var(--e-2);
-  /* Bordure toujours présente : la réserver évite que l'état « en retard »
-     décale la ligne de 2px au moment où elle apparaît. */
-  border-left: 2px solid transparent;
   border-radius: var(--r-carte);
   padding-right: var(--e-2);
   transition: opacity var(--duree-moyen) var(--courbe);
-}
-
-.item-revision--retard {
-  border-left-color: var(--retard);
 }
 
 .item-revision--faite {
