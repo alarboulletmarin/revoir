@@ -232,9 +232,12 @@ Tout le reste : transitions de couleur sur `:hover` / `:active` en `--duree-cour
 **Mobile first sans exception.** Chaque écran est écrit d'abord pour 320px, puis élargi. Aucune media query `max-width` dans le projet — uniquement des `min-width`. Si tu te surprends à écrire un `max-width`, c'est que le design de base a été pensé pour le bureau.
 
 L'en-tête de l'application est en **haut** et collant : la navigation y porte
-les trois vues — Aujourd'hui, Calendrier, Suivi — et rien de plus. « Réglages »
-se tient dans la barre de marque, face au logotype : à 320px un quatrième
+les trois vues — Aujourd'hui, Calendrier, Suivi — et rien de plus. Les réglages
+se tiennent dans la barre de marque, face au logotype : à 320px un quatrième
 libellé ferait déborder la barre, et ce n'est pas une vue.
+
+C'est le **seul lien de l'app réduit à son signe** (section 8.14). Partout
+ailleurs, ce qui n'a pas d'icône s'écrit.
 
 ### 7.1 Points de rupture
 
@@ -549,6 +552,27 @@ Elle porte du texte — « À faire », « En cours », « Terminée » — et n
 
 ---
 
+### 8.14 Le signe des réglages
+
+La septième icône, et la seule ajoutée après coup. Elle mérite sa justification.
+
+**Des curseurs, pas un engrenage.** L'engrenage est le signe générique de
+l'interface logicielle : il dirait « logiciel » là où toute l'app dit « papier
+et instrument de mesure » (section 1). Deux rails gradués que l'on fait
+coulisser disent la même chose et rappellent la frise, qui est la signature
+(section 2). Le registre tient jusque dans l'en-tête.
+
+**Le mot ne disparaît pas, il change de place.** `aria-label` le porte pour les
+lecteurs d'écran, `title` l'affiche au survol. Une icône sans nom n'est pas une
+icône, c'est une devinette — et celle-ci est le seul lien de l'app à ne pas
+écrire le sien.
+
+Le signe fait 20px, sa cible 44 (`min-width: var(--cible)`) : c'est le carré
+qui se touche, pas le dessin. Repos `--encre-2`, actif `--accent` sur
+`--accent-doux`, comme un lien de navigation.
+
+---
+
 ## 9. Écriture
 
 L'interface est en français, en casse normale, à l'infinitif pour les actions.
@@ -595,7 +619,7 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 
 ## 11. Interdits
 
-Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 6 nécessaires (plus, calendrier, coche, chevron, archive, corbeille — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 7 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
 
 Seule dérogation à la palette : les huit teintes de catégorie de la section 3 bis, et sous les trois conditions qui y sont posées.
 

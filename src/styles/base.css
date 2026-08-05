@@ -38,13 +38,26 @@
 
 /* -------------------------------------------------------------- en-tête -- */
 
+/*
+ * Deux dispositions, une seule structure. Sous 480px, une grille de deux
+ * rangées : la marque et les réglages se partagent la première, la navigation
+ * prend la seconde en entier — trois libellés et une icône ne tiennent pas sur
+ * une ligne de 288px. Au-delà, tout revient sur une rangée.
+ *
+ * La hauteur de ces deux dispositions est celle que `--h-entete` calcule, et
+ * dont dépend l'en-tête collant du tableau de suivi (section 8.13).
+ */
 .appli__entete {
   position: sticky;
   top: 0;
   z-index: 2;
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'marque reglages'
+    'nav    nav';
+  align-items: center;
   gap: var(--e-3);
   border-bottom: var(--bordure);
   background-color: var(--papier);
@@ -55,13 +68,10 @@
 }
 
 .appli__barre {
+  grid-area: marque;
   display: flex;
-  width: 100%;
   min-width: 0;
-  max-width: var(--largeur-page);
   align-items: center;
-  justify-content: space-between;
-  margin-inline: auto;
   gap: var(--e-3);
 }
 
@@ -93,10 +103,8 @@
 /* --------------------------------------------------------- navigation --- */
 
 .nav {
-  width: 100%;
+  grid-area: nav;
   min-width: 0;
-  max-width: var(--largeur-page);
-  margin-inline: auto;
 }
 
 .nav__liste {
@@ -143,15 +151,14 @@
  */
 @media (min-width: 480px) {
   .appli__entete {
+    display: flex;
     flex-direction: row;
     align-items: center;
     gap: var(--e-4);
   }
 
   .appli__barre {
-    width: auto;
     flex: 0 0 auto;
-    margin-inline: 0;
   }
 
   .nav {
@@ -161,6 +168,11 @@
 
   .nav__liste {
     justify-content: flex-end;
+  }
+
+  /* Au bout de la rangée, aussi loin du logotype que la largeur le permet. */
+  .appli__reglages {
+    flex: 0 0 auto;
   }
 }
 
@@ -351,23 +363,21 @@ body[data-panneau='ouvert'] .fab {
 }
 
 /*
- * « Réglages » face à la marque, et non dans la navigation : celle-ci porte
- * les trois vues, et à 320px un quatrième libellé la ferait déborder.
- * `.appli__barre` est déjà en `space-between` : il se place tout seul.
+ * Les réglages au bout de l'en-tête, à l'opposé du logotype.
+ *
+ * Le signe fait 20px, sa cible en fait 44 : c'est le carré qui se touche, pas
+ * le dessin.
  */
 .appli__reglages {
+  grid-area: reglages;
   display: inline-flex;
   min-height: var(--cible);
-  min-width: 0;
+  min-width: var(--cible);
   flex-shrink: 0;
   align-items: center;
+  justify-content: center;
   border-radius: var(--r-pilule);
-  padding-inline: var(--e-3);
   color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
   transition:
     color var(--duree-court) var(--courbe),
     background-color var(--duree-court) var(--courbe);

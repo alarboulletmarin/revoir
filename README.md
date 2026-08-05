@@ -160,7 +160,7 @@ Il n'y a pas de serveur : rien ne quitte l'appareil. Les données vivent dans l'
 
 React 19, TypeScript, Vite, vite-plugin-pwa, React Router, IndexedDB via `idb`, date-fns, CSS natif.
 
-Une seule dépendance d'interface, et elle est *headless* : [TanStack Table](https://tanstack.com/table) fournit le modèle du tableau de suivi — colonnes, lignes, cellules — et pas une règle de style. Le balisage, le CSS et l'accessibilité sont écrits dans le projet. Aucune bibliothèque de graphiques : les six icônes sont des composants SVG écrits à la main.
+Une seule dépendance d'interface, et elle est *headless* : [TanStack Table](https://tanstack.com/table) fournit le modèle du tableau de suivi — colonnes, lignes, cellules — et pas une règle de style. Le balisage, le CSS et l'accessibilité sont écrits dans le projet. Aucune bibliothèque de graphiques : les sept icônes sont des composants SVG écrits à la main.
 
 > Note sur les dépendances : `react-router-dom` est maintenu en dernière version. `npm audit` y signale un avis concernant le mode RSC, que cette application n'utilise pas — c'est une SPA statique, sans action serveur. Les versions antérieures cumulent bien plus d'avis réellement applicables.
 

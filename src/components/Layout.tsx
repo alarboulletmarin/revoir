@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { NavBar } from './NavBar'
-import { IconePlus } from './Icons'
+import { IconePlus, IconeReglages } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
 import { useDonnees } from '../state/useDonnees'
@@ -50,21 +50,28 @@ export function Layout() {
             <Marque className="appli__signe" />
             Revoir
           </Link>
-          {/*
-            « Réglages » se tient ici, face à la marque, et non dans la
-            navigation : celle-ci porte les trois vues, et à 320px un
-            quatrième libellé la ferait déborder de l'écran.
-          */}
-          <NavLink
-            to="/reglages"
-            className={({ isActive }) =>
-              isActive ? 'appli__reglages appli__reglages--actif' : 'appli__reglages'
-            }
-          >
-            Réglages
-          </NavLink>
         </div>
         <NavBar />
+        {/*
+          Les réglages ne sont pas dans la navigation : celle-ci porte les trois
+          vues, et à 320px un quatrième libellé la ferait déborder. Ils se
+          tiennent au bout de l'en-tête, à l'opposé du logotype — accolés à lui,
+          ils passeraient pour une seconde moitié du signe.
+
+          Seul lien de l'app réduit à son icône. Le mot reste lu par les
+          lecteurs d'écran et s'affiche au survol : une icône sans nom n'est pas
+          une icône, c'est une devinette.
+        */}
+        <NavLink
+          to="/reglages"
+          aria-label="Réglages"
+          title="Réglages"
+          className={({ isActive }) =>
+            isActive ? 'appli__reglages appli__reglages--actif' : 'appli__reglages'
+          }
+        >
+          <IconeReglages width="20" height="20" />
+        </NavLink>
       </header>
 
       <main className="page" id="contenu">
