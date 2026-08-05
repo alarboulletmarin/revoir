@@ -15,8 +15,17 @@
   /*
    * Recolorable par le contexte : sur la cellule héros (fond --accent plein),
    * le jeu de couleurs s'inverse sans toucher au composant.
+   *
+   * Le rail et les graduations sont deux valeurs distinctes, et pas par
+   * coquetterie : --trait sur --surface tient à 1,2:1, très en dessous des
+   * 3:1 que la WCAG demande pour un objet graphique porteur d'information.
+   * Ce sont les graduations qui portent l'information — où tombent les
+   * échéances et à quelle distance — donc elles passent en --encre-2 (5,4:1).
+   * Le rail ne fait que les relier : il reste en --trait, comme le veut la
+   * section 2, et comme la règle graduée dont la frise s'inspire.
    */
-  --frise-inactif: var(--trait);
+  --frise-rail: var(--trait);
+  --frise-graduation: var(--encre-2);
   --frise-actif: var(--accent);
   --frise-curseur: var(--encre);
 
@@ -60,7 +69,7 @@
   top: 50%;
   height: 1px;
   transform: translateY(-50%);
-  background-color: var(--frise-inactif);
+  background-color: var(--frise-rail);
 }
 
 .frise__trace {
@@ -72,6 +81,12 @@
   background-color: var(--frise-actif);
 }
 
+/*
+ * Graduations franches (section 2). L'échéance faite se distingue par sa
+ * hauteur et par sa couleur, et non plus en atténuant l'opacité de celle à
+ * venir : cette atténuation la ramenait sous le seuil de lisibilité, quand
+ * « franches » demande exactement l'inverse.
+ */
 .frise__graduation {
   position: absolute;
   right: 0;
@@ -79,14 +94,12 @@
   width: 1px;
   height: var(--e-2);
   transform: translateY(-50%);
-  background-color: var(--frise-inactif);
-  opacity: 0.75;
+  background-color: var(--frise-graduation);
 }
 
 .frise__graduation--faite {
   height: var(--e-3);
   background-color: var(--frise-actif);
-  opacity: 1;
 }
 
 .frise__graduation--origine {
@@ -357,8 +370,10 @@
   line-height: var(--l-base);
 }
 
+/* Sur fond --accent plein, tout le jeu repasse en --surface. */
 .cellule--accent .frise {
-  --frise-inactif: var(--surface);
+  --frise-rail: var(--surface);
+  --frise-graduation: var(--surface);
   --frise-actif: var(--surface);
   --frise-curseur: var(--surface);
 }

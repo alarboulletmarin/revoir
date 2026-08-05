@@ -34,8 +34,9 @@ Ultime    ├┬─┬──┬───┬─────┬──────�
 Règles de la frise :
 
 - Largeur des segments : `flex-grow` proportionnel à `Math.sqrt(jours_écoulés)` — la racine carrée compresse J+365 sans écraser J+1. Sans compression, le programme Ultime rend les premières graduations illisibles.
-- Graduations franches : trait de 1px, hauteur 8px (échéance à venir), 12px et pleine opacité (échéance faite).
+- Graduations franches : trait de 1px, hauteur 8px (échéance à venir), 12px (échéance faite). Les deux sont à pleine opacité — l'échéance faite se distingue par sa hauteur et par sa couleur.
 - Remplissage : le segment parcouru est tracé en `--accent`, le reste en `--trait`.
+- **Le rail et les graduations ne portent pas la même valeur.** `--trait` sur `--surface` tient à 1,2:1, très en dessous des 3:1 que la WCAG demande pour un objet graphique porteur d'information. Ce sont les graduations qui portent l'information — où tombent les échéances et à quelle distance : elles sont donc tracées en `--encre-2` (5,4:1). Le rail ne fait que les relier et reste en `--trait`, comme la règle graduée dont la frise s'inspire.
 - Le curseur « aujourd'hui » est un trait vertical de 16px en `--encre`, seul élément qui dépasse la frise.
 
 Où elle apparaît : fiche d'un élément (grande, avec libellés), item de liste (miniature de 24px de haut, sans libellés), prévisualisation du formulaire d'ajout (grande, avec dates réelles).
