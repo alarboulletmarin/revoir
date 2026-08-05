@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   DEFAULT_SCHEDULE,
@@ -10,9 +10,9 @@ import {
   previewDates,
 } from '../lib/schedules'
 import { formatShort, todayKey } from '../lib/dates'
-import { chargeParDate, usedCategories } from '../lib/stats'
+import { chargeParDate } from '../lib/stats'
 import type { ScheduleId } from '../types'
-import { teinteDe } from '../lib/categories'
+import { teinteDe, trouverCategorie } from '../lib/categories'
 import { Champ, ChampDate, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
@@ -28,24 +28,25 @@ const CATEGORIES_SUGGEREES = [
   'Autre',
 ]
 
-export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
+export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const {
-    items,
-    teintes,
+    topics,
+    reviews,
+    categories,
     definirTeinte,
     loading,
-    createItem,
-    editItem,
+    createTopic,
+    editTopic,
     programmes,
     programmesDisponibles,
-  } = useItems()
+  } = useDonnees()
   const listeCategories = useId()
 
-  useTitrePage(mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément')
+  useTitrePage(mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet')
 
-  const existant = mode === 'edit' ? items.find((item) => item.id === id) : undefined
+  const existant = mode === 'edit' ? topics.find((topic) => topic.id === id) : undefined
 
   const [titre, setTitre] = useState('')
   const [categorie, setCategorie] = useState('')
@@ -54,15 +55,17 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
   const [soumis, setSoumis] = useState(false)
   const [enregistrement, setEnregistrement] = useState(false)
 
-  // Les éléments arrivent de façon asynchrone : on remplit le formulaire dès
-  // que l'élément visé est disponible.
+  // Les sujets arrivent de façon asynchrone : on remplit le formulaire dès
+  // que le sujet visé est disponible.
   useEffect(() => {
     if (!existant) return
     setTitre(existant.title)
-    setCategorie(existant.category)
+    setCategorie(
+      categories.find((candidate) => candidate.id === existant.categoryId)?.name ?? '',
+    )
     setDepart(existant.startDate)
-    setProgramme(existant.schedule)
-  }, [existant])
+    setProgramme(existant.scheduleId)
+  }, [existant, categories])
 
   /**
    * Règle métier n°4 : l'aperçu montre les dates générées **et** la charge
@@ -73,18 +76,30 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
     if (depart === '') return []
     const { offsets } = getSchedule(programme, programmes)
     const dates = previewDates(depart, programme, programmes)
-    const charge = chargeParDate(items, dates, existant?.id)
+    const charge = chargeParDate(topics, reviews, dates, existant?.id)
     return dates.map((date, index) => ({
       offset: offsets[index],
       date,
       charge: charge.get(date) ?? 0,
     }))
-  }, [depart, programme, programmes, items, existant?.id])
+  }, [depart, programme, programmes, topics, reviews, existant?.id])
 
-  const categories = useMemo(
-    () => [...new Set([...usedCategories(items), ...CATEGORIES_SUGGEREES])],
-    [items],
+  const suggestions = useMemo(
+    () => [
+      ...new Set([
+        ...categories.map((categorie) => categorie.name),
+        ...CATEGORIES_SUGGEREES,
+      ]),
+    ],
+    [categories],
   )
+
+  /**
+   * La catégorie que la saisie désigne aujourd'hui, s'il y en a une : c'est
+   * elle que le sélecteur de couleur colore. Un nom encore inconnu n'a pas de
+   * couleur à choisir — elle se choisira une fois le sujet créé.
+   */
+  const categorieVisee = trouverCategorie(categorie, categories)
 
   const erreurTitre = titre.trim() === '' ? 'Le titre est obligatoire.' : null
   const erreurDate = depart === '' ? 'La date de départ est obligatoire.' : null
@@ -93,7 +108,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
     return loading ? (
       <p className="discret">Chargement…</p>
     ) : (
-      <p className="discret">Cet élément n'existe pas ou plus.</p>
+      <p className="discret">Ce sujet n'existe pas ou plus.</p>
     )
   }
 
@@ -103,14 +118,19 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
     if (erreurTitre || erreurDate || enregistrement) return
 
     setEnregistrement(true)
-    const brouillon = { title: titre, category: categorie, startDate: depart, schedule: programme }
+    const brouillon = {
+      title: titre,
+      categorie,
+      startDate: depart,
+      scheduleId: programme,
+    }
     try {
       if (mode === 'edit' && existant) {
-        await editItem(existant.id, brouillon)
-        navigate(`/element/${existant.id}`, { replace: true })
+        await editTopic(existant.id, brouillon)
+        navigate(`/sujet/${existant.id}`, { replace: true })
       } else {
-        const cree = await createItem(brouillon)
-        navigate(`/element/${cree.id}`, { replace: true })
+        const cree = await createTopic(brouillon)
+        navigate(`/sujet/${cree.id}`, { replace: true })
       }
     } finally {
       setEnregistrement(false)
@@ -120,7 +140,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
   return (
     <>
       <h1 className="page__titre">
-        {mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément'}
+        {mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet'}
       </h1>
 
       <form className="formulaire" onSubmit={soumettre} noValidate>
@@ -145,21 +165,23 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
           aide="Facultatif."
         />
         <datalist id={listeCategories}>
-          {categories.map((nom) => (
+          {suggestions.map((nom) => (
             <option key={nom} value={nom} />
           ))}
         </datalist>
 
         {/*
-          La couleur appartient à la matière, pas à l'élément : la choisir ici
-          la change partout où cette matière apparaît.
+          La couleur appartient à la catégorie, pas au sujet : la choisir ici
+          la change partout où cette catégorie apparaît. Une catégorie qui
+          n'existe pas encore n'a rien à colorer — elle sera créée avec le
+          sujet, et sa couleur se choisira ensuite.
         */}
-        {categorie.trim() !== '' && (
+        {categorieVisee && (
           <SelecteurTeinte
-            groupe="teinte-matiere"
-            legende={`Couleur de « ${categorie.trim()} »`}
-            valeur={teinteDe(categorie, teintes)}
-            onChange={(teinte) => definirTeinte(categorie, teinte)}
+            groupe="teinte-categorie"
+            legende={`Couleur de « ${categorieVisee.name} »`}
+            valeur={teinteDe(categorieVisee)!}
+            onChange={(teinte) => definirTeinte(categorieVisee.id, teinte)}
           />
         )}
 
@@ -197,7 +219,12 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
                 {/* On choisit un rythme, pas un mot (section 8.7). */}
                 <Frise
                   origine={depart || todayKey()}
-                  reviews={buildReviews(depart || todayKey(), option.id, programmes)}
+                  reviews={buildReviews(
+                    'apercu',
+                    depart || todayKey(),
+                    option.id,
+                    programmes,
+                  )}
                   aujourdhui={depart || todayKey()}
                   variante="mini"
                   intitule={`Programme ${option.label}`}
@@ -220,7 +247,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
 
             <Frise
               origine={depart}
-              reviews={buildReviews(depart, programme, programmes)}
+              reviews={buildReviews('apercu', depart, programme, programmes)}
               aujourdhui={depart}
               libelles="date"
               intitule="Aperçu du programme"
@@ -254,7 +281,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
             Annuler
           </Bouton>
           <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? "Modifier l'élément" : "Créer l'élément"}
+            {mode === 'edit' ? 'Modifier le sujet' : 'Créer le sujet'}
           </Bouton>
         </div>
       </form>

@@ -5,7 +5,7 @@
  * dates, compressé en racine carrée. L'espacement de la répétition espacée
  * devient littéralement visible.
  *
- * Elle n'apparaît qu'à trois endroits : fiche d'un élément, item de liste,
+ * Elle n'apparaît qu'à trois endroits : fiche d'un sujet, ligne de liste,
  * aperçu du formulaire. Une signature qui se répète cesse d'en être une.
  */
 import { useEffect, useRef, useState } from 'react'
@@ -19,7 +19,7 @@ const LARGEUR_LIBELLE_MINIMUM = 32
 export type LibellesFrise = 'aucun' | 'decalage' | 'date'
 
 interface FriseProps {
-  /** Date de départ de l'élément : le `├` qui ouvre la frise. */
+  /** Date de départ du sujet : le `├` qui ouvre la frise. */
   origine: DateKey
   reviews: Review[]
   aujourdhui?: DateKey
@@ -73,7 +73,7 @@ export function Frise({
 
             return (
               <div
-                key={graduation.offset}
+                key={graduation.intervalInDays}
                 className="frise__segment"
                 style={{ flexGrow: graduation.poids }}
               >
@@ -105,13 +105,13 @@ export function Frise({
             if (largeur === 0 || !place) return null
             return (
               <span
-                key={graduation.offset}
+                key={graduation.intervalInDays}
                 className={`frise__libelle ${ancrage(graduation.position)}`}
                 style={{ left: pourcent(graduation.position) }}
               >
                 {libelles === 'date'
                   ? formatShort(graduation.date)
-                  : `J+${graduation.offset}`}
+                  : `J+${graduation.intervalInDays}`}
               </span>
             )
           })}

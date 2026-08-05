@@ -12,9 +12,10 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns'
-import type { Item } from '../types'
+import type { Category, Review, Topic } from '../types'
 import { addDaysToKey, fromKey, toKey, type DateKey } from './dates'
-import { entriesForDate } from './stats'
+import { allEntries } from './stats'
+import { estFaite } from './sujets'
 
 /** Semaine française : lundi en premier. */
 const DEBUT_SEMAINE = { weekStartsOn: 1 } as const
@@ -28,27 +29,52 @@ export interface JourCalendrier {
   total: number
   restantes: number
   /**
-   * Matières des révisions du jour, dans l'ordre où la feuille les listera.
-   * Le calendrier n'en teinte que les trois premiers points, mais c'est la
-   * liste complète qui sert à nommer les matières du jour.
+   * Catégories des révisions du jour, dans l'ordre où la feuille les listera.
+   * `null` pour un sujet sans catégorie. Le calendrier n'en teinte que les
+   * trois premiers points, mais c'est la liste complète qui sert à nommer les
+   * catégories du jour.
    */
-  categories: string[]
+  categories: (Category | null)[]
 }
 
-export function grilleDuMois(items: Item[], mois: Date): JourCalendrier[] {
+/**
+ * Les entrées sont réparties par jour en une passe, puis lues quarante-deux
+ * fois. Une grille qui appellerait une recherche par date pour chacune de ses
+ * cases balaierait toutes les révisions quarante-deux fois par mois affiché.
+ */
+export function grilleDuMois(
+  topics: Topic[],
+  reviews: Review[],
+  categories: Category[],
+  mois: Date,
+): JourCalendrier[] {
   const debut = startOfWeek(startOfMonth(mois), DEBUT_SEMAINE)
   const fin = endOfWeek(endOfMonth(mois), DEBUT_SEMAINE)
 
+  const parId = new Map(categories.map((categorie) => [categorie.id, categorie]))
+  const parJour = new Map<DateKey, JourCalendrier['categories']>()
+  const restantesParJour = new Map<DateKey, number>()
+
+  for (const { topic, review } of allEntries(topics, reviews)) {
+    const jour = review.dueDate
+    const liste = parJour.get(jour) ?? []
+    liste.push(topic.categoryId === null ? null : (parId.get(topic.categoryId) ?? null))
+    parJour.set(jour, liste)
+    if (!estFaite(review)) {
+      restantesParJour.set(jour, (restantesParJour.get(jour) ?? 0) + 1)
+    }
+  }
+
   return eachDayOfInterval({ start: debut, end: fin }).map((date) => {
     const cle = toKey(date)
-    const entrees = entriesForDate(items, cle)
+    const jourCategories = parJour.get(cle) ?? []
     return {
       cle,
       numero: date.getDate(),
       dansLeMois: isSameMonth(date, mois),
-      total: entrees.length,
-      restantes: entrees.filter((entree) => !entree.review.done).length,
-      categories: entrees.map((entree) => entree.item.category),
+      total: jourCategories.length,
+      restantes: restantesParJour.get(cle) ?? 0,
+      categories: jourCategories,
     }
   })
 }

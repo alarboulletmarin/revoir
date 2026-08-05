@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
@@ -10,51 +10,54 @@ import {
   nextReviewDay,
   overdueEntries,
   todayEntries,
+  upcomingEntries,
 } from '../lib/stats'
+import { estFaite } from '../lib/sujets'
 import { Cellule } from '../components/Cellule'
-import { ItemRevision } from '../components/ItemRevision'
+import { LigneRevision } from '../components/LigneRevision'
 import { BarresCharge } from '../components/BarresCharge'
 import { MiniMois } from '../components/MiniMois'
-import { GroupesMatiere } from '../components/GroupesMatiere'
 import { LienBouton } from '../components/Bouton'
-import { grouperParMatiere } from '../lib/matieres'
 
 /** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
 const ITEMS_HERO_ETROIT = 3
 const ITEMS_HERO_LARGE = 6
 
+/** Ce qui vient ensuite, sous le bento. Au-delà, c'est le calendrier. */
+const PROCHAINES_VISIBLES = 5
+
 export function Dashboard() {
   useTitrePage("Aujourd'hui")
-  const { items, teintes, loading } = useItems()
+  const { topics, reviews, categories, loading } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
   const tablette = useMediaQuery('(min-width: 768px)')
   const aujourdhui = todayKey()
 
   const vue = useMemo(() => {
-    const dujour = todayEntries(items, aujourdhui)
+    const dujour = todayEntries(topics, reviews, aujourdhui)
     return {
       /** Ce qu'il reste à faire aujourd'hui. */
-      dujour: dujour.filter((entree) => !entree.review.done),
+      dujour: dujour.filter((entree) => !estFaite(entree.review)),
       /**
        * Ce qui était prévu aujourd'hui, coché ou non. Sans ce compte, une
        * journée bouclée et une journée sans rien de prévu se ressemblent —
        * or ce ne sont pas du tout les mêmes nouvelles.
        */
       prevuesDuJour: dujour.length,
-      retard: overdueEntries(items, aujourdhui),
-      stats: computeStats(items, aujourdhui),
-      charge: loadForDays(items, 14, aujourdhui),
-      prochainJour: nextReviewDay(items, aujourdhui),
-      matieres: grouperParMatiere(items),
+      retard: overdueEntries(topics, reviews, aujourdhui),
+      stats: computeStats(topics, reviews, aujourdhui),
+      charge: loadForDays(topics, reviews, 14, aujourdhui),
+      prochainJour: nextReviewDay(topics, reviews, aujourdhui),
+      prochaines: upcomingEntries(topics, reviews, PROCHAINES_VISIBLES, aujourdhui),
     }
-  }, [items, aujourdhui])
+  }, [topics, reviews, aujourdhui])
 
   if (loading) {
     return <p className="discret">Chargement…</p>
   }
 
-  if (items.length === 0) {
+  if (topics.length === 0) {
     return <PremierUsage />
   }
 
@@ -81,8 +84,8 @@ export function Dashboard() {
             <>
               <ul className="hero__liste">
                 {visibles.map((entree) => (
-                  <ItemRevision
-                    key={`${entree.item.id}-${entree.review.offset}`}
+                  <LigneRevision
+                    key={entree.review.id}
                     entry={entree}
                     aujourdhui={aujourdhui}
                     onValider={validerEntree}
@@ -136,23 +139,41 @@ export function Dashboard() {
         */}
         {tablette && (
           <Cellule zone="calendrier" vers="/calendrier" label="ce mois-ci">
-            <MiniMois items={items} aujourdhui={aujourdhui} />
+            <MiniMois
+              topics={topics}
+              reviews={reviews}
+              categories={categories}
+              aujourdhui={aujourdhui}
+            />
           </Cellule>
         )}
       </div>
 
       {/*
-        Sous le bento, jamais dedans : le tableau de bord reste une réponse,
-        et cette liste-ci est une consultation. Chaque catégorie se replie.
+        Sous le bento, jamais dedans : le tableau de bord reste une réponse.
+        Ce qui vient ensuite, et rien de plus — la consultation par catégorie
+        a maintenant sa propre vue, « Suivi ».
       */}
-      {vue.matieres.length > 0 && (
+      {vue.prochaines.length > 0 && (
         <section className="pile pile--serree">
-          <h2 className="section__titre">Par catégorie</h2>
-          <GroupesMatiere
-            matieres={vue.matieres}
-            teintes={teintes}
-            aujourdhui={aujourdhui}
-          />
+          <h2 className="section__titre">Prochaines échéances</h2>
+          <ul className="liste-revisions">
+            {vue.prochaines.map((entree) => (
+              <LigneRevision
+                key={entree.review.id}
+                entry={entree}
+                aujourdhui={aujourdhui}
+                onValider={validerEntree}
+                onDevalider={devaliderEntree}
+                detail="progression"
+              />
+            ))}
+          </ul>
+          <p className="hero__pied">
+            <LienBouton vers="/revisions/prochaines" variante="texte">
+              Tout voir
+            </LienBouton>
+          </p>
         </section>
       )}
     </>
@@ -181,7 +202,7 @@ function secondeLigne(prevues: number, prochain: { date: string; count: number }
       ? 'Plus rien à revoir : le programme reprendra à la prochaine échéance.'
       : 'Les prochaines révisions apparaîtront ici.'
   }
-  return `Prochaine révision : ${formatShort(prochain.date)}, ${prochain.count} élément${prochain.count > 1 ? 's' : ''}.`
+  return `Prochaine révision : ${formatShort(prochain.date)}, ${prochain.count} sujet${prochain.count > 1 ? 's' : ''}.`
 }
 
 function PremierUsage() {
@@ -189,12 +210,12 @@ function PremierUsage() {
     <div className="etat-vide">
       <h1 className="page__titre">Rien à revoir pour l'instant.</h1>
       <p className="discret">
-        Créez un élément : un titre, une catégorie, une date de départ et un
+        Créez un sujet : un titre, une catégorie, une date de départ et un
         programme. Revoir calcule les dates de révision et ne stocke jamais ce que
         vous apprenez.
       </p>
       <LienBouton vers="/nouveau" variante="primaire">
-        Créer un élément
+        Créer un sujet
       </LienBouton>
     </div>
   )

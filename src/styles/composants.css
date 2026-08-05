@@ -151,7 +151,7 @@
 
 /* =================================================== item de révision === */
 
-.item-revision {
+.ligne-revision {
   display: flex;
   min-width: 0;
   align-items: flex-start;
@@ -161,12 +161,12 @@
   transition: opacity var(--duree-moyen) var(--courbe);
 }
 
-.item-revision--faite {
+.ligne-revision--faite {
   opacity: 0.55;
 }
 
 /* Cible de validation dédiée, 44 × 44px (section 8.2). */
-.item-revision__case {
+.ligne-revision__case {
   display: flex;
   width: var(--cible);
   height: var(--cible);
@@ -182,7 +182,7 @@
  * disparaîtrait dans le fond, et il faut pouvoir tout réassigner d'un bloc
  * sans imbriquer trois niveaux de sélecteurs.
  */
-.item-revision__cercle {
+.ligne-revision__cercle {
   display: flex;
   width: var(--e-5);
   height: var(--e-5);
@@ -194,17 +194,17 @@
     border-color var(--duree-court) var(--courbe);
 }
 
-.item-revision__case:hover .item-revision__cercle {
+.ligne-revision__case:hover .ligne-revision__cercle {
   border-color: var(--cercle-survol, var(--accent));
 }
 
-.item-revision--faite .item-revision__cercle,
-.echeance--faite .item-revision__cercle {
+.ligne-revision--faite .ligne-revision__cercle,
+.echeance--faite .ligne-revision__cercle {
   border-color: var(--cercle-fait, var(--fait));
   background-color: var(--cercle-fait, var(--fait));
 }
 
-.item-revision__coche {
+.ligne-revision__coche {
   width: var(--e-3);
   height: var(--e-3);
   color: var(--coche-couleur, var(--surface));
@@ -223,7 +223,7 @@
   }
 }
 
-.item-revision__corps {
+.ligne-revision__corps {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
@@ -232,7 +232,7 @@
   padding-block: var(--e-2);
 }
 
-.item-revision__titre {
+.ligne-revision__titre {
   display: -webkit-box;
   min-width: 0;
   overflow: hidden;
@@ -244,7 +244,7 @@
   overflow-wrap: anywhere;
 }
 
-.item-revision--faite .item-revision__titre {
+.ligne-revision--faite .ligne-revision__titre {
   text-decoration: line-through;
 }
 
@@ -252,7 +252,7 @@
  * Métadonnées et frise partagent une ligne dès qu'il y a la place. À 320px la
  * frise passe seule à la ligne : `flex-basis: 100%` la fait déborder du wrap.
  */
-.item-revision__meta {
+.ligne-revision__meta {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
@@ -264,18 +264,18 @@
   line-height: var(--l-sm);
 }
 
-.item-revision__date {
+.ligne-revision__date {
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.item-revision__retard {
+.ligne-revision__retard {
   flex-shrink: 0;
   color: var(--retard-texte);
 }
 
 /* « Révision 2 sur 5 · Prochaine : 8 août » — ce que la frise dit en dessin. */
-.item-revision__progression {
+.ligne-revision__progression {
   min-width: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -285,7 +285,7 @@
  * sa première ligne plutôt que centrée sur toute la hauteur. Réservée aux
  * contextes où la place manque — la feuille du calendrier.
  */
-.item-revision--compact {
+.ligne-revision--compact {
   align-items: flex-start;
   padding-right: 0;
 }
@@ -294,37 +294,37 @@
  * La case garde ses 44px de cible, mais son cercle remonte se caler sur la
  * première ligne du titre au lieu de flotter au milieu de la ligne.
  */
-.item-revision--compact .item-revision__case {
+.ligne-revision--compact .ligne-revision__case {
   align-items: flex-start;
   padding-top: var(--e-2);
 }
 
-.item-revision--compact .item-revision__corps {
+.ligne-revision--compact .ligne-revision__corps {
   gap: 0;
   padding-block: var(--e-2);
 }
 
-.item-revision--compact .item-revision__titre {
+.ligne-revision--compact .ligne-revision__titre {
   font-size: var(--t-base);
   line-height: var(--l-base);
 }
 
-.item-revision__corps .frise {
+.ligne-revision__corps .frise {
   flex: 1 1 100%;
 }
 
 @media (min-width: 480px) {
-  .item-revision__corps {
+  .ligne-revision__corps {
     flex-flow: row wrap;
     align-items: center;
     column-gap: var(--e-3);
   }
 
-  .item-revision__titre {
+  .ligne-revision__titre {
     flex: 1 1 100%;
   }
 
-  .item-revision__corps .frise {
+  .ligne-revision__corps .frise {
     flex: 1 1 var(--e-7);
     min-width: 0;
   }
@@ -801,13 +801,13 @@
   }
 }
 
-/* ================================================ teintes de matière ==== */
+/* =============================================== teintes de catégorie === */
 
 /*
  * La teinte n'est jamais une surface pleine : trait, texte et pastille
  * seulement, pour ne pas concurrencer l'unique cellule --accent de l'écran.
  */
-.chip--matiere {
+.chip--categorie {
   border-color: var(--teinte, var(--trait));
   /* L'encre, pas la couleur : une matière pâle doit rester lisible. */
   color: var(--teinte-texte, var(--encre-2));
@@ -916,4 +916,80 @@
 .teintes__choix:has(.teintes__pipette:focus-visible) {
   outline: 2px solid var(--encre);
   outline-offset: 2px;
+}
+
+/* ========================================================= pratique ==== */
+
+/*
+ * Le statut de pratique d'un sujet : trois choix affichés, jamais un cycle au
+ * toucher. Des radios natifs — les flèches naviguent, l'état est annoncé.
+ */
+.pratique {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 0;
+  padding: 0;
+}
+
+.pratique__choix {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-2);
+}
+
+.pratique__option {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  border: var(--bordure);
+  border-radius: var(--r-pilule);
+  padding-inline: var(--e-3);
+  background-color: var(--surface);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.pratique__option--actif {
+  border-width: 1.5px;
+  border-color: var(--accent);
+  background-color: var(--accent-doux);
+  color: var(--accent);
+}
+
+/* Pas de radio visible, mais il reste focusable — l'anneau vient sur la carte. */
+.pratique__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pratique__option:has(.pratique__radio:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .pratique__option:hover {
+    background-color: var(--surface-survol);
+    color: var(--encre);
+  }
+
+  .pratique__option--actif:hover {
+    background-color: var(--accent-doux);
+    color: var(--accent);
+  }
 }

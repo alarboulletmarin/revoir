@@ -1,19 +1,33 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { ItemsProvider } from './state/ItemsContext'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { DonneesProvider } from './state/DonneesContext'
 import { ToastProvider } from './state/ToastContext'
 import { Layout } from './components/Layout'
 import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
-import { ItemDetail } from './pages/ItemDetail'
-import { ItemForm } from './pages/ItemForm'
+import { SujetDetail } from './pages/SujetDetail'
+import { SujetForm } from './pages/SujetForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
+import { Suivi } from './pages/Suivi'
 import { NotFound } from './pages/NotFound'
+
+/**
+ * Les adresses d'avant le renommage.
+ *
+ * L'application est installable : des raccourcis `/element/:id` vivent sur des
+ * écrans d'accueil, et la migration conserve l'identifiant du sujet. Ces deux
+ * routes coûtent quatre lignes et évitent une impasse à qui a posé l'app avant
+ * la mise à jour.
+ */
+function VersSujet({ suffixe = '' }: { suffixe?: string }) {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/sujet/${id}${suffixe}`} replace />
+}
 
 export function App() {
   return (
-    <ItemsProvider>
+    <DonneesProvider>
       <ToastProvider>
         <BrowserRouter>
           <Routes>
@@ -21,20 +35,23 @@ export function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/revisions/:filtre" element={<ReviewList />} />
               <Route path="/calendrier" element={<CalendarPage />} />
-              <Route path="/nouveau" element={<ItemForm mode="create" />} />
-              <Route path="/element/:id" element={<ItemDetail />} />
-              <Route path="/element/:id/modifier" element={<ItemForm mode="edit" />} />
+              <Route path="/suivi" element={<Suivi />} />
+              <Route path="/nouveau" element={<SujetForm mode="create" />} />
+              <Route path="/sujet/:id" element={<SujetDetail />} />
+              <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
               <Route path="/reglages" element={<Settings />} />
               <Route path="/programmes/nouveau" element={<ProgrammeForm mode="create" />} />
               <Route
                 path="/programmes/:id/modifier"
                 element={<ProgrammeForm mode="edit" />}
               />
+              <Route path="/element/:id" element={<VersSujet />} />
+              <Route path="/element/:id/modifier" element={<VersSujet suffixe="/modifier" />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
       </ToastProvider>
-    </ItemsProvider>
+    </DonneesProvider>
   )
 }

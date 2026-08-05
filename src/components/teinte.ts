@@ -2,7 +2,7 @@
  * Le pont entre une teinte et le DOM.
  *
  * Les composants lisent deux variables et ne savent pas ce qu'elles valent :
- * `--teinte`, la couleur de la matière — pastilles, points, bordures —, et
+ * `--teinte`, la couleur de la catégorie — pastilles, points, bordures —, et
  * `--teinte-texte`, la même en encre, assez foncée pour se lire sur le
  * papier. Les huit teintes intégrées tiennent déjà 5,5:1 : les deux valent la
  * même chose. Une couleur libre peut être pâle, et alors seule la seconde

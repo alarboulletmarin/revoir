@@ -1,19 +1,20 @@
 /**
- * Item de révision — le composant le plus important de l'app (section 8.2).
+ * Ligne de révision — le composant le plus important de l'app (section 8.2).
  *
  * Deux cibles distinctes : la case valide sans ouvrir quoi que ce soit, le
  * corps ouvre la fiche. Le geste central est la validation, il doit tomber
  * sous le pouce sans détour.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ReviewEntry } from '../types'
 import { formatEcheance, formatRelative, formatShort, type DateKey } from '../lib/dates'
 import { progressionEntree } from '../lib/stats'
+import { estFaite, revisionsDe } from '../lib/sujets'
 import { IconeCoche } from './Icons'
 import { Frise } from './Frise'
 import { ChipCategorie } from './ChipCategorie'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 
 /**
  * Durée de la ligne barrée avant retrait de la liste (section 8.2).
@@ -22,7 +23,7 @@ import { useItems } from '../state/useItems'
  */
 const DUREE_SORTIE = 200
 
-interface ItemRevisionProps {
+interface LigneRevisionProps {
   entry: ReviewEntry
   aujourdhui: DateKey
   onValider: (entry: ReviewEntry) => void
@@ -41,18 +42,19 @@ interface ItemRevisionProps {
   detail?: 'frise' | 'progression' | 'aucun'
 }
 
-export function ItemRevision({
+export function LigneRevision({
   entry,
   aujourdhui,
   onValider,
   onDevalider,
   masquerDate = false,
   detail = 'frise',
-}: ItemRevisionProps) {
-  const { item, review } = entry
-  // Les teintes viennent du contexte plutôt que d'une prop : le composant est
-  // appelé depuis trois écrans, et c'est une donnée d'affichage, pas d'entrée.
-  const { teintes } = useItems()
+}: LigneRevisionProps) {
+  const { topic, review } = entry
+  // Les catégories et les révisions viennent du contexte plutôt que d'une
+  // prop : le composant est appelé depuis quatre écrans, et ce sont des
+  // données d'affichage, pas d'entrée.
+  const { categories, reviews } = useDonnees()
   const [partante, setPartante] = useState(false)
   const minuteur = useRef<number | undefined>(undefined)
 
@@ -60,11 +62,19 @@ export function ItemRevision({
   // couvre le cas où l'utilisateur quitte l'écran entre-temps.
   useEffect(() => () => window.clearTimeout(minuteur.current), [])
 
-  const enRetard = !review.done && review.date < aujourdhui
-  const coche = review.done || partante
+  const revisions = useMemo(
+    () => revisionsDe(topic.id, reviews),
+    [topic.id, reviews],
+  )
+  const categorie =
+    categories.find((candidate) => candidate.id === topic.categoryId) ?? null
+
+  const faite = estFaite(review)
+  const enRetard = !faite && review.dueDate < aujourdhui
+  const coche = faite || partante
 
   const basculer = () => {
-    if (review.done) {
+    if (faite) {
       onDevalider(entry)
       return
     }
@@ -78,43 +88,44 @@ export function ItemRevision({
   // Le retard ne se signale que par sa mention, en toutes lettres : aucune
   // bande de couleur en bord de ligne.
   const classes = [
-    'item-revision',
-    coche ? 'item-revision--faite' : null,
-    detail === 'progression' ? 'item-revision--compact' : null,
+    'ligne-revision',
+    coche ? 'ligne-revision--faite' : null,
+    detail === 'progression' ? 'ligne-revision--compact' : null,
   ]
     .filter(Boolean)
     .join(' ')
 
-  const progression = detail === 'progression' ? progressionEntree(entry) : null
+  const progression =
+    detail === 'progression' ? progressionEntree(review, revisions) : null
 
   return (
     <li className={classes}>
       <button
         type="button"
-        className="item-revision__case"
+        className="ligne-revision__case"
         role="checkbox"
         aria-checked={coche}
-        aria-label={`${review.done ? 'Décocher' : 'Marquer comme revu'} : ${item.title}, révision J+${review.offset}`}
+        aria-label={`${faite ? 'Décocher' : 'Marquer comme revu'} : ${topic.title}, révision J+${review.intervalInDays}`}
         onClick={basculer}
       >
-        <span className="item-revision__cercle">
-          {coche && <IconeCoche className="item-revision__coche" />}
+        <span className="ligne-revision__cercle">
+          {coche && <IconeCoche className="ligne-revision__coche" />}
         </span>
       </button>
 
-      <Link to={`/element/${item.id}`} className="item-revision__corps">
-        <span className="item-revision__titre">{item.title}</span>
+      <Link to={`/sujet/${topic.id}`} className="ligne-revision__corps">
+        <span className="ligne-revision__titre">{topic.title}</span>
 
-        <span className="item-revision__meta">
-          <ChipCategorie categorie={item.category} teintes={teintes} />
+        <span className="ligne-revision__meta">
+          <ChipCategorie categorie={categorie} />
           {!masquerDate && (
-            <time className="item-revision__date" dateTime={review.date}>
-              {formatShort(review.date)}
+            <time className="ligne-revision__date" dateTime={review.dueDate}>
+              {formatShort(review.dueDate)}
             </time>
           )}
           {enRetard && (
-            <span className="item-revision__retard">
-              {formatRelative(review.date, aujourdhui)}
+            <span className="ligne-revision__retard">
+              {formatRelative(review.dueDate, aujourdhui)}
             </span>
           )}
           {/*
@@ -123,13 +134,13 @@ export function ItemRevision({
             réservée pour une information absente.
           */}
           {progression && (
-            <span className="item-revision__progression">
+            <span className="ligne-revision__progression">
               Révision {progression.rang} sur {progression.total}
               {progression.suivante !== null && (
                 <>
-                  {' · Prochaine : '}
+                  {' · Prochaine : '}
                   <time dateTime={progression.suivante}>
-                    {formatEcheance(progression.suivante, review.date)}
+                    {formatEcheance(progression.suivante, review.dueDate)}
                   </time>
                 </>
               )}
@@ -139,11 +150,11 @@ export function ItemRevision({
 
         {detail === 'frise' && (
           <Frise
-            origine={item.startDate}
-            reviews={item.reviews}
+            origine={topic.startDate}
+            reviews={revisions}
             aujourdhui={aujourdhui}
             variante="mini"
-            intitule={item.title}
+            intitule={topic.title}
           />
         )}
       </Link>

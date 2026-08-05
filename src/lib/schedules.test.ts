@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { Programme } from '../types'
+import type { Programme, Review } from '../types'
+import { compteur } from './ids'
 import {
   ECHELLE_RYTHME,
   SCHEDULES,
@@ -14,6 +15,25 @@ import {
   rebuildReviews,
   tousLesProgrammes,
 } from './schedules'
+
+/**
+ * Les révisions d'un sujet quelconque, aux identifiants prévisibles : ce qui
+ * s'éprouve ici, ce sont les dates et les rangs, pas des UUID.
+ */
+function revisions(
+  startDate: string,
+  schedule: string,
+  personnels: Programme[] = [],
+): Review[] {
+  return buildReviews('sujet', startDate, schedule, personnels, compteur('r'))
+}
+
+/** Marque une révision comme faite, à son décalage. */
+function faite(reviews: Review[], intervalInDays: number, completedAt: string): Review[] {
+  return reviews.map((review) =>
+    review.intervalInDays === intervalInDays ? { ...review, completedAt } : review,
+  )
+}
 
 describe('SCHEDULES', () => {
   it('expose les trois programmes de la specification', () => {
@@ -42,14 +62,15 @@ describe('SCHEDULES', () => {
 
 describe('buildReviews', () => {
   it('crée une révision par décalage, aucune effectuée', () => {
-    const reviews = buildReviews('2026-03-01', 'pousse')
+    const reviews = revisions('2026-03-01', 'pousse')
     expect(reviews).toHaveLength(7)
-    expect(reviews.every((review) => !review.done && review.doneAt === null)).toBe(true)
-    expect(reviews.map((review) => review.offset)).toEqual([1, 2, 4, 7, 14, 30, 60])
+    expect(reviews.every((review) => review.completedAt === null)).toBe(true)
+    expect(reviews.map((review) => review.position)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    expect(reviews.map((review) => review.intervalInDays)).toEqual([1, 2, 4, 7, 14, 30, 60])
   })
 
   it('calcule les dates à partir de la date de départ', () => {
-    expect(buildReviews('2026-03-01', 'simple').map((review) => review.date)).toEqual([
+    expect(revisions('2026-03-01', 'simple').map((review) => review.dueDate)).toEqual([
       '2026-03-02',
       '2026-03-04',
       '2026-03-08',
@@ -59,59 +80,72 @@ describe('buildReviews', () => {
   })
 
   it('passe correctement les fins de mois et d’année', () => {
-    const reviews = buildReviews('2025-12-30', 'simple')
-    expect(reviews[0].date).toBe('2025-12-31')
-    expect(reviews[1].date).toBe('2026-01-02')
-    expect(reviews[4].date).toBe('2026-01-29')
+    const reviews = revisions('2025-12-30', 'simple')
+    expect(reviews[0].dueDate).toBe('2025-12-31')
+    expect(reviews[1].dueDate).toBe('2026-01-02')
+    expect(reviews[4].dueDate).toBe('2026-01-29')
   })
 
   it('traverse une année bissextile sur J+365', () => {
     // 2028 est bissextile : J+365 depuis le 1er janvier 2028 tombe le
     // 31 décembre 2028, pas le 1er janvier 2029.
-    const reviews = buildReviews('2028-01-01', 'ultime')
-    expect(reviews.at(-1)?.date).toBe('2028-12-31')
-    expect(buildReviews('2026-01-01', 'ultime').at(-1)?.date).toBe('2027-01-01')
+    const reviews = revisions('2028-01-01', 'ultime')
+    expect(reviews.at(-1)?.dueDate).toBe('2028-12-31')
+    expect(revisions('2026-01-01', 'ultime').at(-1)?.dueDate).toBe('2027-01-01')
   })
 
   it('previewDates produit les mêmes dates que buildReviews', () => {
     expect(previewDates('2026-05-10', 'ultime')).toEqual(
-      buildReviews('2026-05-10', 'ultime').map((review) => review.date),
+      revisions('2026-05-10', 'ultime').map((review) => review.dueDate),
     )
   })
 })
 
 describe('rebuildReviews', () => {
   it('conserve les révisions effectuées dont le décalage existe encore', () => {
-    const previous = buildReviews('2026-03-01', 'simple').map((review) =>
-      review.offset === 3
-        ? { ...review, done: true, doneAt: '2026-03-04T10:00:00.000Z' }
-        : review,
+    const previous = faite(
+      revisions('2026-03-01', 'simple'),
+      3,
+      '2026-03-04T10:00:00.000Z',
     )
-    const next = rebuildReviews('2026-03-01', 'pousse', previous)
+    const next = rebuildReviews('sujet', '2026-03-01', 'pousse', previous, [], compteur('n'))
 
-    // J+3 n'existe pas dans « poussé » : la coché est perdue, sans effet de bord.
-    expect(next.find((review) => review.offset === 3)).toBeUndefined()
-    expect(next.every((review) => !review.done)).toBe(true)
+    // J+3 n'existe pas dans « poussé » : la coche est perdue, sans effet de bord.
+    expect(next.find((review) => review.intervalInDays === 3)).toBeUndefined()
+    expect(next.every((review) => review.completedAt === null)).toBe(true)
   })
 
   it('reporte l’état effectué sur les décalages communs', () => {
-    const previous = buildReviews('2026-03-01', 'simple').map((review) =>
-      review.offset === 7
-        ? { ...review, done: true, doneAt: '2026-03-08T10:00:00.000Z' }
-        : review,
+    const previous = faite(
+      revisions('2026-03-01', 'simple'),
+      7,
+      '2026-03-08T10:00:00.000Z',
     )
-    const next = rebuildReviews('2026-03-01', 'ultime', previous)
-    const kept = next.find((review) => review.offset === 7)
+    const next = rebuildReviews('sujet', '2026-03-01', 'ultime', previous, [], compteur('n'))
+    const kept = next.find((review) => review.intervalInDays === 7)
 
-    expect(kept?.done).toBe(true)
-    expect(kept?.doneAt).toBe('2026-03-08T10:00:00.000Z')
-    expect(next.filter((review) => review.done)).toHaveLength(1)
+    expect(kept?.completedAt).toBe('2026-03-08T10:00:00.000Z')
+    expect(next.filter((review) => review.completedAt !== null)).toHaveLength(1)
+  })
+
+  it('garde l’identifiant d’une révision dont le décalage traverse la modification', () => {
+    const previous = revisions('2026-03-01', 'simple')
+    const next = rebuildReviews('sujet', '2026-03-05', 'simple', previous, [], compteur('n'))
+
+    expect(next.map((review) => review.id)).toEqual(previous.map((review) => review.id))
+  })
+
+  it('renumérote les rangs selon le nouveau programme', () => {
+    const previous = revisions('2026-03-01', 'simple')
+    const next = rebuildReviews('sujet', '2026-03-01', 'pousse', previous, [], compteur('n'))
+
+    expect(next.map((review) => review.position)).toEqual([1, 2, 3, 4, 5, 6, 7])
   })
 
   it('recalcule les dates quand la date de départ change', () => {
-    const previous = buildReviews('2026-03-01', 'simple')
-    const next = rebuildReviews('2026-03-05', 'simple', previous)
-    expect(next[0].date).toBe('2026-03-06')
+    const previous = revisions('2026-03-01', 'simple')
+    const next = rebuildReviews('sujet', '2026-03-05', 'simple', previous, [], compteur('n'))
+    expect(next[0].dueDate).toBe('2026-03-06')
   })
 })
 
@@ -187,7 +221,7 @@ describe('programmes personnalisés', () => {
   })
 
   it('produit les révisions de son rythme', () => {
-    expect(buildReviews('2026-03-01', 'p-1', [PERSO]).map((r) => r.date)).toEqual([
+    expect(revisions('2026-03-01', 'p-1', [PERSO]).map((r) => r.dueDate)).toEqual([
       '2026-03-03',
       '2026-03-06',
       '2026-03-10',

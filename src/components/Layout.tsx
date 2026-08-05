@@ -1,10 +1,10 @@
 import { useLayoutEffect } from 'react'
-import { Link, Outlet, useLocation, useNavigationType } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { NavBar } from './NavBar'
-import { IconePlus } from './Icons'
+import { IconePlus, IconeReglages } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 
 /** Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes. */
 function fabVisible(pathname: string): boolean {
@@ -14,7 +14,7 @@ function fabVisible(pathname: string): boolean {
 /**
  * Une page qui s'ouvre s'ouvre en haut.
  *
- * Le bouton « Créer l'élément » est en bas d'un formulaire long : sans ça, la
+ * Le bouton « Créer le sujet » est en bas d'un formulaire long : sans ça, la
  * fiche qui s'ouvre derrière hérite du défilement du formulaire et démarre au
  * milieu de nulle part. Vaut pour toute navigation, pas seulement celle-là.
  *
@@ -33,7 +33,7 @@ function useRemonterEnHaut(pathname: string) {
 }
 
 export function Layout() {
-  const { error } = useItems()
+  const { error } = useDonnees()
   const { pathname } = useLocation()
 
   useRemonterEnHaut(pathname)
@@ -52,6 +52,26 @@ export function Layout() {
           </Link>
         </div>
         <NavBar />
+        {/*
+          Les réglages ne sont pas dans la navigation : celle-ci porte les trois
+          vues, et à 320px un quatrième libellé la ferait déborder. Ils se
+          tiennent au bout de l'en-tête, à l'opposé du logotype — accolés à lui,
+          ils passeraient pour une seconde moitié du signe.
+
+          Seul lien de l'app réduit à son icône. Le mot reste lu par les
+          lecteurs d'écran et s'affiche au survol : une icône sans nom n'est pas
+          une icône, c'est une devinette.
+        */}
+        <NavLink
+          to="/reglages"
+          aria-label="Réglages"
+          title="Réglages"
+          className={({ isActive }) =>
+            isActive ? 'appli__reglages appli__reglages--actif' : 'appli__reglages'
+          }
+        >
+          <IconeReglages width="20" height="20" />
+        </NavLink>
       </header>
 
       <main className="page" id="contenu">
@@ -64,7 +84,7 @@ export function Layout() {
       </main>
 
       {fabVisible(pathname) && (
-        <Link to="/nouveau" className="fab" aria-label="Ajouter un élément">
+        <Link to="/nouveau" className="fab" aria-label="Ajouter un sujet">
           <IconePlus width="24" height="24" strokeWidth="1.8" />
         </Link>
       )}

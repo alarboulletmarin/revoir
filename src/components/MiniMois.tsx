@@ -5,19 +5,21 @@
  */
 import { useMemo } from 'react'
 import { startOfMonth } from 'date-fns'
-import type { Item } from '../types'
+import type { Category, Review, Topic } from '../types'
 import { fromKey, type DateKey } from '../lib/dates'
 import { densite, grilleDuMois } from '../lib/calendrier'
 
 interface MiniMoisProps {
-  items: Item[]
+  topics: Topic[]
+  reviews: Review[]
+  categories: Category[]
   aujourdhui: DateKey
 }
 
-export function MiniMois({ items, aujourdhui }: MiniMoisProps) {
+export function MiniMois({ topics, reviews, categories, aujourdhui }: MiniMoisProps) {
   const jours = useMemo(
-    () => grilleDuMois(items, startOfMonth(fromKey(aujourdhui))),
-    [items, aujourdhui],
+    () => grilleDuMois(topics, reviews, categories, startOfMonth(fromKey(aujourdhui))),
+    [topics, reviews, categories, aujourdhui],
   )
 
   return (

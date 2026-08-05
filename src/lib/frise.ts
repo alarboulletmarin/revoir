@@ -21,7 +21,8 @@ import { dateEffective } from './recalage'
 const JOURS_MINIMUM = 1
 
 export interface GraduationFrise {
-  offset: number
+  /** Le « n » de J+n — ce que la graduation porte comme libellé. */
+  intervalInDays: number
   /** Date réelle : échéance planifiée, ou date de validation si elle est faite. */
   date: DateKey
   faite: boolean
@@ -47,7 +48,9 @@ export interface GeometrieFrise {
 const FRISE_VIDE: GeometrieFrise = { graduations: [], parcours: 0, curseur: null }
 
 /**
- * @param origine date de départ de l'élément — le `├` qui ouvre la frise.
+ * @param origine date de départ du sujet — le `├` qui ouvre la frise.
+ * @param reviews les révisions du sujet, **triées par `position`** : c'est
+ *   l'ordre du programme, et la frise le lit tel quel.
  */
 export function geometrieFrise(
   origine: DateKey,
@@ -68,9 +71,9 @@ export function geometrieFrise(
   const graduations = reviews.map((review, index) => {
     cumul += poids[index]
     return {
-      offset: review.offset,
+      intervalInDays: review.intervalInDays,
       date: dates[index],
-      faite: review.done,
+      faite: review.completedAt !== null,
       position: cumul / total,
       poids: poids[index],
       part: poids[index] / total,

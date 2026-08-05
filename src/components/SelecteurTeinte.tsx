@@ -1,5 +1,5 @@
 /**
- * Choix de la teinte d'une matière : les huit pastilles de la palette, plus un
+ * Choix de la teinte d'une catégorie : les huit pastilles de la palette, plus un
  * neuvième cercle pour une couleur libre.
  *
  * Chaque pastille de la palette est un vrai bouton radio, masqué visuellement
@@ -32,7 +32,7 @@ import { proprietesTeinte } from './teinte'
 /**
  * Les huit teintes en dur, uniquement pour amorcer le sélecteur du système :
  * il attend une valeur hexadécimale et ne sait pas lire une variable CSS.
- * Miroir de la section « Teintes de matière » de tokens.css.
+ * Miroir de la section « Teintes de catégorie » de tokens.css.
  */
 const HEX_TEINTE: Record<(typeof TEINTES)[number], string> = {
   ardoise: '#4a6572',
@@ -53,7 +53,7 @@ interface SelecteurTeinteProps {
   legende: string
   /**
    * Masque visuellement la légende sans la retirer : quand le nom de la
-   * matière est déjà écrit juste au-dessus, la répéter n'apporte rien à
+   * catégorie est déjà écrit juste au-dessus, la répéter n'apporte rien à
    * l'œil, mais un lecteur d'écran a toujours besoin de l'intitulé.
    */
   legendeMasquee?: boolean

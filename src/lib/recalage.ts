@@ -10,25 +10,26 @@
  * Sans ce recalage, valider une semaine de retard d'un coup ferait tomber
  * toutes les échéances suivantes en même temps.
  */
-import type { Item, Review } from '../types'
+import type { Review } from '../types'
 import { addDaysToKey, daysBetween, toKey, todayKey, type DateKey } from './dates'
 
 /**
  * Date à laquelle une révision a réellement eu lieu.
  *
- * `date` est l'échéance planifiée, `doneAt` le moment de la validation : les
- * deux diffèrent dès qu'une révision est validée en retard. La frise se sert
- * de cette date-ci pour ses graduations faites.
+ * `dueDate` est l'échéance planifiée, `completedAt` le moment de la validation :
+ * les deux diffèrent dès qu'une révision est validée en retard. La frise se
+ * sert de cette date-ci pour ses graduations faites.
  */
 export function dateEffective(review: Review): DateKey {
-  if (!review.done || review.doneAt === null) return review.date
-  const validee = new Date(review.doneAt)
-  if (Number.isNaN(validee.getTime())) return review.date
+  if (review.completedAt === null) return review.dueDate
+  const validee = new Date(review.completedAt)
+  if (Number.isNaN(validee.getTime())) return review.dueDate
   return toKey(validee)
 }
 
 export interface ResultatValidation {
-  item: Item
+  /** Les révisions du sujet, réécrites. Le recalage en déplace plusieurs. */
+  reviews: Review[]
   /** Jours de retard absorbés. 0 si la validation n'était pas en retard. */
   retard: number
   /** Nombre d'échéances à venir déplacées par le recalage. */
@@ -38,37 +39,47 @@ export interface ResultatValidation {
 /**
  * Valide une révision et recale les suivantes si elle était en retard.
  *
+ * « Suivantes » se lit sur `position`, jamais sur l'ordre du tableau : les
+ * révisions viennent maintenant de leur propre table, où l'ordre de lecture ne
+ * veut rien dire. Se fier à l'index aurait recalé au hasard.
+ *
  * `aujourdhui` et `horodatage` sont injectables pour rendre la fonction
  * testable : rien ici ne lit l'horloge en dehors de leurs valeurs par défaut.
  */
 export function validerRevision(
-  item: Item,
-  offset: number,
+  reviews: Review[],
+  reviewId: string,
   aujourdhui: DateKey = todayKey(),
   horodatage: string = new Date().toISOString(),
 ): ResultatValidation {
-  const index = item.reviews.findIndex((review) => review.offset === offset)
-  if (index === -1) return { item, retard: 0, deplacees: 0 }
+  const cible = reviews.find((review) => review.id === reviewId)
+  if (!cible) return { reviews, retard: 0, deplacees: 0 }
 
-  const cible = item.reviews[index]
-  const retard = Math.max(0, daysBetween(cible.date, aujourdhui))
+  const retard = Math.max(0, daysBetween(cible.dueDate, aujourdhui))
 
   let deplacees = 0
-  const reviews = item.reviews.map((review, position) => {
-    if (position === index) {
-      return { ...review, done: true, doneAt: horodatage }
-    }
+  const recalees = reviews.map((review) => {
+    if (review.id === cible.id) return { ...review, completedAt: horodatage }
     // Validation à l'heure ou en avance : aucune échéance ne bouge.
     // Une révision déjà faite garde sa date, elle appartient au passé.
-    if (retard === 0 || position <= index || review.done) return review
+    if (
+      retard === 0 ||
+      review.position <= cible.position ||
+      review.completedAt !== null
+    ) {
+      return review
+    }
 
-    const date = addDaysToKey(aujourdhui, review.offset - cible.offset)
-    if (date === review.date) return review
+    const dueDate = addDaysToKey(
+      aujourdhui,
+      review.intervalInDays - cible.intervalInDays,
+    )
+    if (dueDate === review.dueDate) return review
     deplacees += 1
-    return { ...review, date }
+    return { ...review, dueDate }
   })
 
-  return { item: { ...item, reviews, updatedAt: horodatage }, retard, deplacees }
+  return { reviews: recalees, retard, deplacees }
 }
 
 /**
@@ -77,21 +88,11 @@ export function validerRevision(
  * Volontairement asymétrique : décocher ne défait pas un recalage, parce que
  * les échéances suivantes ont pu être validées entre-temps sur leurs nouvelles
  * dates. Le retour exact à l'état antérieur est le rôle du bouton « Annuler »
- * du toast, qui restaure l'élément tel qu'il était avant la validation.
+ * du toast, qui restaure les révisions telles qu'elles étaient avant la
+ * validation.
  */
-export function devaliderRevision(
-  item: Item,
-  offset: number,
-  horodatage: string = new Date().toISOString(),
-): Item {
-  const index = item.reviews.findIndex((review) => review.offset === offset)
-  if (index === -1) return item
-
-  return {
-    ...item,
-    reviews: item.reviews.map((review, position) =>
-      position === index ? { ...review, done: false, doneAt: null } : review,
-    ),
-    updatedAt: horodatage,
-  }
+export function devaliderRevision(reviews: Review[], reviewId: string): Review[] {
+  return reviews.map((review) =>
+    review.id === reviewId ? { ...review, completedAt: null } : review,
+  )
 }

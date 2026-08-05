@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { useItems } from '../state/useItems'
+import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { useTitrePage } from '../state/useTitrePage'
 import { formatLong, formatRelative, todayKey, type DateKey } from '../lib/dates'
 import { overdueEntries, todayEntries, upcomingEntries } from '../lib/stats'
-import type { Item, ReviewEntry } from '../types'
-import { ItemRevision } from '../components/ItemRevision'
+import { estFaite } from '../lib/sujets'
+import type { Review, ReviewEntry, Topic } from '../types'
+import { LigneRevision } from '../components/LigneRevision'
 
 /**
  * Destination des liens « Tout voir ». Colonne simple : le bento est réservé
@@ -16,18 +17,20 @@ const FILTRES = {
   aujourdhui: {
     titre: "Aujourd'hui",
     vide: 'Rien à revoir aujourd’hui.',
-    entrees: (items: Item[], jour: DateKey) =>
-      todayEntries(items, jour).filter((entree) => !entree.review.done),
+    entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
+      todayEntries(topics, reviews, jour).filter((entree) => !estFaite(entree.review)),
   },
   retard: {
     titre: 'En retard',
     vide: 'Aucune révision en retard.',
-    entrees: (items: Item[], jour: DateKey) => overdueEntries(items, jour),
+    entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
+      overdueEntries(topics, reviews, jour),
   },
   prochaines: {
     titre: 'Prochaines révisions',
     vide: 'Aucune révision planifiée',
-    entrees: (items: Item[], jour: DateKey) => upcomingEntries(items, 100, jour),
+    entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
+      upcomingEntries(topics, reviews, 100, jour),
   },
 } as const
 
@@ -43,7 +46,7 @@ export function ReviewList() {
 }
 
 function Liste({ filtre }: { filtre: Filtre }) {
-  const { items } = useItems()
+  const { topics, reviews } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = todayKey()
   const config = FILTRES[filtre]
@@ -51,8 +54,8 @@ function Liste({ filtre }: { filtre: Filtre }) {
   useTitrePage(config.titre)
 
   const groupes = useMemo(
-    () => grouperParJour(config.entrees(items, aujourdhui)),
-    [config, items, aujourdhui],
+    () => grouperParJour(config.entrees(topics, reviews, aujourdhui)),
+    [config, topics, reviews, aujourdhui],
   )
 
   return (
@@ -74,8 +77,8 @@ function Liste({ filtre }: { filtre: Filtre }) {
             </h2>
             <ul className="liste-revisions">
               {entrees.map((entree) => (
-                <ItemRevision
-                  key={`${entree.item.id}-${entree.review.offset}`}
+                <LigneRevision
+                  key={entree.review.id}
                   entry={entree}
                   aujourdhui={aujourdhui}
                   onValider={validerEntree}
@@ -96,8 +99,8 @@ function grouperParJour(entrees: ReviewEntry[]): [DateKey, ReviewEntry[]][] {
   const groupes: [DateKey, ReviewEntry[]][] = []
   for (const entree of entrees) {
     const dernier = groupes.at(-1)
-    if (dernier && dernier[0] === entree.review.date) dernier[1].push(entree)
-    else groupes.push([entree.review.date, [entree]])
+    if (dernier && dernier[0] === entree.review.dueDate) dernier[1].push(entree)
+    else groupes.push([entree.review.dueDate, [entree]])
   }
   return groupes
 }
