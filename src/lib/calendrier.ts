@@ -5,24 +5,38 @@
  * et le mini-mois du bento.
  */
 import {
+  addDays,
   addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
+  format,
   isSameMonth,
   startOfMonth,
   startOfWeek,
   subMonths,
 } from 'date-fns'
 import type { Category, Review, Topic } from '../types'
-import { addDaysToKey, fromKey, toKey, type DateKey } from './dates'
+import { localeActive } from '../i18n'
+import { addDaysToKey, debutSemaine, fromKey, toKey, type DateKey } from './dates'
 import { allEntries } from './stats'
 import { estFaite } from './sujets'
 
-/** Semaine française : lundi en premier. */
-const DEBUT_SEMAINE = { weekStartsOn: 1 } as const
-
-export const JOURS_SEMAINE = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+/**
+ * Les initiales de la rangée d'en-tête, dans l'ordre où la grille les rend.
+ *
+ * Dérivées de la locale plutôt qu'écrites à la main : la semaine ne commence
+ * pas le même jour partout — lundi en français, dimanche en anglais — et une
+ * liste figée décalerait les colonnes d'un cran sans que rien ne le dise. Le
+ * calcul repart du début de semaine réel, celui-là même que `grilleDuMois`
+ * emploie.
+ */
+export function joursSemaine(): string[] {
+  const debut = startOfWeek(new Date(), debutSemaine())
+  return Array.from({ length: 7 }, (_, index) =>
+    format(addDays(debut, index), 'EEEEE', { locale: localeActive() }),
+  )
+}
 
 export interface JourCalendrier {
   cle: DateKey
@@ -50,8 +64,8 @@ export function grilleDuMois(
   categories: Category[],
   mois: Date,
 ): JourCalendrier[] {
-  const debut = startOfWeek(startOfMonth(mois), DEBUT_SEMAINE)
-  const fin = endOfWeek(endOfMonth(mois), DEBUT_SEMAINE)
+  const debut = startOfWeek(startOfMonth(mois), debutSemaine())
+  const fin = endOfWeek(endOfMonth(mois), debutSemaine())
 
   const parId = new Map(categories.map((categorie) => [categorie.id, categorie]))
   const parJour = new Map<DateKey, JourCalendrier['categories']>()
@@ -95,8 +109,8 @@ export function densite(total: number): number {
  *
  * Flèches d'un jour et d'une semaine, Origine et Fin aux deux bouts de la
  * semaine, Page préc./suiv. d'un mois : c'est le jeu de touches attendu d'une
- * grille de dates, et il vit ici pour partager la semaine française avec
- * `grilleDuMois`.
+ * grille de dates, et il vit ici pour partager le début de semaine de la
+ * langue active avec `grilleDuMois`.
  */
 export function deplacementClavier(cle: DateKey, touche: string): DateKey | null {
   switch (touche) {
@@ -109,9 +123,9 @@ export function deplacementClavier(cle: DateKey, touche: string): DateKey | null
     case 'ArrowDown':
       return addDaysToKey(cle, 7)
     case 'Home':
-      return toKey(startOfWeek(fromKey(cle), DEBUT_SEMAINE))
+      return toKey(startOfWeek(fromKey(cle), debutSemaine()))
     case 'End':
-      return toKey(endOfWeek(fromKey(cle), DEBUT_SEMAINE))
+      return toKey(endOfWeek(fromKey(cle), debutSemaine()))
     case 'PageUp':
       return toKey(subMonths(fromKey(cle), 1))
     case 'PageDown':

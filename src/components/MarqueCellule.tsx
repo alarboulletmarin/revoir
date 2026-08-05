@@ -12,7 +12,7 @@
  *   ·  à venir          point
  *   —  hors programme   filet
  *
- * Tout est dessiné en CSS : la section 11 arrête la liste des icônes à six, et
+ * Tout est dessiné en CSS : la section 11 arrête la liste des icônes, et
  * la coche — qui en fait partie — est la seule reprise ici.
  */
 import type { EtatCellule } from '../lib/suivi'

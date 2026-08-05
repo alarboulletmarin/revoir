@@ -3,9 +3,13 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Uniquement des `min-width` (section 7.1). Certaines règles ne peuvent pas
- * s'écrire en CSS seul — le nombre d'items de la cellule héros change le
- * libellé du lien « Tout voir », pas seulement l'affichage.
+ * Des `min-width` (section 7.1), et une exception : `prefers-color-scheme`.
+ *
+ * Certaines règles ne peuvent pas s'écrire en CSS seul — le nombre d'items de
+ * la cellule héros change le libellé du lien « Tout voir », pas seulement
+ * l'affichage. Le thème du système, lui, doit être **résolu** en JavaScript :
+ * `data-theme` ne porte jamais « système », et les couleurs libres sont
+ * ajustées contre le fond réellement rendu, que le CSS ne sait pas rendre.
  */
 export function useMediaQuery(query: string): boolean {
   const [correspond, setCorrespond] = useState(

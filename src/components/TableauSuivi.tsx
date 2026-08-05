@@ -26,12 +26,13 @@ import {
   lignesCategorie,
   type CelluleSuivi,
   type ColonneSuivi,
-  type EtatCellule,
   type LigneSuivi,
   type ModeColonnes,
 } from '../lib/suivi'
-import { LIBELLES_PRATIQUE } from './SelecteurPratique'
+import { textes } from '../i18n'
+import { libellePratique } from './SelecteurPratique'
 import { MarqueCellule } from './MarqueCellule'
+import { useTextes } from '../state/usePreferences'
 
 /** Aucune fonctionnalité au-delà du cœur : ni tri, ni filtre, ni pagination. */
 const features = tableFeatures({})
@@ -62,6 +63,7 @@ export function TableauSuivi({
   onCellule,
   astuce = false,
 }: TableauSuiviProps) {
+  const t = useTextes()
   const colonnes = useMemo(
     () => colonnesCategorie(topics, reviews, mode),
     [topics, reviews, mode],
@@ -76,7 +78,7 @@ export function TableauSuivi({
       helper.columns([
         helper.display({
           id: 'sujet',
-          header: 'Sujet',
+          header: t.suivi.colonneSujet,
           cell: ({ row }) => (
             <Link to={`/sujet/${row.original.topic.id}`} className="suivi__lien">
               {row.original.topic.title}
@@ -110,7 +112,7 @@ export function TableauSuivi({
         ),
         helper.display({
           id: 'pratique',
-          header: 'Pratique',
+          header: t.suivi.colonnePratique,
           cell: ({ row }) => (
             <button
               type="button"
@@ -120,17 +122,19 @@ export function TableauSuivi({
               }
             >
               <span aria-hidden="true">
-                {LIBELLES_PRATIQUE[row.original.topic.practiceStatus]}
+                {libellePratique(row.original.topic.practiceStatus)}
               </span>
               <span className="invisible">
-                Pratique de {row.original.topic.title} :{' '}
-                {LIBELLES_PRATIQUE[row.original.topic.practiceStatus]}. Changer.
+                {t.suivi.pratiqueCase(
+                  row.original.topic.title,
+                  libellePratique(row.original.topic.practiceStatus),
+                )}
               </span>
             </button>
           ),
         }),
       ]),
-    [colonnes, onCellule],
+    [colonnes, onCellule, t],
   )
 
   const table = useTable({ features, columns, data })
@@ -148,13 +152,10 @@ export function TableauSuivi({
         className="suivi__cadre"
         role="region"
         tabIndex={0}
-        aria-label={`Tableau de suivi — ${nom}`}
+        aria-label={t.suivi.cadre(nom)}
       >
         <table className="suivi__table">
-          <caption className="invisible">
-            Suivi de {nom} : un sujet par ligne, une étape de révision par
-            colonne.
-          </caption>
+          <caption className="invisible">{t.suivi.caption(nom)}</caption>
 
           <thead>
             {table.getHeaderGroups().map((groupe) => (
@@ -203,9 +204,7 @@ export function TableauSuivi({
         Aucune ombre ni dégradé pour signaler la suite (section 11) : une
         phrase, une fois, et la barre de défilement pour le reste.
       */}
-      {astuce && deborde && (
-        <p className="suivi__astuce">Faites glisser pour voir la suite.</p>
-      )}
+      {astuce && deborde && <p className="suivi__astuce">{t.suivi.astuce}</p>}
     </>
   )
 }
@@ -271,7 +270,7 @@ function Cellule({ cellule, colonne, titre, onOuvrir }: CelluleProps) {
       <span className="suivi__marque">
         <MarqueCellule etat="hors-programme" />
         <span className="invisible">
-          {titre}, {colonne.description} : hors programme.
+          {textes().suivi.horsProgrammeCase(titre, colonne.description)}
         </span>
       </span>
     )
@@ -281,23 +280,14 @@ function Cellule({ cellule, colonne, titre, onOuvrir }: CelluleProps) {
     <button type="button" className="suivi__marque suivi__marque--action" onClick={onOuvrir}>
       <MarqueCellule etat={cellule.etat} />
       <span className="invisible">
-        {titre}, {colonne.description}, {decrireEtat(cellule.etat)}{' '}
-        {formatLong(cellule.review.dueDate)}.
+        {textes().suivi.caseComplete(
+          titre,
+          colonne.description,
+          textes().suivi.etatsDate[cellule.etat],
+          formatLong(cellule.review.dueDate),
+        )}
       </span>
     </button>
   )
 }
 
-/** Une forme ne se lit pas : chaque case dit son état en toutes lettres. */
-function decrireEtat(etat: EtatCellule): string {
-  switch (etat) {
-    case 'faite':
-      return 'effectuée, prévue le'
-    case 'aujourdhui':
-      return 'à effectuer aujourd’hui,'
-    case 'retard':
-      return 'en retard depuis le'
-    default:
-      return 'à venir le'
-  }
-}

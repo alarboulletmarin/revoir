@@ -17,6 +17,7 @@ import { teinteParDefaut } from '../lib/categories'
 import { Champ } from './Champ'
 import { ChipCategorie } from './ChipCategorie'
 import { SelecteurTeinte } from './SelecteurTeinte'
+import { useTextes } from '../state/usePreferences'
 import type { Ref } from 'react'
 
 export interface BrouillonCategorie {
@@ -42,6 +43,7 @@ export function ChampsCategorie({
   groupeTeinte,
   refNom,
 }: ChampsCategorieProps) {
+  const t = useTextes()
   const propre = valeur.nom.trim()
 
   /*
@@ -56,7 +58,7 @@ export function ChampsCategorie({
     <>
       <Champ
         ref={refNom}
-        label="Nom"
+        label={t.categories.champNom}
         type="text"
         value={valeur.nom}
         maxLength={60}
@@ -67,18 +69,18 @@ export function ChampsCategorie({
 
       <SelecteurTeinte
         groupe={groupeTeinte}
-        legende="Couleur"
+        legende={t.teintes.legende}
         valeur={apercu}
         onChange={(teinte) => onChange({ ...valeur, teinte })}
       />
 
       {/* Ce qu'on obtiendra, tel que ça s'écrira dans les listes. */}
       <div className="champs-categorie__apercu">
-        <span className="champ__label">Aperçu</span>
+        <span className="champ__label">{t.categories.apercu}</span>
         <ChipCategorie
           categorie={{
             id: 'apercu',
-            name: propre === '' ? 'Sans nom' : propre,
+            name: propre === '' ? t.commun.sansNom : propre,
             tint: apercu,
             createdAt: '',
             updatedAt: '',

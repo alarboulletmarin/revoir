@@ -10,6 +10,8 @@
  */
 import type { DayLoad } from '../lib/stats'
 import { formatCompact, formatShort, type DateKey } from '../lib/dates'
+import { textes } from '../i18n'
+import { useTextes } from '../state/usePreferences'
 
 const OPACITE_MINIMUM = 0.25
 
@@ -19,14 +21,13 @@ interface BarresChargeProps {
 }
 
 export function BarresCharge({ charge, aujourdhui }: BarresChargeProps) {
+  const t = useTextes()
   const maximum = Math.max(1, ...charge.map((jour) => jour.count))
   const total = charge.reduce((somme, jour) => somme + jour.count, 0)
 
   if (total === 0) {
     return (
-      <p className="discret discret--petit">
-        Aucune révision dans les {charge.length} prochains jours.
-      </p>
+      <p className="discret discret--petit">{t.charge.aucune(charge.length)}</p>
     )
   }
 
@@ -34,7 +35,7 @@ export function BarresCharge({ charge, aujourdhui }: BarresChargeProps) {
     <div className="charge">
       <ul
         className="charge__barres"
-        aria-label={`Charge sur les ${charge.length} prochains jours`}
+        aria-label={t.charge.intitule(charge.length)}
       >
         {charge.map((jour) => (
           <li key={jour.date} className="charge__jour">
@@ -59,7 +60,9 @@ export function BarresCharge({ charge, aujourdhui }: BarresChargeProps) {
         de la première et de la dernière barre.
       */}
       <div className="charge__reperes" aria-hidden="true">
-        <span className="charge__repere charge__repere--jour">Auj.</span>
+        <span className="charge__repere charge__repere--jour">
+          {t.charge.aujourdhuiCourt}
+        </span>
         <span className="charge__repere">{formatCompact(charge[Math.floor(charge.length / 2)].date)}</span>
         <span className="charge__repere">{formatCompact(charge[charge.length - 1].date)}</span>
       </div>
@@ -69,8 +72,9 @@ export function BarresCharge({ charge, aujourdhui }: BarresChargeProps) {
 
 /** « aujourd'hui, 3 révisions » · « ven. 7 août, aucune révision ». */
 function etiquetteJour(jour: DayLoad, aujourdhui: DateKey): string {
-  const quand = jour.date === aujourdhui ? "aujourd'hui" : formatShort(jour.date)
-  const combien =
-    jour.count === 0 ? 'aucune révision' : `${jour.count} révision${jour.count > 1 ? 's' : ''}`
-  return `${quand}, ${combien}`
+  const quand =
+    jour.date === aujourdhui
+      ? textes().dates.relatif.aujourdhui
+      : formatShort(jour.date)
+  return textes().charge.jour(quand, jour.count)
 }

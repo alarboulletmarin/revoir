@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
+  contrasteSurFond,
   contrasteSurPapier,
+  couleurAffichee,
   couleurRetenue,
   couleurTexte,
   estCouleurPersonnalisee,
   repereOklab,
   type CouleurPersonnalisee,
 } from './couleurs'
+import { FOND, definirThemeResolu } from '../state/theme'
 
 /** Les huit teintes de la section 3 bis, telles qu'écrites dans tokens.css. */
 const HUIT: CouleurPersonnalisee[] = [
@@ -153,6 +156,56 @@ describe('registre des huit teintes', () => {
     for (const teinte of HUIT) {
       expect(contrasteSurPapier(teinte)).toBeGreaterThanOrEqual(4.5)
     }
+  })
+})
+
+describe('sur le papier de nuit', () => {
+  // Le thème clair est celui par défaut, et le reste de la suite en dépend.
+  afterEach(() => definirThemeResolu('clair'))
+
+  /*
+   * Le sens de l'ajustement dépend du fond. Assombrir un bleu marine sur un
+   * papier de nuit le rendrait invisible pile là où le thème clair le lisait
+   * enfin : la clarté monte au lieu de descendre.
+   */
+  it('éclaircit au lieu d’assombrir', () => {
+    definirThemeResolu('sombre')
+    const encre = couleurTexte('#1a2b6b')
+    expect(contrasteSurFond(encre, FOND.sombre)).toBeGreaterThanOrEqual(4.49)
+    expect(repereOklab(encre).clarte).toBeGreaterThan(repereOklab('#1a2b6b').clarte)
+  })
+
+  it('laisse intacte une couleur qui s’y lit déjà', () => {
+    definirThemeResolu('sombre')
+    for (const pale of ['#ffb6c1', '#ffee88', '#d8f0ff']) {
+      expect(couleurTexte(pale as CouleurPersonnalisee)).toBe(pale)
+    }
+  })
+
+  it('remonte au seuil de visibilité une pastille trop sombre', () => {
+    definirThemeResolu('sombre')
+    const pastille = couleurAffichee('#0b0a09')
+    expect(contrasteSurFond(pastille, FOND.sombre)).toBeGreaterThanOrEqual(1.39)
+    expect(contrasteSurFond(pastille, FOND.sombre)).toBeLessThan(1.7)
+  })
+
+  it('conserve la teinte choisie en montant', () => {
+    definirThemeResolu('sombre')
+    const [rouge, , bleu] = canaux(couleurTexte('#0a1a5a'))
+    expect(bleu).toBeGreaterThan(rouge)
+  })
+
+  /*
+   * Ce qui part en base ne dépend pas de l'écran sur lequel on l'a choisi :
+   * sinon la même catégorie vaudrait deux valeurs selon le thème actif au
+   * moment de la création, et un export ne se rejouerait plus à l'identique.
+   */
+  it('n’influence pas la couleur enregistrée', () => {
+    definirThemeResolu('clair')
+    const enClair = couleurRetenue('#ffffff')
+    definirThemeResolu('sombre')
+    expect(couleurRetenue('#ffffff')).toBe(enClair)
+    expect(couleurRetenue('#0b0a09')).toBe('#0b0a09')
   })
 })
 

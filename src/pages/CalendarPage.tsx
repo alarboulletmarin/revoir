@@ -18,12 +18,14 @@ import { formatLong, formatMonth, fromKey, toKey, type DateKey } from '../lib/da
 import { entriesForDate } from '../lib/stats'
 import { teinteDe } from '../lib/categories'
 import {
-  JOURS_SEMAINE,
   densite,
   deplacementClavier,
   grilleDuMois,
+  joursSemaine,
   type JourCalendrier,
 } from '../lib/calendrier'
+import { textes } from '../i18n'
+import { useTextes } from '../state/usePreferences'
 import { LigneRevision } from '../components/LigneRevision'
 import { FeuilleBas } from '../components/FeuilleBas'
 import { Bouton } from '../components/Bouton'
@@ -31,7 +33,8 @@ import { IconeChevron } from '../components/Icons'
 import { proprietesTeinte } from '../components/teinte'
 
 export function CalendarPage() {
-  useTitrePage('Calendrier')
+  const t = useTextes()
+  useTitrePage(t.calendrier.titre)
   const { topics, reviews, categories } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = useAujourdhui()
@@ -116,14 +119,14 @@ export function CalendarPage() {
 
   return (
     <>
-      <h1 className="page__titre">Calendrier</h1>
+      <h1 className="page__titre">{t.calendrier.titre}</h1>
 
       <section className="calendrier">
         <div className="calendrier__entete">
           <button
             type="button"
             className="calendrier__fleche"
-            aria-label="Mois précédent"
+            aria-label={t.calendrier.moisPrecedent}
             onClick={() => allerAuMois(subMonths(mois, 1))}
           >
             <IconeChevron direction="gauche" />
@@ -132,7 +135,7 @@ export function CalendarPage() {
           <button
             type="button"
             className="calendrier__fleche"
-            aria-label="Mois suivant"
+            aria-label={t.calendrier.moisSuivant}
             onClick={() => allerAuMois(addMonths(mois, 1))}
           >
             <IconeChevron direction="droite" />
@@ -140,7 +143,7 @@ export function CalendarPage() {
         </div>
 
         <div className="calendrier__jours" aria-hidden="true">
-          {JOURS_SEMAINE.map((jour, index) => (
+          {joursSemaine().map((jour, index) => (
             <span key={`${jour}-${index}`}>{jour}</span>
           ))}
         </div>
@@ -219,7 +222,7 @@ export function CalendarPage() {
               variante="texte"
               onClick={() => allerAuMois(startOfMonth(fromKey(aujourdhui)))}
             >
-              Revenir à aujourd'hui
+              {t.calendrier.revenirAujourdhui}
             </Bouton>
           </div>
         )}
@@ -231,7 +234,7 @@ export function CalendarPage() {
         onFermer={fermer}
       >
         {entrees.length === 0 ? (
-          <p className="discret discret--petit">Aucune révision prévue ce jour-là.</p>
+          <p className="discret discret--petit">{t.calendrier.aucuneCeJour}</p>
         ) : (
           <ul className="liste-revisions liste-revisions--separee">
             {entrees.map((entree) => (
@@ -279,14 +282,13 @@ function etiquetteJour(
   estAujourdhui: boolean,
   toutesFaites: boolean,
 ): string {
+  const t = textes()
   const parties = [formatLong(jour.cle)]
-  if (estAujourdhui) parties.push("aujourd'hui")
+  if (estAujourdhui) parties.push(t.dates.relatif.aujourdhui)
   parties.push(
-    jour.total === 0
-      ? 'aucune révision'
-      : `${jour.total} révision${jour.total > 1 ? 's' : ''}`,
+    jour.total === 0 ? t.commun.aucuneRevision : t.commun.revisions(jour.total),
   )
-  if (toutesFaites) parties.push('toutes faites')
+  if (toutesFaites) parties.push(t.calendrier.toutesFaites)
   parties.push(...categoriesDuJour(jour.categories))
   return parties.join(', ')
 }

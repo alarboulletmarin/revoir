@@ -8,7 +8,10 @@ import { useValidation } from '../state/useValidation'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { libelleReport, useReport } from '../state/useReport'
 import { useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
 import { getSchedule } from '../lib/schedules'
+import { echeancesIcs, nomFichierIcs, serialiserIcs } from '../lib/ics'
+import { TYPE_ICS, telecharger } from '../lib/telechargement'
 import { formatIsoDate, formatLong, formatRelative } from '../lib/dates'
 import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
 import type { ModeleSujet } from './SujetForm'
@@ -16,7 +19,12 @@ import { Frise } from '../components/Frise'
 import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton, LienBouton } from '../components/Bouton'
-import { IconeArchive, IconeCoche, IconeCorbeille } from '../components/Icons'
+import {
+  IconeArchive,
+  IconeCalendrier,
+  IconeCoche,
+  IconeCorbeille,
+} from '../components/Icons'
 import { ChipCategorie } from '../components/ChipCategorie'
 import { SelecteurPratique } from '../components/SelecteurPratique'
 
@@ -34,6 +42,7 @@ export function SujetDetail() {
     removeTopic,
     programmes,
   } = useDonnees()
+  const t = useTextes()
   const { afficherToast } = useToast()
   const { validerRevision } = useValidation()
   const reporter = useReport()
@@ -41,7 +50,7 @@ export function SujetDetail() {
   const aujourdhui = useAujourdhui()
 
   const topic = topics.find((candidat) => candidat.id === id)
-  useTitrePage(topic?.title ?? 'Sujet')
+  useTitrePage(topic?.title ?? t.sujet.titreDefaut)
 
   const revisions = useMemo(
     () => (topic ? revisionsDe(topic.id, reviews) : []),
@@ -50,12 +59,12 @@ export function SujetDetail() {
 
   if (!topic) {
     return loading ? (
-      <p className="discret">Chargement…</p>
+      <p className="discret">{t.commun.chargement}</p>
     ) : (
       <div className="etat-vide">
-        <p className="discret">Ce sujet n'existe pas ou plus.</p>
+        <p className="discret">{t.sujet.introuvable}</p>
         <LienBouton vers="/" variante="discret">
-          Retour au tableau de bord
+          {t.sujet.retourTableau}
         </LienBouton>
       </div>
     )
@@ -87,12 +96,31 @@ export function SujetDetail() {
   const archiver = () => {
     setArchived(topic.id, !archive)
     afficherToast({
-      texte: archive ? 'Sujet désarchivé' : 'Sujet archivé',
+      texte: archive ? t.sujet.toastDesarchive : t.sujet.toastArchive,
       action: {
-        libelle: 'Annuler',
+        libelle: t.commun.annuler,
         onAction: () => setArchived(topic.id, archive),
       },
     })
+  }
+
+  /*
+   * L'export d'un seul sujet. Un sujet dont toutes les révisions sont faites
+   * n'a rien à verser dans un agenda : plutôt qu'un fichier vide — que
+   * l'agenda importerait sans rien dire —, on le dit.
+   */
+  const exporterIcs = () => {
+    const echeances = echeancesIcs(topics, reviews, categories, programmes, topic.id)
+    if (echeances.length === 0) {
+      afficherToast({ texte: t.ics.aucuneSujet })
+      return
+    }
+    telecharger(
+      serialiserIcs(echeances, t.ics.nomCalendrierSujet(topic.title)),
+      nomFichierIcs(topic.title),
+      TYPE_ICS,
+    )
+    afficherToast({ texte: t.ics.exportees(echeances.length) })
   }
 
   return (
@@ -102,14 +130,14 @@ export function SujetDetail() {
         <div className="fiche__badges">
           <ChipCategorie categorie={categorie} />
           <span className="chip chip--accent">{programme.label}</span>
-          {archive && <span className="chip chip--retard">Archivé</span>}
+          {archive && <span className="chip chip--retard">{t.sujet.archive}</span>}
         </div>
-        {creeLe && <p className="page__intro">Créé le {creeLe}</p>}
+        {creeLe && <p className="page__intro">{t.sujet.creeLe(creeLe)}</p>}
       </div>
 
       {/* La frise en grand, avec ses libellés : c'est ici qu'elle se lit. */}
       <section className="fiche__bloc">
-        <h2 className="section__titre">Programme</h2>
+        <h2 className="section__titre">{t.sujet.programme}</h2>
         <Frise
           origine={topic.startDate}
           reviews={revisions}
@@ -120,11 +148,10 @@ export function SujetDetail() {
         <div className="restantes">
           <AnneauProgression
             part={progression / 100}
-            label={`Progression : ${progression} %`}
+            label={t.sujet.progression(progression)}
           />
           <p className="discret discret--petit chiffres" aria-live="polite">
-            {faites} révision{faites > 1 ? 's' : ''} effectuée{faites > 1 ? 's' : ''} ·{' '}
-            {restantes} restante{restantes > 1 ? 's' : ''}
+            {t.sujet.compte(faites, restantes)}
           </p>
         </div>
       </section>
@@ -135,26 +162,24 @@ export function SujetDetail() {
         listes du jour — sans date, elle y serait toujours en retard.
       */}
       <section className="fiche__bloc">
-        <h2 className="section__titre">Pratique</h2>
+        <h2 className="section__titre">{t.pratique.legende}</h2>
         <SelecteurPratique
           valeur={topic.practiceStatus}
-          legende="Où en est la pratique de ce sujet"
+          legende={t.pratique.legendeSujet}
           onChange={(statut) => definirPratique(topic.id, statut)}
         />
         {/*
           Le mot ne se devine pas. Trois exemples valent mieux qu'une
           définition, et disent au passage que le sens change avec le domaine.
         */}
-        <p className="discret discret--petit">
-          Des exercices pour un cours, la répétition pour un instrument, une
-          série de questions pour le code de la route. La pratique est un état,
-          pas une date : elle n'a donc pas d'échéance.
-        </p>
+        <p className="discret discret--petit">{t.sujet.pratiqueDetail}</p>
       </section>
 
       <section className="fiche__bloc">
-        <h2 className="section__titre">Échéances</h2>
-        <p className="discret discret--petit">Départ le {formatLong(topic.startDate)}</p>
+        <h2 className="section__titre">{t.sujet.echeances}</h2>
+        <p className="discret discret--petit">
+          {t.sujet.depart(formatLong(topic.startDate))}
+        </p>
         <ul className="liste-revisions">
           {revisions.map((review) => {
             const faite = estFaite(review)
@@ -170,7 +195,10 @@ export function SujetDetail() {
                   className="ligne-revision__case"
                   role="checkbox"
                   aria-checked={faite}
-                  aria-label={`${faite ? 'Décocher' : 'Marquer comme revu'} la révision J+${review.intervalInDays}`}
+                  aria-label={t.sujet.basculer(
+                    faite,
+                    t.programmes.decalage(review.intervalInDays),
+                  )}
                   onClick={() => basculer(review.id, faite)}
                 >
                   <span className="ligne-revision__cercle">
@@ -180,7 +208,8 @@ export function SujetDetail() {
 
                 <div className="echeance__corps">
                   <span className="echeance__titre">
-                    J+{review.intervalInDays} · {formatLong(review.dueDate)}
+                    {t.programmes.decalage(review.intervalInDays)} ·{' '}
+                    {formatLong(review.dueDate)}
                   </span>
                   <span
                     className={
@@ -191,7 +220,9 @@ export function SujetDetail() {
                           : 'echeance__etat'
                     }
                   >
-                    {faite ? 'effectuée' : formatRelative(review.dueDate, aujourdhui)}
+                    {faite
+                      ? t.sujet.effectuee
+                      : formatRelative(review.dueDate, aujourdhui)}
                   </span>
                 </div>
 
@@ -204,10 +235,13 @@ export function SujetDetail() {
                   <Bouton
                     variante="texte"
                     className="echeance__report"
-                    aria-label={`${libelleReport(review, aujourdhui)} : révision J+${review.intervalInDays}`}
+                    aria-label={t.sujet.reporterCible(
+                      libelleReport(review, aujourdhui),
+                      t.programmes.decalage(review.intervalInDays),
+                    )}
                     onClick={() => reporter(review.id, aujourdhui)}
                   >
-                    Reporter
+                    {t.sujet.reporter}
                   </Bouton>
                 )}
               </li>
@@ -217,10 +251,10 @@ export function SujetDetail() {
       </section>
 
       <section className="fiche__bloc">
-        <h2 className="section__titre">Actions</h2>
+        <h2 className="section__titre">{t.sujet.actions}</h2>
         <div className="fiche__actions">
           <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="discret">
-            Modifier
+            {t.commun.modifier}
           </LienBouton>
           {/*
             Le chapitre suivant se prépare comme le précédent : même catégorie,
@@ -229,21 +263,31 @@ export function SujetDetail() {
             n'est pas soumis.
           */}
           <Bouton variante="discret" onClick={dupliquer}>
-            Dupliquer
+            {t.sujet.dupliquer}
+          </Bouton>
+          {/*
+            L'export calendrier du sujet, là où vivent déjà ses autres actions.
+            Le signe du calendrier plutôt qu'un dessin de plus : c'est bien un
+            agenda que le fichier va remplir, et le mot est écrit à côté.
+          */}
+          <Bouton
+            variante="discret"
+            title={t.sujet.exporterIcsIntitule(topic.title)}
+            onClick={exporterIcs}
+          >
+            <IconeCalendrier width="18" height="18" />
+            {t.sujet.exporterIcs}
           </Bouton>
           <Bouton variante="discret" onClick={archiver}>
             <IconeArchive width="18" height="18" />
-            {archive ? 'Désarchiver' : 'Archiver'}
+            {archive ? t.sujet.desarchiver : t.sujet.archiver}
           </Bouton>
           <Bouton variante="danger" onClick={() => setConfirmerSuppression(true)}>
             <IconeCorbeille width="18" height="18" />
-            Supprimer
+            {t.commun.supprimer}
           </Bouton>
         </div>
-        <p className="discret discret--petit">
-          Un sujet archivé sort du tableau de bord, du calendrier et du suivi. Il reste
-          dans l'export.
-        </p>
+        <p className="discret discret--petit">{t.sujet.noteArchive}</p>
       </section>
 
       {/*
@@ -253,9 +297,9 @@ export function SujetDetail() {
       */}
       <ConfirmDialog
         open={confirmerSuppression}
-        title="Supprimer ce sujet ?"
-        message={`« ${topic.title} » et ses ${revisions.length} révisions seront définitivement supprimés.`}
-        confirmLabel="Supprimer"
+        title={t.sujet.confirmerSuppression}
+        message={t.sujet.detailSuppression(topic.title, revisions.length)}
+        confirmLabel={t.commun.supprimer}
         danger
         onCancel={() => setConfirmerSuppression(false)}
         onConfirm={() => {

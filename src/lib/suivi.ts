@@ -15,6 +15,7 @@
  * s'y lit « hors programme ».
  */
 import type { Review, Topic } from '../types'
+import { textes } from '../i18n'
 import type { DateKey } from './dates'
 import { nommerEcart } from './schedules'
 import { estFaite, revisionsParSujet } from './sujets'
@@ -93,8 +94,8 @@ export function colonnesCategorie(
       const position = index + 1
       return {
         cle: `p-${position}`,
-        libelle: `R${position}`,
-        description: `Révision ${position}`,
+        libelle: textes().suivi.rang(position),
+        description: textes().suivi.rangComplet(position),
         intervalInDays: null,
         position,
       }
@@ -107,8 +108,8 @@ export function colonnesCategorie(
 
   return ecarts.map((intervalInDays) => ({
     cle: `i-${intervalInDays}`,
-    libelle: `J+${intervalInDays}`,
-    description: `Révision à ${nommerEcart(intervalInDays)}`,
+    libelle: textes().programmes.decalage(intervalInDays),
+    description: textes().suivi.ecartComplet(nommerEcart(intervalInDays)),
     intervalInDays,
     position: null,
   }))
@@ -188,16 +189,14 @@ export function statsCategorie(
   }
 }
 
-/** « 8 sujets · 3 révisions en retard · 62 % terminé », sans le zéro inutile. */
+/**
+ * « 8 sujets · 3 révisions en retard · 62 % terminé », sans le zéro inutile.
+ *
+ * Le retard n'accuse pas : à zéro il ne s'écrit pas, plutôt que d'annoncer
+ * fièrement « 0 en retard » à qui n'en a jamais eu. C'est le dictionnaire qui
+ * assemble les morceaux — l'espace avant le pour-cent est française, et la
+ * virgule de l'anglais ne tombe pas au même endroit.
+ */
 export function resumeCategorie(stats: StatsCategorie): string {
-  const parties = [`${stats.sujets} sujet${stats.sujets > 1 ? 's' : ''}`]
-  // Le retard n'accuse pas : à zéro il ne s'écrit pas, plutôt que d'annoncer
-  // fièrement « 0 en retard » à qui n'en a jamais eu.
-  if (stats.enRetard > 0) {
-    parties.push(
-      `${stats.enRetard} révision${stats.enRetard > 1 ? 's' : ''} en retard`,
-    )
-  }
-  parties.push(`${stats.progression} % terminé`)
-  return parties.join(' · ')
+  return textes().suivi.resume(stats.sujets, stats.enRetard, stats.progression)
 }

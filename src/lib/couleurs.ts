@@ -23,6 +23,8 @@
  * jaune et un bleu de la même quantité les assombrit autant à l'œil.
  */
 
+import { FOND, fondCourant } from '../state/theme'
+
 /** Une couleur libre, toujours normalisée, toujours en `#rrggbb` minuscule. */
 export type CouleurPersonnalisee = `#${string}`
 
@@ -106,9 +108,23 @@ export function contraste(a: CouleurPersonnalisee, b: CouleurPersonnalisee): num
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
-/** Contraste sur `--papier` — la seule mesure qui nous occupe ici. */
+/** Contraste sur un fond donné : celui du thème rendu, en pratique. */
+export function contrasteSurFond(
+  couleur: CouleurPersonnalisee,
+  fond: CouleurPersonnalisee,
+): number {
+  return contraste(couleur, fond)
+}
+
+/**
+ * Contraste sur le papier **clair**.
+ *
+ * C'est la mesure de référence du stockage : une couleur enregistrée ne doit
+ * pas dépendre du thème actif au moment où on l'a choisie, sans quoi la même
+ * catégorie vaudrait deux valeurs différentes selon l'écran où on l'a créée.
+ */
 export function contrasteSurPapier(couleur: CouleurPersonnalisee): number {
-  return contraste(couleur, '#faf9f6')
+  return contraste(couleur, FOND.clair)
 }
 
 /** Clarté et chroma OKLab d'une couleur, pour les tests et le registre. */
@@ -121,38 +137,50 @@ export function repereOklab(couleur: CouleurPersonnalisee): {
 }
 
 /**
- * Assombrit une couleur jusqu'à ce qu'elle atteigne le contraste visé sur le
- * papier, sans la toucher si elle y est déjà. La teinte et la chroma sont
- * conservées ; seule la clarté descend, et du minimum.
+ * Déplace la clarté d'une couleur jusqu'à ce qu'elle atteigne le contraste visé
+ * sur `fond`, sans la toucher si elle y est déjà. La teinte et la chroma sont
+ * conservées ; seule la clarté bouge, et du minimum.
+ *
+ * **Le sens dépend du fond.** Sur le papier crème, une couleur trop pâle
+ * s'assombrit ; sur le papier de nuit, la même couleur est déjà lisible et
+ * c'est un bleu marine qui a besoin d'être éclairci. Assombrir dans les deux
+ * cas rendrait le thème sombre illisible pile là où le thème clair l'était
+ * enfin — l'algorithme est le même, la direction non.
  */
-function assombrirJusqua(
+function ajusterJusqua(
   couleur: CouleurPersonnalisee,
   cible: number,
+  fond: CouleurPersonnalisee,
 ): CouleurPersonnalisee {
-  if (contrasteSurPapier(couleur) >= cible) return couleur
+  if (contraste(couleur, fond) >= cible) return couleur
 
   const [clarteSource, a, b] = versOklab(versRgb(couleur))
   const angle = Math.atan2(b, a)
   const chromaSource = Math.hypot(a, b)
+  // Au-delà de 0,5 en clarté OKLab, le fond est du côté clair de la roue.
+  const fondClair = versOklab(versRgb(fond))[0] > 0.5
 
   /*
-   * Le contraste sur le papier décroît quand la clarté monte : on cherche la
-   * clarté la plus haute qui tienne encore la cible — la couleur la plus
-   * proche de celle qu'on a choisie.
+   * Le contraste décroît quand la clarté se rapproche de celle du fond : on
+   * cherche donc, du bon côté, la clarté la plus proche de l'originale qui
+   * tienne encore la cible — la couleur la plus proche de celle qu'on a
+   * choisie.
    */
   const rendu = (clarte: number, chroma: number) =>
     depuisOklab([clarte, Math.cos(angle) * chroma, Math.sin(angle) * chroma])
 
   let chroma = chromaSource
   for (let essai = 0; essai < 24; essai += 1) {
-    let bas = 0
-    let haut = clarteSource
+    // `proche` est du côté de la couleur d'origine, `loin` du côté opposé au
+    // fond : la dichotomie ramène toujours `proche` vers la première.
+    let proche = fondClair ? 0 : 1
+    let loin = clarteSource
     for (let tour = 0; tour < 30; tour += 1) {
-      const milieu = (bas + haut) / 2
-      if (contraste(versHex(rendu(milieu, chroma)), '#faf9f6') >= cible) bas = milieu
-      else haut = milieu
+      const milieu = (proche + loin) / 2
+      if (contraste(versHex(rendu(milieu, chroma)), fond) >= cible) proche = milieu
+      else loin = milieu
     }
-    const rgb = rendu(bas, chroma)
+    const rgb = rendu(proche, chroma)
     // Une chroma trop forte pour cette clarté sort du gamut sRGB : on la
     // resserre plutôt que de laisser le rendu se faire écrêter n'importe où.
     if (rgb.every((composante) => composante >= -0.001 && composante <= 1.001)) {
@@ -160,23 +188,49 @@ function assombrirJusqua(
     }
     chroma *= 0.9
   }
-  return versHex(rendu(0, 0))
+  return versHex(rendu(fondClair ? 0 : 1, 0))
 }
 
 /**
- * La couleur telle qu'elle sera portée par les pastilles, les points du
- * calendrier et les bordures : celle qui a été choisie, à ceci près qu'une
- * couleur invisible sur le papier est descendue jusqu'au seuil.
+ * La couleur telle qu'elle est **enregistrée** : celle qui a été choisie, à
+ * ceci près qu'une couleur invisible sur le papier clair est descendue jusqu'au
+ * seuil.
+ *
+ * Mesurée sur le papier clair quel que soit le thème actif, et c'est
+ * volontaire : ce qui part en base ne doit pas dépendre de l'écran sur lequel
+ * on l'a choisi. L'adaptation au thème est un fait d'affichage, et elle a lieu
+ * plus bas.
  */
 export function couleurRetenue(hex: string): CouleurPersonnalisee {
   if (!HEX.test(hex)) return '#6b665d'
-  return assombrirJusqua(hex.toLowerCase() as CouleurPersonnalisee, CONTRASTE_VISIBLE)
+  return ajusterJusqua(
+    hex.toLowerCase() as CouleurPersonnalisee,
+    CONTRASTE_VISIBLE,
+    FOND.clair,
+  )
 }
 
 /**
- * La même couleur, en encre : assombrie juste assez pour se lire sur le
- * papier. Une couleur déjà assez foncée ressort inchangée.
+ * La couleur telle qu'elle s'affiche : pastilles, points du calendrier,
+ * bordures. Sur le papier clair elle vaut celle qui est enregistrée ; sur le
+ * papier de nuit, une couleur trop sombre y remonte jusqu'au seuil de
+ * visibilité — un bleu marine sur fond de nuit est un point absent, pas un
+ * choix.
  */
-export function couleurTexte(couleur: CouleurPersonnalisee): CouleurPersonnalisee {
-  return assombrirJusqua(couleur, CONTRASTE_TEXTE)
+export function couleurAffichee(
+  couleur: CouleurPersonnalisee,
+  fond: CouleurPersonnalisee = fondCourant(),
+): CouleurPersonnalisee {
+  return ajusterJusqua(couleur, CONTRASTE_VISIBLE, fond)
+}
+
+/**
+ * La même couleur, en encre : déplacée juste assez pour se lire sur le fond du
+ * thème rendu. Une couleur qui s'y lit déjà ressort inchangée.
+ */
+export function couleurTexte(
+  couleur: CouleurPersonnalisee,
+  fond: CouleurPersonnalisee = fondCourant(),
+): CouleurPersonnalisee {
+  return ajusterJusqua(couleur, CONTRASTE_TEXTE, fond)
 }

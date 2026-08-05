@@ -9,10 +9,11 @@
  * la base ne veut rien dire — c'est `position` qui fait foi.
  */
 import type { Category, Review, Topic } from '../types'
-import { cleCategorie, SANS_CATEGORIE } from './categories'
+import { comparerTextes } from '../i18n'
+import { cleCategorie, sansCategorie } from './categories'
 import type { DateKey } from './dates'
 
-export { SANS_CATEGORIE }
+export { sansCategorie }
 
 /** Une révision est faite si et seulement si elle porte un horodatage. */
 export function estFaite(review: Review): boolean {
@@ -122,7 +123,7 @@ export function grouperParCategorie(
     const groupe = groupes.get(cle) ?? {
       cle,
       categorie: categorie ?? null,
-      nom: categorie?.name ?? SANS_CATEGORIE,
+      nom: categorie?.name ?? sansCategorie(),
       topics: [],
       restantes: 0,
       prochaine: null,
@@ -146,7 +147,7 @@ export function grouperParCategorie(
   return [...groupes.values()].sort((a, b) => {
     if (a.cle === CLE_SANS_CATEGORIE) return 1
     if (b.cle === CLE_SANS_CATEGORIE) return -1
-    return a.nom.localeCompare(b.nom, 'fr')
+    return comparerTextes(a.nom, b.nom)
   })
 }
 
@@ -155,17 +156,17 @@ function comparerTopics(parSujet: Map<string, Review[]>) {
   return (a: Topic, b: Topic): number => {
     const da = prochaineEcheance(parSujet.get(a.id) ?? [])
     const db = prochaineEcheance(parSujet.get(b.id) ?? [])
-    if (da === null && db === null) return a.title.localeCompare(b.title, 'fr')
+    if (da === null && db === null) return comparerTextes(a.title, b.title)
     if (da === null) return 1
     if (db === null) return -1
     if (da !== db) return da < db ? -1 : 1
-    return a.title.localeCompare(b.title, 'fr')
+    return comparerTextes(a.title, b.title)
   }
 }
 
 /** Les catégories triées par nom, comme elles s'affichent partout. */
 export function categoriesTriees(categories: Category[]): Category[] {
-  return [...categories].sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  return [...categories].sort((a, b) => comparerTextes(a.name, b.name))
 }
 
 /** Combien de sujets portent cette catégorie, archivés compris. */

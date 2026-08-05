@@ -17,6 +17,7 @@ import {
 } from 'react'
 import { formatLong } from '../lib/dates'
 import { IconeCalendrier, IconeChevron } from './Icons'
+import { useTextes } from '../state/usePreferences'
 
 /** Identifiants des messages reliés au champ par `aria-describedby`. */
 function decrire(id: string, erreur?: string | null, aide?: ReactNode) {
@@ -122,7 +123,7 @@ interface ChampSelectProps
  *
  * `appearance: none` est nécessaire pour qu'iOS ne repeigne pas le champ
  * par-dessus la bordure du design system, mais il emporte la flèche native au
- * passage. Elle est donc redessinée avec le chevron des sept icônes, pivoté —
+ * passage. Elle est donc redessinée avec le chevron des neuf icônes, pivoté —
  * aucun signe nouveau (section 11). C'est ce que le filtre du suivi n'avait
  * pas : une boîte de 48px sans le moindre indice qu'elle s'ouvre.
  */
@@ -194,6 +195,7 @@ export function ChampDate({
   erreur,
   aide,
 }: ChampDateProps) {
+  const t = useTextes()
   const id = useId()
 
   /*
@@ -224,7 +226,7 @@ export function ChampDate({
             .join(' ')}
           aria-hidden="true"
         >
-          {value === '' ? 'Choisir une date' : formatLong(value)}
+          {value === '' ? t.champDate.choisir : formatLong(value)}
         </span>
         <IconeCalendrier className="champ-date__icone" width="18" height="18" />
         <input

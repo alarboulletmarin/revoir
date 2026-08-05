@@ -45,7 +45,7 @@ Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse
 
 ### Le signe de l'en-tête
 
-Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les six icônes de la section 11.
+Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les neuf icônes de la section 11.
 
 Le carré plein `--accent` de l'icône reste à l'icône. Dans l'en-tête, ce serait une seconde surface pleine sur un écran qui en compte déjà une (section 3) : le signe se pose à même le papier, tracé en `--accent`, 48px de large. Sous 32px les deux premières graduations se confondent — c'est le plancher, pas une valeur à ajuster à vue.
 
@@ -53,7 +53,7 @@ Le carré plein `--accent` de l'icône reste à l'icône. Dans l'en-tête, ce se
 
 ## 3. Couleurs
 
-Aucun noir pur, aucun blanc pur. Palette de 8 valeurs, pas une de plus.
+Aucun noir pur, aucun blanc pur. Palette de 8 valeurs, pas une de plus — **par thème**.
 
 ```css
 --papier:   #FAF9F6;  /* fond de page */
@@ -87,6 +87,46 @@ Deux variantes sombres, **uniquement pour du texte** :
 
 Sur fond `--accent` plein, le texte est `--surface` (4,6:1) : réservé au poids 500 et à 15px minimum.
 
+### 3 ter. Le thème sombre
+
+> Ajouté après coup. La section 11 l'interdisait ; l'interdit tombe, et voici ce qui le remplace.
+
+**Deux apparences, trois choix.** L'utilisateur choisit *clair*, *sombre* ou *système* ; le CSS ne connaît que les deux premières. « Système » n'est pas une apparence, c'est une délégation : elle est résolue en JavaScript (`state/theme.ts`) avant d'être écrite sur `<html data-theme>`. Une feuille de style qui gérerait les trois écrirait deux fois la même palette — une fois pour le choix explicite, une fois sous `@media (prefers-color-scheme: dark)`.
+
+**Ce n'est pas le thème clair inversé.** Le registre ne change pas : papier et instrument de mesure. Le fond est un noir chaud, jamais un noir pur, et les surfaces s'**éclaircissent** en montant vers l'œil au lieu de s'assombrir.
+
+```css
+[data-theme='sombre'] {
+  --papier:   #1A1917;  --surface:  #221F1C;
+  --surface-survol: #2B2723;  --trait: #3A3630;
+  --encre:    #EFECE4;  --encre-2: #98927F;
+  --accent:   #7FA89A;  --accent-doux: #23302C;
+  --retard:   #B8843F;  --retard-texte: #CF9D64;
+  --fait:     #6F9670;  --fait-texte:   #8FB790;
+  color-scheme: dark;
+}
+```
+
+| Couleur | Ratio sur `--papier` sombre | Usage autorisé |
+|---|---|---|
+| `--encre` | 14,9:1 | tout |
+| `--encre-2` | 5,7:1 | texte courant, labels |
+| `--accent` | 6,7:1 | texte, icônes, remplissages |
+| `--retard` | 5,4:1 | points, bordures, barres |
+| `--fait` | 5,3:1 | points, coches, barres |
+| `--retard-texte` | 7,2:1 | texte |
+| `--fait-texte` | 7,8:1 | texte |
+
+Sur fond `--accent` plein, le texte reste `--surface` : en sombre c'est une encre foncée sur un vert clair, et elle tient 6,2:1.
+
+Trois écritures accompagnent le thème, et aucune n'est décorative :
+
+- `data-theme` sur `<html>` sélectionne la palette ;
+- `color-scheme` fait suivre les surfaces que le navigateur peint lui-même — barres de défilement, sélecteur de date, champ de couleur ;
+- `<meta name="theme-color">` la barre système d'une application installée, qui resterait crème au-dessus d'un écran de nuit.
+
+Enfin, quelques lignes en clair dans `index.html` posent `data-theme` **avant** que React ne se charge. C'est le seul défaut d'affichage que l'application ne peut pas corriger après coup : un éclair blanc a déjà eu lieu.
+
 ### Règle d'usage
 
 **Une seule surface pleine `--accent` par écran.** C'est elle qui porte la hiérarchie. Si deux cellules sont pleines, la hiérarchie est morte.
@@ -115,6 +155,8 @@ Trois règles, sans exception :
 2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la catégorie est donc toujours écrit à côté de sa pastille.
 3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
 
+Les huit sont redéfinies pour le thème sombre : ce ne sont pas d'autres couleurs, ce sont les mêmes, éclaircies en OKLab — teinte et chroma conservées, seule la clarté monte — jusqu'à retrouver sur le papier de nuit le contraste qu'elles tenaient sur le clair. De 5,50:1 (ocre) à 5,54:1 (ardoise et bleu). Les composants n'en savent rien : ils lisent toujours `--teinte` et `--teinte-texte`, et ce sont les variables `--cat-*` qui changent sous eux.
+
 Une catégorie sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable. La couleur appartient à la catégorie elle-même, qui est une entité — la renommer une fois la renomme partout.
 
 Une entité que l'on **gère**, et non un sous-produit de la saisie. Elle se crée, se renomme, se recolore et se supprime depuis son écran (section 8.15), et elle survit à zéro sujet. Tant qu'elle naissait du mot tapé dans le formulaire d'un sujet et disparaissait dès que plus aucun ne la portait, on ne pouvait ni la préparer, ni la renommer — retaper le nom en fabriquait une seconde, avec sa propre couleur —, ni la garder vide.
@@ -136,11 +178,15 @@ Deux garde-fous seulement, et aucun n'est affaire de goût — ce sont ceux sans
 
 Pour les huit intégrées, les deux valent la même chose : elles tiennent déjà 5,5:1. Seule une couleur libre pâle les fait diverger — un rose `#ffb6c1` garde sa bordure rose et écrit son nom en `#a2606c`.
 
-L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et la chroma sont conservées, seule la clarté descend, **et du minimum**. Un rose pâle donne un rose foncé, jamais un brun quelconque.
+L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et la chroma sont conservées, seule la clarté bouge, **et du minimum**. Un rose pâle donne un rose foncé, jamais un brun quelconque.
 
-**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix. Sous 1,4:1 la couleur est descendue jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la catégorie est toujours écrit à côté (règle 2 ci-dessus).
+**Le sens dépend du fond.** Sur le papier crème, une couleur trop pâle s'assombrit ; sur le papier de nuit, la même couleur se lit déjà et c'est un bleu marine qui doit être éclairci. Assombrir dans les deux cas rendrait le thème sombre illisible pile là où le clair l'était enfin.
 
-`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `retenirTeinte` dans `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
+**La pastille doit se voir.** Un blanc cassé sur du papier crème est un point invisible, pas un choix — un bleu marine sur du papier de nuit non plus. Sous 1,4:1 la couleur est ramenée jusqu'à ce seuil, et pas d'un pas de plus. Ce plancher est très en deçà des 3:1 que la WCAG demande d'un objet graphique porteur d'information — la pastille n'en porte aucune, le nom de la catégorie est toujours écrit à côté (règle 2 ci-dessus).
+
+**Ce qui est enregistré ne dépend pas du thème.** L'ajustement au fond a lieu au rendu, jamais à l'écriture : `retenirTeinte` mesure toujours sur le papier clair, sinon la même catégorie vaudrait deux valeurs selon l'écran où on l'a créée, et un export ne se rejouerait plus à l'identique.
+
+`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, `retenirTeinte` dans `lib/categories.ts` le seul point de passage à l'écriture, et `components/teinte.ts` le seul à l'affichage : chip, pastille, point de calendrier et sélecteur ne peuvent pas diverger.
 
 ---
 
@@ -239,13 +285,24 @@ Tout le reste : transitions de couleur sur `:hover` / `:active` en `--duree-cour
 
 **Mobile first sans exception.** Chaque écran est écrit d'abord pour 320px, puis élargi. Aucune media query `max-width` dans le projet — uniquement des `min-width`. Si tu te surprends à écrire un `max-width`, c'est que le design de base a été pensé pour le bureau.
 
-L'en-tête de l'application est en **haut** et collant : la navigation y porte
-les trois vues — Aujourd'hui, Calendrier, Suivi — et rien de plus. Les réglages
-se tiennent dans la barre de marque, face au logotype : à 320px un quatrième
-libellé ferait déborder la barre, et ce n'est pas une vue.
+La coque a **deux barres**, et chacune a son emploi.
 
-C'est le **seul lien de l'app réduit à son signe** (section 8.14). Partout
-ailleurs, ce qui n'a pas d'icône s'écrit.
+En **bas**, fixe, la navigation : les trois vues — Aujourd'hui, Calendrier,
+Suivi —, l'icône au-dessus de son mot (section 8.18). En bas parce que c'est là
+que le pouce arrive : l'application s'installe et se tient d'une main, et le
+geste central — cocher — se fait justement du pouce.
+
+En **haut**, collant, la coque : à gauche le logotype sur une vue, le retour
+partout ailleurs (section 8.19) ; à droite l'aide et les réglages. Ce sont les
+**deux seuls liens de l'app réduits à leur signe** (sections 8.14 et 8.16). Ni
+l'un ni l'autre n'est une vue, et une quatrième part dans la barre du bas
+ferait tomber chaque libellé sous 72px à 320px.
+
+Une seule chose à gauche de l'en-tête, jamais deux : la marque et le retour
+mènent tous deux en arrière — l'une vers la racine, l'autre vers l'écran
+précédent — et les afficher ensemble donnerait deux réponses à la même
+question. La barre du bas, elle, reste là dans les deux cas : c'est ce qui rend
+l'effacement de la marque sans conséquence.
 
 ### 7.1 Points de rupture
 
@@ -305,19 +362,23 @@ Sous 480px, la cellule héros n'affiche que **3 items + « Tout voir »** : un t
 
 ### 7.3 La pile du bas — source n°1 de chevauchement
 
-Trois éléments se disputent le bas de l'écran : le FAB, le toast et la zone système iOS. Ils sont empilés par des variables, **jamais par des valeurs en dur**.
+Quatre éléments se disputent le bas de l'écran : la barre de navigation, le FAB, le toast et la zone système iOS. Ils sont empilés par des variables, **jamais par des valeurs en dur**, et chacune est dérivée de la précédente — c'est la seule façon d'empêcher qu'un jour l'une passe sous l'autre.
 
 ```css
 :root {
   --bas-securise: env(safe-area-inset-bottom, 0px);
   --h-fab: 56px;
-  --bas-fab: calc(var(--e-4) + var(--bas-securise));
+  --h-nav: 58px;
+  --pile-nav: calc(var(--h-nav) + var(--bas-securise));
+  --bas-fab: calc(var(--pile-nav) + var(--e-3));
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
+  --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
 }
 ```
 
-- Toute liste scrollable se termine par `padding-bottom: calc(var(--bas-fab) + var(--h-fab) + var(--e-5))`. Sans ça, la dernière ligne est inatteignable sous le FAB — le bug le plus fréquent de ce type d'app.
-- Le panneau du jour du calendrier porte `padding-bottom: var(--bas-securise)`.
+- Toute liste scrollable se termine par `padding-bottom: var(--purge-liste)`. Sans ça, la dernière ligne est inatteignable sous la barre du bas et le FAB — le bug le plus fréquent de ce type d'app.
+- La barre de navigation porte `padding-bottom: var(--bas-securise)`. Sans lui, elle passe sous la barre d'accueil iOS en mode autonome, et ses trois libellés deviennent intouchables.
+- Le panneau du jour du calendrier porte `padding-bottom: var(--bas-securise)`. C'est une surface modale : elle couvre la barre du bas, elle ne s'empile pas dessus.
 - Le FAB s'efface (opacité + `translateY`) dès qu'un panneau ou une feuille modale s'ouvre. Il ne flotte jamais par-dessus.
 
 ### 7.4 Pièges d'espacement et de chevauchement
@@ -393,7 +454,7 @@ Fond `--surface`, 1px `--trait`, `--r-carte`, hauteur 48px, padding `--e-3`. Foc
 
 **Champ de choix** (`.champ-select`). Un `<select>` natif, habillé aux mêmes bordure, rayon, fond et 48px. Le contrôle du système reste — liste roulante iOS, clavier, recherche à la frappe : même parti pris que le champ date et que la pipette du sélecteur de teinte, et pour la même raison.
 
-`appearance: none` est nécessaire, sans quoi iOS repeint le champ à sa façon par-dessus la bordure ; il emporte la flèche native au passage. Elle est donc **redessinée** : le chevron des sept icônes, pivoté de 90°, en `--encre-2` au bord droit — aucun signe nouveau (section 11). Sans elle, le champ n'est qu'une boîte de 48px sans le moindre indice qu'elle s'ouvre.
+`appearance: none` est nécessaire, sans quoi iOS repeint le champ à sa façon par-dessus la bordure ; il emporte la flèche native au passage. Elle est donc **redessinée** : le chevron des neuf icônes, pivoté de 90°, en `--encre-2` au bord droit — aucun signe nouveau (section 11). Sans elle, le champ n'est qu'une boîte de 48px sans le moindre indice qu'elle s'ouvre.
 
 Une pastille de teinte peut être peinte dans le champ, à gauche de la valeur (`.champ-select--pastille`) : la liste déroulée appartient au système et un `<option>` ne se colore pas de la même façon d'un navigateur à l'autre. Elle est `aria-hidden` et le nom reste écrit — section 3 bis, règle 2. Pastille et chevron sont `pointer-events: none` : c'est le `<select>` entier qui reste la cible.
 
@@ -595,7 +656,7 @@ Elle porte du texte — « À faire », « En cours », « Terminée » — et n
 
 ### 8.14 Le signe des réglages
 
-La septième icône, et la seule ajoutée après coup. Elle mérite sa justification.
+La septième icône, ajoutée après coup. Elle mérite sa justification.
 
 **Des curseurs, pas un engrenage.** L'engrenage est le signe générique de
 l'interface logicielle : il dirait « logiciel » là où toute l'app dit « papier
@@ -636,11 +697,11 @@ Le retour après suppression est une bannière `role="status"`, pas un toast : l
 
 ### 8.16 Le signe de l'aide, et la page qu'il ouvre
 
-**Un point d'interrogation, pas une huitième icône.** La section 11 arrête la liste des signes dessinés à sept, et elle n'a pas à s'allonger ici : un « ? » est une lettre. Il est cerclé au trait, à 20px comme le signe des réglages, et sa cible fait 44px — c'est le carré qui se touche, pas le caractère. Repos `--encre-2`, actif `--accent` sur `--accent-doux`, comme un lien de navigation.
+**Un point d'interrogation, pas une icône de plus.** La section 11 arrête la liste des signes dessinés, et elle n'a pas à s'allonger ici : un « ? » est une lettre. Il est cerclé au trait, à 20px comme le signe des réglages, et sa cible fait 44px — c'est le carré qui se touche, pas le caractère. Repos `--encre-2`, actif `--accent` sur `--accent-doux`, comme un lien de navigation.
 
-Les deux signes vivent côte à côte au bout de l'en-tête (`.appli__outils`), à l'opposé du logotype. Deux cibles de 44px y tiennent encore à 320px, où la navigation occupe déjà sa propre ligne. Comme les réglages, l'aide porte son nom en `aria-label` et en `title` : un signe sans nom est une devinette.
+Les deux signes vivent côte à côte au bout de l'en-tête (`.appli__outils`), à l'opposé du logotype. Deux cibles de 44px y tiennent encore à 320px, où la navigation occupe désormais le bas de l'écran. Comme les réglages, l'aide porte son nom en `aria-label` et en `title` : un signe sans nom est une devinette.
 
-**La page** — `/aide`, cinq sections, dans l'ordre où les questions se posent : le vocabulaire, les programmes, le retard et le recalage, lire le tableau de suivi, vos données. Elle emprunte le bloc des réglages (`.aide__bloc`) : deux écrans de texte long n'ont aucune raison de se dessiner différemment.
+**La page** — `/aide`, six sections, dans l'ordre où les questions se posent : le vocabulaire, les programmes, le retard et le recalage, lire le tableau de suivi, se déplacer dans l'application, vos données. Elle emprunte le bloc des réglages (`.aide__bloc`) : deux écrans de texte long n'ont aucune raison de se dessiner différemment.
 
 Elle est **hors ligne comme le reste** : aucun lien sortant, aucune capture d'écran. Ce sont les composants de l'application qui l'illustrent — la frise pour les programmes, la légende des cinq marques pour le tableau. Une capture vieillit dès la première retouche du CSS ; un composant, non.
 
@@ -670,9 +731,74 @@ Les balises `og:` de `index.html` vont avec : sans elles, un lien collé dans un
 
 ---
 
+### 8.18 La barre de navigation
+
+**En bas, fixe, trois parts égales.** L'application s'installe et se tient d'une main : une navigation en haut d'un grand téléphone demande de changer de prise à chaque changement de vue, et le geste central de l'app — cocher — se fait justement du pouce.
+
+**L'icône et le mot, jamais l'icône seule.** Aucun des trois signes ne se devine : « Aujourd'hui » et « Suivi » n'ont pas de pictogramme convenu, et même le calendrier, seul, ne dirait pas s'il ouvre une vue ou un sélecteur de date. Le mot dit la destination, le signe la rend reconnaissable au coup d'œil suivant. Le signe fait 22px, le mot 12px sous lui, et la part entière fait 58px de haut — cible largement au-delà des 44px.
+
+**L'état actif se lit sur la couleur *et* sur le poids.** À 12px, une nuance de teinte seule ne se voit pas, et elle ne se voit pas du tout en niveaux de gris : `--accent` **et** graisse 600. Aucune pastille, aucune surface pleine — la hiérarchie de l'écran appartient à l'unique cellule `--accent` du tableau de bord (section 3).
+
+Trois entrées, et trois seulement : les trois vues. Aide et réglages ne sont pas des vues, ils vivent au bout de l'en-tête ; une quatrième part ferait tomber chaque libellé sous 72px à 320px.
+
+`env(safe-area-inset-bottom)` est indispensable : sans lui, la barre passe sous la barre d'accueil iOS en mode autonome. Le libellé se coupe en points de suspension plutôt que d'élargir sa part : une traduction plus longue ne doit pas pouvoir emporter la page en défilement horizontal.
+
+---
+
+### 8.19 Le retour
+
+**Il est là partout où l'on n'est pas sur une vue.** Une application installée n'a pas de bouton « précédent » : ni barre de navigateur, ni — sur iOS en mode autonome — geste système. Un formulaire ouvert depuis une fiche s'y terminait en impasse, avec pour seule sortie la barre du bas, qui ramène à une vue et non d'où l'on vient.
+
+**Un chevron *et* le mot « Retour ».** La navigation s'écrit en toutes lettres (section 11), et un signe seul dans un coin d'écran est une devinette. Le chevron est celui des sept, pivoté : aucun signe nouveau.
+
+**Il prend la place de la marque**, il ne s'ajoute pas à elle (section 7). Deux chemins vers l'arrière côte à côte donneraient deux réponses à la même question, et coûteraient au retour la place de son mot à 320px.
+
+Deux chemins, dans cet ordre :
+
+1. **L'historique**, quand il y a quelque chose derrière. C'est le seul retour exact — il rend la position dans une longue liste, ce qu'aucune adresse ne saurait faire.
+2. **Le parent**, sinon. Une fiche ouverte depuis un lien partagé ou un raccourci d'écran d'accueil n'a rien derrière elle : `navigate(-1)` en sortirait de l'application, ce qui n'est pas un retour, c'est un départ. La hiérarchie est écrite dans `state/useRetour.ts` — la modification d'un sujet remonte à sa fiche, un programme aux réglages qui le listent.
+
+Le « Annuler » d'un formulaire emprunte le même chemin : un formulaire abandonné doit reposer là où le retour aurait reposé.
+
+---
+
+### 8.20 L'export calendrier
+
+**Deux boutons, deux endroits, et la différence est le sujet.**
+
+L'export de **tous** les sujets vit dans les Réglages, sous son propre titre, à côté de la sauvegarde JSON : c'est la même question — « comment je sors mes données d'ici ? » — et la réponse n'est pas la même, ce qui mérite deux blocs plutôt qu'un. La vue Calendrier répond à « quand ? » ; ce n'est pas un écran d'outils, et le bento n'est pas davantage l'endroit d'un bouton de fichier.
+
+L'export d'**un** sujet vit sur sa fiche, dans le bloc Actions, entre « Dupliquer » et « Archiver » : c'est là qu'on l'a en tête, et c'est là que sont déjà ses autres verbes. Il porte le signe du calendrier — pas un dessin de plus — et son mot, « Exporter (.ics) ».
+
+Le `.ics` n'est pas une sauvegarde, et l'interface le dit : seul le JSON se réimporte. C'est une copie figée versée dans un agenda, jamais une synchronisation — il n'y a pas de serveur.
+
+Trois décisions de contenu, et chacune découle du projet plutôt que du format :
+
+| Décision | Pourquoi |
+|---|---|
+| Journées entières, pas des rendez-vous | Une révision a un jour, pas une heure. `DTSTART;VALUE=DATE` évite du même coup toute question de fuseau. |
+| Ce qui reste à faire, et rien d'autre | Une révision effectuée n'est plus une échéance. L'app répond à « qu'est-ce que je dois revoir aujourd'hui ? », pas à « qu'ai-je révisé ». |
+| Aucune alarme | `VALARM` ferait sonner un téléphone, et l'app ne notifie pas — c'est écrit sur son premier écran. Qui veut un rappel le règle dans son agenda. |
+
+Un export qui ne contient rien n'est pas une erreur, c'est un fait : la bannière le dit plutôt que de livrer un fichier vide, qu'un agenda importerait sans un mot.
+
+---
+
+### 8.21 Thème et langue, dans les réglages
+
+Ce sont les deux premiers blocs de l'écran : ils changent l'écran sous les doigts, et ce sont les seuls réglages qu'on vienne chercher sans savoir où ils sont.
+
+Chacun est une **bascule** — le gabarit de radios natifs habillés en segments qu'avait inauguré le sélecteur de pratique (`components/Bascule.tsx`). Tous les choix sont visibles à la fois ; jamais un cycle au toucher. Trois valeurs pour le thème — Système, Clair, Sombre —, deux pour la langue.
+
+**Chaque langue se nomme dans sa propre langue** : « Français », « English ». Quelqu'un qui ouvre l'application dans une langue qu'il ne lit pas doit pouvoir y reconnaître la sienne.
+
+Ni l'un ni l'autre n'appartient aux données : ils ne s'exportent pas, ne s'importent pas, ne se synchronisent pas — un fichier de sauvegarde décrit des révisions, pas l'écran sur lequel on les lit. Ils vivent dans `localStorage`, et une écriture qui échoue n'est pas une erreur : en navigation privée l'application marche, elle oublie simplement le choix d'une visite à l'autre. Les deux blocs le disent.
+
+---
+
 ## 9. Écriture
 
-L'interface est en français, en casse normale, à l'infinitif pour les actions.
+L'interface est en **français et en anglais**, en casse normale, à l'infinitif pour les actions.
 
 | À écrire | À ne pas écrire |
 |---|---|
@@ -686,7 +812,29 @@ L'interface est en français, en casse normale, à l'infinitif pour les actions.
 
 Une action garde le même mot du bouton jusqu'au toast : « Archiver » produit « Sujet archivé ». Zéro emoji, zéro exclamation, zéro gamification — c'est une exclusion explicite du projet.
 
-Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 jours »), absolu au-delà (« jeudi 6 août »). `date-fns` avec la locale `fr`.
+Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 jours »), absolu au-delà (« jeudi 6 août »). `date-fns` avec la locale de la langue active.
+
+### 9.1 Deux langues
+
+Le français reste la langue de référence : `src/i18n/fr.ts` **définit la forme** du dictionnaire, et l'anglais ne compile que s'il la respecte au champ près. Un écran nouveau ne peut donc pas oublier une traduction — c'est la compilation qui le dit, pas une relecture.
+
+Ce que la traduction touche, et qui n'est pas seulement des mots :
+
+| | Français | Anglais |
+|---|---|---|
+| Date longue | 14 mars 2026 | March 14, 2026 |
+| Début de semaine | lundi | dimanche |
+| Décalage | J+7 | D+7 |
+| Pluriel à zéro | 0 révision | 0 reviews |
+| Espace avant `%` et `:` | oui | non |
+
+Les pluriels et les accords sont donc des **fonctions** dans le dictionnaire, pas des gabarits à trous : « 3 révisions effectuées » et « 3 reviews done » ne s'accordent pas aux mêmes endroits. Les gabarits de date en font partie — c'est l'ordre des champs qui change, pas seulement les mots.
+
+**Ce que l'utilisateur a écrit ne se traduit jamais** : titres de sujets, noms de catégories, noms de programmes créés. Les six catégories livrées prennent la langue active *au moment où elles sont créées*, et pas ensuite : traduire après coup renommerait des données qu'on a pu modifier.
+
+Une seule langue est active à la fois dans un onglet ; elle vit donc dans un module (`src/i18n/index.ts`) plutôt que d'être portée en argument à travers une quinzaine de fonctions pures qui n'ont rien à décider. Les composants passent par `useTextes()`, qui les abonne au changement ; les modules `lib/` par `textes()`, qui ne réveille personne — ils ne sont pas des composants.
+
+`<html lang>` suit, et le tri des chaînes aussi : `localeCompare` sans étiquette suivrait la locale du navigateur, qui n'est pas forcément celle de l'interface, et deux appareils afficheraient la même liste dans deux ordres.
 
 ---
 
@@ -697,7 +845,8 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 - [ ] Toute cible tactile fait ≥ 44 × 44px
 - [ ] Focus clavier visible sur chaque élément interactif, parcours complet au clavier
 - [ ] `prefers-reduced-motion` respecté
-- [ ] Contrastes conformes au tableau de la section 3
+- [ ] Contrastes conformes aux tableaux de la section 3, **dans les deux thèmes**
+- [ ] Écran vérifié en clair et en sombre, et dans les deux langues
 - [ ] Zoom à 200 % sans perte de fonction ni scroll horizontal **de page** — celui du tableau de suivi, à l'intérieur de son cadre, est prévu
 - [ ] Écran vérifié à **320px** : aucun scroll horizontal, aucun chevauchement, aucun texte tronqué involontairement
 - [ ] `min-width: 0` sur les enfants de grid/flex contenant du texte
@@ -705,10 +854,12 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 - [ ] Champs de saisie à 16px minimum
 - [ ] `100dvh` et non `100vh` ; aucune media query `max-width`
 - [ ] Aucun composant ne porte de marge externe
-- [ ] `lang="fr"` sur `<html>`, `<title>` propre à chaque page
+- [ ] `<html lang>` suit la langue choisie, `<title>` propre à chaque page
+- [ ] Aucune chaîne écrite en dur dans un composant : tout passe par le dictionnaire
 - [ ] Les compteurs qui changent sont dans une région `aria-live="polite"`
 - [ ] La validation d'une révision est annulable pendant 5 secondes
-- [ ] `env(safe-area-inset-*)` appliqué sur le FAB et la barre de navigation
+- [ ] `env(safe-area-inset-*)` appliqué sur le FAB et sur la barre de navigation du bas
+- [ ] Un retour est atteignable sur tout écran qui n'est pas une des trois vues
 - [ ] Une navigation remonte en haut de page — sauf le retour arrière, où le navigateur restaure la position
 - [ ] Aucune ombre portée dans le CSS produit
 
@@ -716,9 +867,15 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 
 ## 11. Interdits
 
-Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 7 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · thème sombre · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi — en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
 
 Le « ? » de l'aide (section 8.16) n'entame pas le compte : c'est une lettre cerclée, pas un signe dessiné. La règle vise les dessins qu'il faut apprendre à lire, et l'alphabet n'en fait pas partie.
+
+**Deux interdits sont tombés, et il faut dire pourquoi.**
+
+Le **thème sombre** était interdit pour une bonne raison — une palette de huit valeurs se double, se remesure et se maintient en double — et pour une mauvaise : l'application s'installe et s'ouvre le soir, sur un appareil que son propriétaire a déjà réglé en sombre, et lui répondre par un écran crème est une décision prise à sa place. Il est donc autorisé sous les conditions de la section 3 ter : deux apparences seulement, contrastes remesurés, et la même palette de huit valeurs — pas une de plus.
+
+Les **icônes** passent de sept à neuf, et pas d'une de plus. Les deux ajoutées — jour et suivi — servent la barre du bas, où les trois vues portent leur signe au-dessus de leur mot (section 8.18). Elles ne remplacent aucun libellé : le mot reste écrit sous chacune. Ce qui n'est toujours pas dans la liste s'écrit en toutes lettres.
 
 Seule dérogation à la palette : les huit teintes de catégorie de la section 3 bis, et sous les trois conditions qui y sont posées.
 
@@ -780,7 +937,9 @@ Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-tab
   --cible: 44px;
   --bas-securise: env(safe-area-inset-bottom, 0px);
   --h-fab: 56px;
-  --bas-fab: calc(var(--e-4) + var(--bas-securise));
+  --h-nav: 58px;
+  --pile-nav: calc(var(--h-nav) + var(--bas-securise));
+  --bas-fab: calc(var(--pile-nav) + var(--e-3));
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
 
@@ -788,23 +947,40 @@ Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-tab
    * Hauteur de l'en-tête de l'application, qui est collant. Le tableau de
    * suivi s'y décale (section 8.13). C'est de l'arithmétique sur le gabarit
    * de l'en-tête, pas une mesure : elle change avec lui, et rien ne le
-   * signalera d'autre que l'écran. 125px + zone sûre sous 480px, 69px au-delà.
+   * signalera d'autre que l'écran. Une seule rangée à toutes les largeurs
+   * depuis que la navigation est passée en bas.
    */
   --h-entete: calc(var(--e-3) + var(--haut-securise) + var(--cible)
-                 + var(--e-3) + var(--cible) + var(--e-3) + 1px);   /* 125px */
+                 + var(--e-3) + 1px);                                /* 69px */
   /* Largeur de la colonne figée du tableau de suivi. */
   --suivi-sujet: 120px;
 
   color-scheme: light;
 }
 
-/* Dès 480px, l'en-tête tient sur une ligne et la colonne du sujet s'élargit. */
+/* Dès 480px, la colonne du sujet s'élargit. */
 @media (min-width: 480px) {
   :root {
-    --h-entete: calc(var(--e-3) + var(--haut-securise) + var(--cible)
-                   + var(--e-3) + 1px);                              /* 69px */
     --suivi-sujet: 180px;
   }
+}
+
+/* Le thème sombre — section 3 ter. Une seule apparence de plus, résolue en JS. */
+[data-theme='sombre'] {
+  --papier: #1A1917;
+  --surface: #221F1C;
+  --surface-survol: #2B2723;
+  --trait: #3A3630;
+  --encre: #EFECE4;
+  --encre-2: #98927F;
+  --accent: #7FA89A;
+  --accent-doux: #23302C;
+  --retard: #B8843F;
+  --retard-texte: #CF9D64;
+  --fait: #6F9670;
+  --fait-texte: #8FB790;
+
+  color-scheme: dark;
 }
 
 /* Teintes de catégorie — section 3 bis. */
@@ -817,5 +993,17 @@ Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-tab
   --cat-teal: #3E6B68;
   --cat-mauve: #7A5470;
   --cat-ocre: #75632A;
+}
+
+/* Les mêmes huit, éclaircies pour le papier de nuit. */
+[data-theme='sombre'] {
+  --cat-ardoise: #7895A2;
+  --cat-prune: #9A8AAC;
+  --cat-olive: #849766;
+  --cat-terre: #AB8A72;
+  --cat-bleu: #6E94BC;
+  --cat-teal: #6A9995;
+  --cat-mauve: #AD84A1;
+  --cat-ocre: #A18F56;
 }
 ```

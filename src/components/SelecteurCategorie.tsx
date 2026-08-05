@@ -28,6 +28,7 @@ import { ChampsCategorie, type BrouillonCategorie } from './ChampsCategorie'
 import { PastilleCategorie } from './ChipCategorie'
 import { FeuilleBas } from './FeuilleBas'
 import { IconePlus } from './Icons'
+import { useTextes } from '../state/usePreferences'
 
 const VIDE: BrouillonCategorie = { nom: '', teinte: null }
 
@@ -49,6 +50,7 @@ export function SelecteurCategorie({
   onCreer,
   onFeuille,
 }: SelecteurCategorieProps) {
+  const t = useTextes()
   const champ = useRef<HTMLSelectElement>(null)
   const viserLeChamp = useRef(false)
   const [feuille, setFeuille] = useState(false)
@@ -93,8 +95,8 @@ export function SelecteurCategorie({
       <div className="selecteur-categorie">
         <ChampSelect
           ref={champ}
-          label="Catégorie"
-          aide="Facultatif."
+          label={t.categories.champCategorie}
+          aide={t.categories.facultatif}
           value={valeur ?? ''}
           pastille={
             selectionnee ? (
@@ -107,7 +109,7 @@ export function SelecteurCategorie({
           }
           onChange={(event) => onChange(event.target.value || null)}
         >
-          <option value="">Sans catégorie</option>
+          <option value="">{t.commun.sansCategorie}</option>
           {categoriesTriees(categories).map((categorie) => (
             <option key={categorie.id} value={categorie.id}>
               {categorie.name}
@@ -117,7 +119,7 @@ export function SelecteurCategorie({
 
         <Bouton className="selecteur-categorie__ajout" onClick={() => basculer(true)}>
           <IconePlus width="16" height="16" strokeWidth="2" />
-          Nouvelle catégorie
+          {t.categories.nouvelle}
         </Bouton>
       </div>
 
@@ -154,6 +156,7 @@ function FeuilleNouvelleCategorie({
   onFermer,
   onCreer,
 }: FeuilleNouvelleCategorieProps) {
+  const t = useTextes()
   const champNom = useRef<HTMLInputElement>(null)
   const [brouillon, setBrouillon] = useState<BrouillonCategorie>(VIDE)
   const [soumis, setSoumis] = useState(false)
@@ -162,9 +165,9 @@ function FeuilleNouvelleCategorie({
   const propre = brouillon.nom.trim()
   const erreur =
     propre === ''
-      ? 'Le nom est obligatoire.'
+      ? t.categories.erreurNom
       : categorieHomonyme(propre, categories)
-        ? 'Une catégorie porte déjà ce nom.'
+        ? t.categories.erreurHomonyme
         : null
 
   const fermer = () => {
@@ -189,7 +192,7 @@ function FeuilleNouvelleCategorie({
   return (
     <FeuilleBas
       ouverte={ouverte}
-      titre="Nouvelle catégorie"
+      titre={t.categories.nouvelle}
       cibleFocus={champNom}
       onFermer={fermer}
     >
@@ -235,14 +238,14 @@ function FeuilleNouvelleCategorie({
 
           <div className="formulaire__actions">
             <Bouton variante="discret" onClick={fermer}>
-              Annuler
+              {t.commun.annuler}
             </Bouton>
             <Bouton
               variante="primaire"
               disabled={enregistrement}
               onClick={() => void soumettre()}
             >
-              Créer la catégorie
+              {t.categories.creerBouton}
             </Bouton>
           </div>
         </div>

@@ -3,10 +3,12 @@
 import { useLayoutEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { NavBar } from './NavBar'
-import { IconePlus, IconeReglages } from './Icons'
+import { IconeChevron, IconePlus, IconeReglages } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
 import { useDonnees } from '../state/useDonnees'
+import { useTextes } from '../state/usePreferences'
+import { estRacine, useRetour } from '../state/useRetour'
 
 /**
  * Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes.
@@ -42,28 +44,52 @@ function useRemonterEnHaut(pathname: string) {
 export function Layout() {
   const { error } = useDonnees()
   const { pathname } = useLocation()
+  const t = useTextes()
+  const revenir = useRetour()
 
   useRemonterEnHaut(pathname)
+
+  const racine = estRacine(pathname)
 
   return (
     <div className="appli">
       <a className="saut" href="#contenu">
-        Aller au contenu
+        {t.coque.sautContenu}
       </a>
 
       <header className="appli__entete">
+        {/*
+          Une seule chose à gauche : la marque sur une vue, le retour partout
+          ailleurs. Les deux mènent en arrière, l'un vers la racine et l'autre
+          vers l'écran précédent ; les afficher ensemble donnerait deux
+          réponses à la même question, et prendrait au retour la place de son
+          mot à 320px. La barre du bas, elle, reste là dans les deux cas.
+        */}
         <div className="appli__barre">
-          <Link to="/" className="appli__marque">
-            <Marque className="appli__signe" />
-            Revoir
-          </Link>
+          {racine ? (
+            <Link to="/" className="appli__marque">
+              <Marque className="appli__signe" />
+              Revoir
+            </Link>
+          ) : (
+            <button type="button" className="appli__retour" onClick={revenir}>
+              <IconeChevron
+                direction="gauche"
+                className="appli__retour-signe"
+                width="20"
+                height="20"
+              />
+              {t.commun.retour}
+            </button>
+          )}
         </div>
-        <NavBar />
+
         {/*
           Aide et réglages ne sont pas dans la navigation : celle-ci porte les
-          trois vues, et à 320px un quatrième libellé la ferait déborder. Ils se
-          tiennent au bout de l'en-tête, à l'opposé du logotype — accolés à lui,
-          ils passeraient pour une seconde moitié du signe.
+          trois vues, et une quatrième part ferait tomber chaque libellé sous
+          72px à 320px. Ils se tiennent au bout de l'en-tête, à l'opposé du
+          logotype — accolés à lui, ils passeraient pour une seconde moitié du
+          signe.
 
           Les deux seuls liens de l'app réduits à un signe. Le mot reste lu par
           les lecteurs d'écran et s'affiche au survol : un signe sans nom n'est
@@ -71,14 +97,14 @@ export function Layout() {
         */}
         <div className="appli__outils">
           {/*
-            Un point d'interrogation composé, pas une huitième icône : la
-            section 11 arrête la liste à sept, et un « ? » est une lettre. Il
-            dit déjà ce qu'aucun dessin ne dirait mieux.
+            Un point d'interrogation composé, pas une dixième icône : la
+            section 11 arrête la liste des signes dessinés, et un « ? » est une
+            lettre. Il dit déjà ce qu'aucun dessin ne dirait mieux.
           */}
           <NavLink
             to="/aide"
-            aria-label="Aide"
-            title="Aide"
+            aria-label={t.coque.aide}
+            title={t.coque.aide}
             className={({ isActive }) =>
               isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
             }
@@ -90,8 +116,8 @@ export function Layout() {
 
           <NavLink
             to="/reglages"
-            aria-label="Réglages"
-            title="Réglages"
+            aria-label={t.coque.reglages}
+            title={t.coque.reglages}
             className={({ isActive }) =>
               isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
             }
@@ -111,10 +137,12 @@ export function Layout() {
       </main>
 
       {fabVisible(pathname) && (
-        <Link to="/nouveau" className="fab" aria-label="Ajouter un sujet">
+        <Link to="/nouveau" className="fab" aria-label={t.coque.ajouterSujet}>
           <IconePlus width="24" height="24" strokeWidth="1.8" />
         </Link>
       )}
+
+      <NavBar />
 
       <UpdatePrompt />
     </div>

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Category, Topic } from '../types'
 import {
-  CATEGORIES_PROPOSEES,
+  propositionsCategories,
   TEINTES,
   categorieHomonyme,
   categoriesProposees,
@@ -144,7 +144,7 @@ describe('categorieHomonyme', () => {
 
 describe('categoriesProposees', () => {
   it('livre six catégories', () => {
-    expect(CATEGORIES_PROPOSEES).toHaveLength(6)
+    expect(propositionsCategories()).toHaveLength(6)
   })
 
   it('leur donne six teintes distinctes', () => {
@@ -153,14 +153,14 @@ describe('categoriesProposees', () => {
      * `teinteParDefaut`, ces six noms ne produisent que cinq couleurs — deux
      * catégories livrées ensemble seraient jumelles dès le premier écran.
      */
-    const teintes = new Set(CATEGORIES_PROPOSEES.map(({ tint }) => tint))
+    const teintes = new Set(propositionsCategories().map(({ tint }) => tint))
     expect(teintes.size).toBe(6)
     for (const teinte of teintes) expect(TEINTES).toContain(teinte)
   })
 
   it('ne propose jamais deux fois le même nom', () => {
-    const cles = new Set(CATEGORIES_PROPOSEES.map(({ name }) => cleCategorie(name)))
-    expect(cles.size).toBe(CATEGORIES_PROPOSEES.length)
+    const cles = new Set(propositionsCategories().map(({ name }) => cleCategorie(name)))
+    expect(cles.size).toBe(propositionsCategories().length)
   })
 
   it('matérialise des catégories complètes et horodatées', () => {

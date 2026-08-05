@@ -39,24 +39,19 @@
 /* -------------------------------------------------------------- en-tête -- */
 
 /*
- * Deux dispositions, une seule structure. Sous 480px, une grille de deux
- * rangées : la marque et les réglages se partagent la première, la navigation
- * prend la seconde en entier — trois libellés et une icône ne tiennent pas sur
- * une ligne de 288px. Au-delà, tout revient sur une rangée.
- *
- * La hauteur de ces deux dispositions est celle que `--h-entete` calcule, et
- * dont dépend l'en-tête collant du tableau de suivi (section 8.13).
+ * Une seule rangée, à toutes les largeurs : la marque (ou le retour) à gauche,
+ * l'aide et les réglages à droite. La navigation est descendue au bas de
+ * l'écran, où le pouce la trouve sans traverser la page — et l'en-tête, qui
+ * empilait deux rangées sous 480px, n'en a plus qu'une. C'est cette hauteur-là
+ * que `--h-entete` calcule, et dont dépend l'en-tête collant du tableau de
+ * suivi (section 8.13).
  */
 .appli__entete {
   position: sticky;
   top: 0;
   z-index: 2;
-  display: grid;
+  display: flex;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'marque reglages'
-    'nav    nav';
   align-items: center;
   gap: var(--e-3);
   border-bottom: var(--bordure);
@@ -68,11 +63,11 @@
 }
 
 .appli__barre {
-  grid-area: marque;
   display: flex;
   min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
-  gap: var(--e-3);
+  gap: var(--e-2);
 }
 
 .appli__marque {
@@ -100,83 +95,134 @@
   color: var(--accent);
 }
 
+/* ------------------------------------------------------------- retour --- */
+
+/*
+ * Le retour, à la place de la marque.
+ *
+ * Il prend la gauche de l'en-tête sur tout ce qui n'est pas une des trois
+ * vues, et la marque s'efface alors — les deux ne cohabitent pas. Ce n'est pas
+ * une perte : la barre du bas ramène à l'accueil d'un tap, à toute heure, et
+ * deux chemins vers la racine côte à côte à 320px auraient coûté au retour la
+ * place de son mot.
+ *
+ * Un mot, pas seulement un chevron : la navigation s'écrit en toutes lettres
+ * (section 11), et un signe seul dans un coin est une devinette.
+ */
+.appli__retour {
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-1);
+  border-radius: var(--r-pilule);
+  margin-inline-start: calc(var(--e-2) * -1);
+  padding-inline: var(--e-2);
+  color: var(--encre);
+  font-size: var(--t-base);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.appli__retour:hover {
+  background-color: var(--surface-survol);
+}
+
+.appli__retour-signe {
+  flex-shrink: 0;
+}
+
 /* --------------------------------------------------------- navigation --- */
 
+/*
+ * La barre du bas : trois vues, l'icône et son mot dessous.
+ *
+ * En bas parce que c'est là que le pouce arrive. L'application est installable
+ * et se tient d'une main : une navigation en haut d'un téléphone de six pouces
+ * demande de changer de prise à chaque changement de vue.
+ *
+ * `env(safe-area-inset-bottom)` est indispensable (section 10) : sans lui, la
+ * barre passe sous la barre d'accueil iOS en mode autonome, et les trois
+ * libellés deviennent intouchables.
+ */
 .nav {
-  grid-area: nav;
-  min-width: 0;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  border-top: var(--bordure);
+  background-color: var(--papier);
+  padding-bottom: var(--bas-securise);
 }
 
 .nav__liste {
   display: flex;
+  width: 100%;
+  max-width: var(--largeur-page);
   min-width: 0;
-  gap: var(--e-1);
+  margin-inline: auto;
 }
 
-/* À 320px, trois libellés tiennent — à condition qu'aucun ne se coupe. */
+/* Trois parts égales : les libellés ne dansent pas d'une vue à l'autre. */
 .nav__element {
   min-width: 0;
-  flex-shrink: 0;
+  flex: 1 1 0;
 }
 
 .nav__lien {
   display: flex;
-  min-height: var(--cible);
+  min-height: var(--h-nav);
   min-width: 0;
+  flex-direction: column;
   align-items: center;
-  border-radius: var(--r-pilule);
-  padding-inline: var(--e-3);
+  justify-content: center;
+  gap: 2px;
+  padding: var(--e-1) var(--e-1);
   color: var(--encre-2);
-  font-size: var(--t-sm);
+  font-size: var(--t-xs);
   font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  transition: color var(--duree-court) var(--courbe),
-    background-color var(--duree-court) var(--courbe);
-}
-
-.nav__lien:hover {
-  background-color: var(--surface-survol);
-  color: var(--encre);
-}
-
-.nav__lien--actif {
-  background-color: var(--accent-doux);
-  color: var(--accent);
+  letter-spacing: 0.01em;
+  line-height: var(--l-xs);
+  text-align: center;
+  transition: color var(--duree-court) var(--courbe);
 }
 
 /*
- * L'en-tête tient sur une seule ligne dès qu'il y a la place : sous 480px,
- * « Revoir » et trois libellés ne cohabitent pas sans troncature.
+ * Le libellé se coupe plutôt que d'élargir sa colonne : « Aujourd'hui » à
+ * 320px tient dans un tiers de 288px, mais une traduction plus longue ne le
+ * garantit pas, et une barre qui déborde emporterait la page avec elle.
  */
-@media (min-width: 480px) {
-  .appli__entete {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--e-4);
-  }
-
-  .appli__barre {
-    flex: 0 0 auto;
-  }
-
-  .nav {
-    margin-inline: 0;
-    flex: 1 1 auto;
-  }
-
-  .nav__liste {
-    justify-content: flex-end;
-  }
-
-  /* Au bout de la rangée, aussi loin du logotype que la largeur le permet. */
-  .appli__outils {
-    flex: 0 0 auto;
-  }
+.nav__mot {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Recentre le couple marque + navigation dans la largeur de lecture. */
+.nav__lien:hover {
+  color: var(--encre);
+}
+
+/*
+ * L'état actif se lit sur la couleur **et** sur le poids : à 12px, une nuance
+ * de teinte seule ne se voit pas, et elle ne se voit pas du tout en niveaux de
+ * gris. Aucune pastille ni surface pleine — la hiérarchie de l'écran
+ * appartient à l'unique cellule --accent du tableau de bord (section 3).
+ */
+.nav__lien--actif {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.nav__signe {
+  flex-shrink: 0;
+}
+
+/* Recentre l'en-tête dans la largeur de lecture, comme la page elle-même. */
 @media (min-width: 480px) {
   .appli__entete {
     padding-inline: max(
@@ -190,7 +236,7 @@
 
 /*
  * `--purge-liste` en bas : sans elle, le dernier élément de toute liste reste
- * inatteignable sous le FAB (section 7.3).
+ * inatteignable sous la barre du bas et le FAB (section 7.3).
  */
 .page {
   display: flex;
@@ -367,10 +413,9 @@ body[data-panneau='ouvert'] .fab {
  *
  * Le signe fait 20px, sa cible en fait 44 : c'est le carré qui se touche, pas
  * le dessin. Deux cibles de 44px côte à côte tiennent encore à 320px — le
- * logotype garde 180px pour lui, et la navigation vit sur sa propre ligne.
+ * logotype garde 200px pour lui, et la navigation vit tout en bas.
  */
 .appli__outils {
-  grid-area: reglages;
   display: flex;
   min-width: 0;
   flex-shrink: 0;

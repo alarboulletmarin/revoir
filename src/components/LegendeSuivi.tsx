@@ -13,22 +13,26 @@
  */
 import type { EtatCellule } from '../lib/suivi'
 import { MarqueCellule } from './MarqueCellule'
+import { useTextes } from '../state/usePreferences'
 
-const ETATS: { etat: EtatCellule; libelle: string }[] = [
-  { etat: 'faite', libelle: 'Effectuée' },
-  { etat: 'aujourdhui', libelle: 'À effectuer aujourd’hui' },
-  { etat: 'retard', libelle: 'En retard' },
-  { etat: 'avenir', libelle: 'À venir' },
-  { etat: 'hors-programme', libelle: 'Hors programme' },
+/** Dans l'ordre de la vie d'une révision, pas dans celui du dictionnaire. */
+const ETATS: EtatCellule[] = [
+  'faite',
+  'aujourdhui',
+  'retard',
+  'avenir',
+  'hors-programme',
 ]
 
 export function LegendeSuivi() {
+  const t = useTextes()
+
   return (
     <ul className="legende">
-      {ETATS.map(({ etat, libelle }) => (
+      {ETATS.map((etat) => (
         <li key={etat} className="legende__entree">
           <MarqueCellule etat={etat} />
-          {libelle}
+          {t.suivi.etats[etat]}
         </li>
       ))}
     </ul>

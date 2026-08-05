@@ -3,8 +3,10 @@
 import { useCallback } from 'react'
 import type { Review } from '../types'
 import { formatEcheance, type DateKey } from '../lib/dates'
+import { textes } from '../i18n'
 import { useDonnees } from './useDonnees'
 import { useToast } from './useToast'
+import { useTextes } from './usePreferences'
 
 /**
  * Le libellé du report, qui dit où l'échéance va.
@@ -15,7 +17,8 @@ import { useToast } from './useToast'
  * jours serait un mensonge.
  */
 export function libelleReport(review: Review, aujourdhui: DateKey): string {
-  return review.dueDate <= aujourdhui ? 'Reporter à demain' : 'Reporter d’un jour'
+  const { reporterDemain, reporterUnJour } = textes().toast
+  return review.dueDate <= aujourdhui ? reporterDemain : reporterUnJour
 }
 
 /**
@@ -30,6 +33,7 @@ export function libelleReport(review: Review, aujourdhui: DateKey): string {
 export function useReport() {
   const { reporter, restaurerRevisions } = useDonnees()
   const { afficherToast } = useToast()
+  const t = useTextes()
 
   return useCallback(
     (reviewId: string, aujourdhui: DateKey) => {
@@ -37,14 +41,14 @@ export function useReport() {
       if (!effet) return
 
       afficherToast({
-        texte: 'Révision reportée',
-        detail: `Au ${formatEcheance(effet.date, aujourdhui)}`,
+        texte: t.toast.revisionReportee,
+        detail: t.toast.reporteeAu(formatEcheance(effet.date, aujourdhui)),
         action: {
-          libelle: 'Annuler',
+          libelle: t.commun.annuler,
           onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
         },
       })
     },
-    [reporter, restaurerRevisions, afficherToast],
+    [reporter, restaurerRevisions, afficherToast, t],
   )
 }

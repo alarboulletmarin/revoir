@@ -20,6 +20,8 @@
  */
 import { useTitrePage } from '../state/useTitrePage'
 import { useAujourdhui } from '../state/useAujourdhui'
+import { useTextes } from '../state/usePreferences'
+import { propositionsCategories } from '../lib/categories'
 import { SCHEDULES, reviewsDepuisOffsets } from '../lib/schedules'
 import { Frise } from '../components/Frise'
 import { LienBouton } from '../components/Bouton'
@@ -27,37 +29,17 @@ import { LienBouton } from '../components/Bouton'
 /** Le programme « Simple » : celui que le formulaire propose d'abord. */
 const DEMONSTRATION = SCHEDULES[0]
 
-const TEMPS = [
-  {
-    titre: 'Vous notez ce que vous voulez revoir',
-    detail:
-      'Un titre, une catégorie, une date de départ, un programme. Ni cours, ni fiches, ni documents : Revoir ne stocke jamais ce que vous apprenez.',
-  },
-  {
-    titre: 'Revoir calcule les dates',
-    detail:
-      'Les écarts grandissent — un jour, trois jours, une semaine, deux, un mois. C’est la répétition espacée : on revoit juste avant d’oublier.',
-  },
-  {
-    titre: 'Vous cochez, l’application suit',
-    detail:
-      'En un tap, depuis n’importe quelle liste. Une révision validée en retard recale les suivantes en gardant leurs écarts, plutôt que de les faire tomber le même jour.',
-  },
-]
 
 export function Accueil() {
-  useTitrePage("Aujourd'hui")
+  const t = useTextes()
+  useTitrePage(t.dashboard.titre)
   const aujourdhui = useAujourdhui()
 
   return (
     <div className="accueil">
       <div className="accueil__entete">
-        <h1 className="accueil__titre">Qu'est-ce que je dois revoir aujourd'hui ?</h1>
-        <p className="accueil__intro">
-          Revoir planifie vos révisions par répétition espacée et répond à cette
-          seule question. Aucun compte, aucun serveur : tout reste sur cet
-          appareil.
-        </p>
+        <h1 className="accueil__titre">{t.accueil.titre}</h1>
+        <p className="accueil__intro">{t.accueil.intro}</p>
       </div>
 
       {/*
@@ -71,16 +53,15 @@ export function Accueil() {
           reviews={reviewsDepuisOffsets('apercu', aujourdhui, DEMONSTRATION.offsets)}
           aujourdhui={aujourdhui}
           libelles="decalage"
-          intitule={`Programme ${DEMONSTRATION.label}`}
+          intitule={t.reglages.programmes.intitule(DEMONSTRATION.label)}
         />
         <p className="accueil__legende">
-          Le programme « {DEMONSTRATION.label} », de la date de départ au dernier
-          rappel : {DEMONSTRATION.description}.
+          {t.accueil.legendeFrise(DEMONSTRATION.label, DEMONSTRATION.description)}
         </p>
       </section>
 
       <ol className="accueil__temps">
-        {TEMPS.map((temps, index) => (
+        {t.accueil.temps.map((temps, index) => (
           <li key={temps.titre} className="accueil__temp">
             <span className="accueil__rang" aria-hidden="true">
               {index + 1}
@@ -96,31 +77,31 @@ export function Accueil() {
         la moitié du projet, et personne ne la devine.
       */}
       <section className="accueil__bloc">
-        <h2 className="section__titre">Ce que Revoir ne fait pas</h2>
-        <p className="discret">
-          Pas de compte, pas de serveur, pas de synchronisation, pas de
-          publicité, pas de mesure d'audience. Pas de notification, pas de série
-          à tenir, pas de score : le retard est une information, pas un jugement.
-        </p>
-        <p className="discret">
-          Vos données vivent dans le stockage de ce navigateur, et vous pouvez
-          les exporter dans un fichier à tout moment.
-        </p>
+        <h2 className="section__titre">{t.accueil.neFaitPas}</h2>
+        <p className="discret">{t.accueil.neFaitPasDetail}</p>
+        <p className="discret">{t.accueil.donneesLocales}</p>
       </section>
 
       <div className="accueil__actions">
         <LienBouton vers="/nouveau" variante="primaire">
-          Créer un sujet
+          {t.accueil.creerSujet}
         </LienBouton>
         <LienBouton vers="/aide" variante="texte">
-          Comment ça marche
+          {t.accueil.commentCaMarche}
         </LienBouton>
       </div>
 
+      {/*
+        Les six noms viennent de la même liste que les catégories réellement
+        semées : les réécrire ici les aurait laissés en français dans une
+        interface anglaise, et périmés le jour où la liste change.
+      */}
       <p className="discret discret--petit">
-        Six catégories sont déjà là — Études, Travail, Langues, Développement,
-        Lecture, Personnel. Renommez-les, recolorez-les ou supprimez-les depuis
-        les réglages.
+        {t.accueil.categoriesLivrees(
+          propositionsCategories()
+            .map(({ name }) => name)
+            .join(', '),
+        )}
       </p>
     </div>
   )

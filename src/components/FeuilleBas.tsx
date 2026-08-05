@@ -20,6 +20,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react'
+import { useTextes } from '../state/usePreferences'
 
 /** Course au-delà de laquelle le geste ferme au lieu de revenir en place. */
 const SEUIL_FERMETURE = 96
@@ -47,6 +48,7 @@ export function FeuilleBas({
   cibleFocus,
   children,
 }: FeuilleBasProps) {
+  const t = useTextes()
   const reference = useRef<HTMLDialogElement>(null)
   const corps = useRef<HTMLDivElement>(null)
   const depart = useRef<number | null>(null)
@@ -130,7 +132,7 @@ export function FeuilleBas({
           <div className="feuille__barre">
             <h2 className="feuille__titre">{titre}</h2>
             <button type="button" className="feuille__fermer" onClick={onFermer}>
-              Fermer
+              {t.commun.fermer}
             </button>
           </div>
         </header>

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from 'react'
 import { Bouton } from './Bouton'
 import { usePanneauOuvert } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTextes()
   const ref = useRef<HTMLDialogElement>(null)
   const corps = useRef<HTMLDivElement>(null)
   const id = useId()
@@ -80,7 +82,7 @@ export function ConfirmDialog({
         </p>
         <div className="dialogue__actions">
           <Bouton variante="discret" className="dialogue__action" onClick={onCancel}>
-            Annuler
+            {t.commun.annuler}
           </Bouton>
           <Bouton
             variante={danger ? 'danger' : 'primaire'}

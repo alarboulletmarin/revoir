@@ -16,7 +16,9 @@
 import { useState } from 'react'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
-import { CATEGORIES_PROPOSEES, categorieHomonyme } from '../lib/categories'
+import { useTextes } from '../state/usePreferences'
+import { textes } from '../i18n'
+import { categorieHomonyme, propositionsCategories } from '../lib/categories'
 import { categoriesTriees, compterSujets } from '../lib/sujets'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -25,12 +27,14 @@ import type { Category } from '../types'
 
 /** Combien de sujets, en toutes lettres. Le zéro se dit, il ne se chiffre pas. */
 function direSujets(nombre: number): string {
-  if (nombre === 0) return 'Aucun sujet'
-  return `${nombre} sujet${nombre > 1 ? 's' : ''}`
+  return nombre === 0
+    ? textes().categories.aucunSujet
+    : textes().commun.sujets(nombre)
 }
 
 export function CategoriesPage() {
-  useTitrePage('Catégories')
+  const t = useTextes()
+  useTitrePage(t.categories.titre)
   const { categories, topics, creerCategorie, supprimerCategorie } = useDonnees()
   const [visee, setVisee] = useState<Category | null>(null)
   const [retour, setRetour] = useState<string | null>(null)
@@ -44,22 +48,20 @@ export function CategoriesPage() {
    * On ne rajoute que ce qui manque — un homonyme resterait un doublon.
    */
   const ajouterProposees = async () => {
-    const manquantes = CATEGORIES_PROPOSEES.filter(
+    const manquantes = propositionsCategories().filter(
       ({ name }) => categorieHomonyme(name, categories) === null,
     )
     for (const { name, tint } of manquantes) {
       await creerCategorie(name, tint)
     }
-    setRetour(
-      `${manquantes.length} catégorie${manquantes.length > 1 ? 's' : ''} ajoutée${manquantes.length > 1 ? 's' : ''}.`,
-    )
+    setRetour(t.categories.ajoutees(manquantes.length))
   }
 
   const confirmerSuppression = () => {
     if (!visee) return
     const nom = visee.name
     void supprimerCategorie(visee.id).then(() => {
-      setRetour(`Catégorie « ${nom} » supprimée.`)
+      setRetour(t.categories.supprimee(nom))
     })
     setVisee(null)
   }
@@ -68,11 +70,8 @@ export function CategoriesPage() {
 
   return (
     <>
-      <h1 className="page__titre">Catégories</h1>
-      <p className="discret">
-        Une catégorie regroupe des sujets. Sa couleur lui appartient : la changer ici
-        la change partout où la catégorie apparaît.
-      </p>
+      <h1 className="page__titre">{t.categories.titre}</h1>
+      <p className="discret">{t.categories.intro}</p>
 
       {retour && (
         <p className="banniere banniere--fait" role="status">
@@ -82,13 +81,13 @@ export function CategoriesPage() {
 
       {rangees.length === 0 ? (
         <div className="etat-vide">
-          <p className="discret">Aucune catégorie pour le moment.</p>
+          <p className="discret">{t.categories.aucune}</p>
           <div className="reglages__actions">
             <LienBouton vers="/categories/nouvelle" variante="primaire">
-              Créer une catégorie
+              {t.categories.creer}
             </LienBouton>
             <Bouton onClick={() => void ajouterProposees()}>
-              Ajouter les catégories proposées
+              {t.categories.ajouterProposees}
             </Bouton>
           </div>
         </div>
@@ -108,10 +107,10 @@ export function CategoriesPage() {
                 </div>
                 <div className="categorie__actions">
                   <LienBouton vers={`/categories/${categorie.id}/modifier`}>
-                    Modifier
+                    {t.commun.modifier}
                   </LienBouton>
                   <Bouton variante="danger" onClick={() => setVisee(categorie)}>
-                    Supprimer
+                    {t.commun.supprimer}
                   </Bouton>
                 </div>
               </li>
@@ -119,20 +118,20 @@ export function CategoriesPage() {
           </ul>
 
           <div className="reglages__actions">
-            <LienBouton vers="/categories/nouvelle">Créer une catégorie</LienBouton>
+            <LienBouton vers="/categories/nouvelle">{t.categories.creer}</LienBouton>
           </div>
         </>
       )}
 
       <ConfirmDialog
         open={visee !== null}
-        title={visee ? `Supprimer « ${visee.name} » ?` : ''}
+        title={visee ? t.categories.confirmerSuppression(visee.name) : ''}
         message={
           portes === 0
-            ? 'Cette catégorie ne porte aucun sujet.'
-            : `${portes === 1 ? 'Son sujet passera' : `Ses ${portes} sujets passeront`} sans catégorie. ${portes === 1 ? 'Il' : 'Ils'} ne ${portes === 1 ? 'sera' : 'seront'} pas supprimé${portes === 1 ? '' : 's'}.`
+            ? t.categories.detailAucunSujet
+            : t.categories.detailSujets(portes)
         }
-        confirmLabel="Supprimer"
+        confirmLabel={t.commun.supprimer}
         danger
         onCancel={() => setVisee(null)}
         onConfirm={confirmerSuppression}

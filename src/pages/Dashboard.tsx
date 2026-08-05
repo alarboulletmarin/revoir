@@ -6,6 +6,8 @@ import { useValidation } from '../state/useValidation'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
+import { textes } from '../i18n'
 import { formatLong, formatShort } from '../lib/dates'
 import {
   computeStats,
@@ -31,7 +33,8 @@ const ITEMS_HERO_LARGE = 6
 const PROCHAINES_VISIBLES = 5
 
 export function Dashboard() {
-  useTitrePage("Aujourd'hui")
+  const t = useTextes()
+  useTitrePage(t.dashboard.titre)
   const { topics, reviews, categories, loading } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const large = useMediaQuery('(min-width: 480px)')
@@ -58,7 +61,7 @@ export function Dashboard() {
   }, [topics, reviews, aujourdhui])
 
   if (loading) {
-    return <p className="discret">Chargement…</p>
+    return <p className="discret">{t.commun.chargement}</p>
   }
 
   // Aucun sujet : l'écran qui explique le projet, et non une grille de zéros.
@@ -74,7 +77,7 @@ export function Dashboard() {
   return (
     <>
       <div className="page__entete">
-        <h1 className="page__titre">Aujourd'hui</h1>
+        <h1 className="page__titre">{t.dashboard.titre}</h1>
         <p className="page__intro">{formatLong(aujourdhui)}</p>
       </div>
 
@@ -103,7 +106,7 @@ export function Dashboard() {
               {reste > 0 && (
                 <p className="hero__pied">
                   <LienBouton vers="/revisions/aujourdhui" variante="texte">
-                    Tout voir ({vue.dujour.length})
+                    {t.dashboard.toutVoirCompte(vue.dujour.length)}
                   </LienBouton>
                 </p>
               )}
@@ -113,7 +116,7 @@ export function Dashboard() {
 
         {/* Disparaît du DOM à zéro : la grille se recompose (section 7.2). */}
         {!sansRetard && (
-          <Cellule zone="retard" vers="/revisions/retard" label="en retard">
+          <Cellule zone="retard" vers="/revisions/retard" label={t.dashboard.enRetard}>
             <span className="retard__valeur">
               <span className="retard__point" aria-hidden="true" />
               <output className="cellule__chiffre">{vue.retard.length}</output>
@@ -129,10 +132,9 @@ export function Dashboard() {
         <Cellule zone="synthese">
           <output className="cellule__chiffre">{vue.stats.remainingReviews}</output>
           <p className="cellule__label">
-            révision{vue.stats.remainingReviews > 1 ? 's' : ''} restante
-            {vue.stats.remainingReviews > 1 ? 's' : ''}
+            {t.dashboard.restantes(vue.stats.remainingReviews)}
           </p>
-          <p className="synthese__intitule">Charge sur 14 jours</p>
+          <p className="synthese__intitule">{t.dashboard.charge(vue.charge.length)}</p>
           <BarresCharge charge={vue.charge} aujourdhui={aujourdhui} />
         </Cellule>
 
@@ -143,7 +145,7 @@ export function Dashboard() {
           la grille des colonnes implicites qui écrasent tout le bento.
         */}
         {tablette && (
-          <Cellule zone="calendrier" vers="/calendrier" label="ce mois-ci">
+          <Cellule zone="calendrier" vers="/calendrier" label={t.dashboard.ceMois}>
             <MiniMois
               topics={topics}
               reviews={reviews}
@@ -161,7 +163,7 @@ export function Dashboard() {
       */}
       {vue.prochaines.length > 0 && (
         <section className="pile pile--serree">
-          <h2 className="section__titre">Prochaines échéances</h2>
+          <h2 className="section__titre">{t.dashboard.prochainesEcheances}</h2>
           <ul className="liste-revisions">
             {vue.prochaines.map((entree) => (
               <LigneRevision
@@ -176,7 +178,7 @@ export function Dashboard() {
           </ul>
           <p className="hero__pied">
             <LienBouton vers="/revisions/prochaines" variante="texte">
-              Tout voir
+              {t.dashboard.toutVoir}
             </LienBouton>
           </p>
         </section>
@@ -191,10 +193,9 @@ export function Dashboard() {
  * prévue » quand rien ne l'était.
  */
 function titreDuJour(restantes: number, prevues: number): string {
-  if (restantes > 0) {
-    return `${restantes} révision${restantes > 1 ? 's' : ''} aujourd’hui`
-  }
-  return prevues > 0 ? 'Tout est terminé pour aujourd’hui' : 'Aucune révision prévue aujourd’hui'
+  const t = textes().dashboard
+  if (restantes > 0) return t.aFaire(restantes)
+  return prevues > 0 ? t.tempsTermine : t.rienDePrevu
 }
 
 /**
@@ -202,11 +203,8 @@ function titreDuJour(restantes: number, prevues: number): string {
  * la prochaine échéance quand il y en a une, sinon la promesse minimale.
  */
 function secondeLigne(prevues: number, prochain: { date: string; count: number } | null): string {
-  if (prochain === null) {
-    return prevues > 0
-      ? 'Plus rien à revoir : le programme reprendra à la prochaine échéance.'
-      : 'Les prochaines révisions apparaîtront ici.'
-  }
-  return `Prochaine révision : ${formatShort(prochain.date)}, ${prochain.count} sujet${prochain.count > 1 ? 's' : ''}.`
+  const t = textes().dashboard
+  if (prochain === null) return prevues > 0 ? t.plusRien : t.aVenirIci
+  return t.prochaine(formatShort(prochain.date), prochain.count)
 }
 

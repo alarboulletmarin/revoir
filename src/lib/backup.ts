@@ -9,6 +9,7 @@ import type {
   Topic,
   TopicStatus,
 } from '../types'
+import { textes } from '../i18n'
 import { RYTHME_MAX_JOURS, RYTHME_MAX_REVISIONS, isScheduleId } from './schedules'
 import { cleCategorie, retenirTeinte, type Teinte } from './categories'
 import {
@@ -94,17 +95,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function parseProgramme(value: unknown, index: number): Programme {
   if (!isRecord(value)) {
-    throw new BackupError(`Programme ${index + 1} invalide.`)
+    throw new BackupError(textes().backup.programmeInvalide(index + 1))
   }
   const { id, label, offsets } = value
   if (typeof id !== 'string' || id === '') {
-    throw new BackupError(`Programme ${index + 1} : identifiant manquant.`)
+    throw new BackupError(textes().backup.programmeSansId(index + 1))
   }
   if (typeof label !== 'string' || label.trim() === '') {
-    throw new BackupError(`Programme ${index + 1} : nom manquant.`)
+    throw new BackupError(textes().backup.programmeSansNom(index + 1))
   }
   if (!Array.isArray(offsets) || offsets.length === 0) {
-    throw new BackupError(`« ${label} » : rythme manquant.`)
+    throw new BackupError(textes().backup.rythmeManquant(label))
   }
   const retenus = offsets.filter(
     (offset): offset is number =>
@@ -114,7 +115,7 @@ function parseProgramme(value: unknown, index: number): Programme {
       offset <= RYTHME_MAX_JOURS,
   )
   if (retenus.length === 0) {
-    throw new BackupError(`« ${label} » : rythme invalide.`)
+    throw new BackupError(textes().backup.rythmeInvalide(label))
   }
   const now = new Date().toISOString()
   return {
@@ -139,14 +140,14 @@ function parseTeinte(value: unknown): Teinte | null {
 
 function parseCategory(value: unknown, index: number): Category {
   if (!isRecord(value)) {
-    throw new BackupError(`Catégorie ${index + 1} invalide.`)
+    throw new BackupError(textes().backup.categorieInvalide(index + 1))
   }
   const { id, name } = value
   if (typeof id !== 'string' || id === '') {
-    throw new BackupError(`Catégorie ${index + 1} : identifiant manquant.`)
+    throw new BackupError(textes().backup.categorieSansId(index + 1))
   }
   if (typeof name !== 'string' || name.trim() === '') {
-    throw new BackupError(`Catégorie ${index + 1} : nom manquant.`)
+    throw new BackupError(textes().backup.categorieSansNom(index + 1))
   }
   const now = new Date().toISOString()
   return {
@@ -165,17 +166,17 @@ function parseTopic(
   categories: Set<string>,
 ): Topic {
   if (!isRecord(value)) {
-    throw new BackupError(`Sujet ${index + 1} invalide.`)
+    throw new BackupError(textes().backup.sujetInvalide(index + 1))
   }
   const { id, title, categoryId, startDate, scheduleId } = value
   if (typeof id !== 'string' || id === '') {
-    throw new BackupError(`Sujet ${index + 1} : identifiant manquant.`)
+    throw new BackupError(textes().backup.sujetSansId(index + 1))
   }
   if (typeof title !== 'string' || title.trim() === '') {
-    throw new BackupError(`Sujet ${index + 1} : titre manquant.`)
+    throw new BackupError(textes().backup.sujetSansTitre(index + 1))
   }
   if (typeof startDate !== 'string' || !DATE_KEY.test(startDate)) {
-    throw new BackupError(`« ${title} » : date de départ invalide.`)
+    throw new BackupError(textes().backup.dateDepartInvalide(title))
   }
   // Un identifiant de programme n'est pas une union fermée : il doit se
   // résoudre contre les trois intégrés ou contre un programme du même fichier.
@@ -183,7 +184,7 @@ function parseTopic(
     typeof scheduleId !== 'string' ||
     (!isScheduleId(scheduleId) && !programmes.has(scheduleId))
   ) {
-    throw new BackupError(`« ${title} » : configuration inconnue.`)
+    throw new BackupError(textes().backup.programmeInconnu(title))
   }
   /*
    * L'intégrité référentielle, que le modèle plat n'avait pas à défendre : un
@@ -193,7 +194,7 @@ function parseTopic(
    */
   if (categoryId !== null && categoryId !== undefined) {
     if (typeof categoryId !== 'string' || !categories.has(categoryId)) {
-      throw new BackupError(`« ${title} » : catégorie inconnue.`)
+      throw new BackupError(textes().backup.categorieInconnue(title))
     }
   }
 
@@ -217,23 +218,23 @@ function parseTopic(
 
 function parseReview(value: unknown, index: number, topics: Set<string>): Review {
   if (!isRecord(value)) {
-    throw new BackupError(`Révision ${index + 1} invalide.`)
+    throw new BackupError(textes().backup.revisionInvalide(index + 1))
   }
   const { id, topicId, position, intervalInDays, dueDate, completedAt } = value
   if (typeof id !== 'string' || id === '') {
-    throw new BackupError(`Révision ${index + 1} : identifiant manquant.`)
+    throw new BackupError(textes().backup.revisionSansId(index + 1))
   }
   if (typeof topicId !== 'string' || !topics.has(topicId)) {
-    throw new BackupError(`Révision ${index + 1} : sujet inconnu.`)
+    throw new BackupError(textes().backup.revisionSujetInconnu(index + 1))
   }
   if (typeof position !== 'number' || !Number.isInteger(position) || position < 1) {
-    throw new BackupError(`Révision ${index + 1} : rang invalide.`)
+    throw new BackupError(textes().backup.revisionRang(index + 1))
   }
   if (typeof intervalInDays !== 'number' || !Number.isFinite(intervalInDays)) {
-    throw new BackupError(`Révision ${index + 1} : décalage invalide.`)
+    throw new BackupError(textes().backup.revisionDecalage(index + 1))
   }
   if (typeof dueDate !== 'string' || !DATE_KEY.test(dueDate)) {
-    throw new BackupError(`Révision ${index + 1} : échéance invalide.`)
+    throw new BackupError(textes().backup.revisionEcheance(index + 1))
   }
   return {
     id,
@@ -253,14 +254,14 @@ function parseReviewLegacy(
   itemLabel: string,
 ): ReviewLegacy {
   if (!isRecord(value)) {
-    throw new BackupError(`Révision ${index + 1} invalide dans « ${itemLabel} ».`)
+    throw new BackupError(textes().backup.revisionLegacy(index + 1, itemLabel))
   }
   const { offset, date, done, doneAt } = value
   if (typeof offset !== 'number' || !Number.isFinite(offset)) {
-    throw new BackupError(`Décalage invalide dans « ${itemLabel} ».`)
+    throw new BackupError(textes().backup.decalageLegacy(itemLabel))
   }
   if (typeof date !== 'string' || !DATE_KEY.test(date)) {
-    throw new BackupError(`Date de révision invalide dans « ${itemLabel} ».`)
+    throw new BackupError(textes().backup.dateLegacy(itemLabel))
   }
   return {
     offset,
@@ -276,26 +277,26 @@ function parseItemLegacy(
   programmes: Set<string>,
 ): ItemLegacy {
   if (!isRecord(value)) {
-    throw new BackupError(`Élément ${index + 1} invalide.`)
+    throw new BackupError(textes().backup.elementInvalide(index + 1))
   }
   const { id, title, category, startDate, schedule, reviews, archived } = value
   if (typeof id !== 'string' || id === '') {
-    throw new BackupError(`Élément ${index + 1} : identifiant manquant.`)
+    throw new BackupError(textes().backup.elementSansId(index + 1))
   }
   if (typeof title !== 'string' || title.trim() === '') {
-    throw new BackupError(`Élément ${index + 1} : titre manquant.`)
+    throw new BackupError(textes().backup.elementSansTitre(index + 1))
   }
   if (typeof startDate !== 'string' || !DATE_KEY.test(startDate)) {
-    throw new BackupError(`« ${title} » : date de départ invalide.`)
+    throw new BackupError(textes().backup.dateDepartInvalide(title))
   }
   if (
     typeof schedule !== 'string' ||
     (!isScheduleId(schedule) && !programmes.has(schedule))
   ) {
-    throw new BackupError(`« ${title} » : configuration inconnue.`)
+    throw new BackupError(textes().backup.programmeInconnu(title))
   }
   if (!Array.isArray(reviews)) {
-    throw new BackupError(`« ${title} » : liste de révisions manquante.`)
+    throw new BackupError(textes().backup.revisionsManquantes(title))
   }
   const now = new Date().toISOString()
   return {
@@ -339,13 +340,13 @@ export function parseBackup(raw: string): ContenuSauvegarde {
   try {
     parsed = JSON.parse(raw)
   } catch {
-    throw new BackupError('Ce fichier n’est pas un JSON valide.')
+    throw new BackupError(textes().backup.jsonInvalide)
   }
   if (!isRecord(parsed)) {
-    throw new BackupError('Le fichier ne contient pas une sauvegarde Revoir.')
+    throw new BackupError(textes().backup.pasUneSauvegarde)
   }
   if (parsed.app !== BACKUP_APP) {
-    throw new BackupError('Le fichier ne provient pas de Revoir.')
+    throw new BackupError(textes().backup.autreApplication)
   }
 
   /*
@@ -358,7 +359,7 @@ export function parseBackup(raw: string): ContenuSauvegarde {
     : []
   const idsProgrammes = new Set(programmes.map((programme) => programme.id))
   if (idsProgrammes.size !== programmes.length) {
-    throw new BackupError('Le fichier contient des programmes en double.')
+    throw new BackupError(textes().backup.programmesDoublons)
   }
 
   if (Array.isArray(parsed.topics)) {
@@ -367,7 +368,7 @@ export function parseBackup(raw: string): ContenuSauvegarde {
   if (Array.isArray(parsed.items)) {
     return parseContenuLegacy(parsed, idsProgrammes, programmes)
   }
-  throw new BackupError('Le fichier ne contient aucune liste de sujets.')
+  throw new BackupError(textes().backup.aucuneListe)
 }
 
 function parseContenu(
@@ -380,7 +381,7 @@ function parseContenu(
     : []
   const idsCategories = new Set(categories.map((categorie) => categorie.id))
   if (idsCategories.size !== categories.length) {
-    throw new BackupError('Le fichier contient des catégories en double.')
+    throw new BackupError(textes().backup.categoriesDoublons)
   }
 
   const topics = (parsed.topics as unknown[]).map((topic, index) =>
@@ -388,14 +389,14 @@ function parseContenu(
   )
   const idsTopics = new Set(topics.map((topic) => topic.id))
   if (idsTopics.size !== topics.length) {
-    throw new BackupError('Le fichier contient des sujets en double.')
+    throw new BackupError(textes().backup.sujetsDoublons)
   }
 
   const reviews = Array.isArray(parsed.reviews)
     ? parsed.reviews.map((review, index) => parseReview(review, index, idsTopics))
     : []
   if (new Set(reviews.map((review) => review.id)).size !== reviews.length) {
-    throw new BackupError('Le fichier contient des révisions en double.')
+    throw new BackupError(textes().backup.revisionsDoublons)
   }
 
   return { categories, topics, reviews, programmes }
@@ -414,7 +415,7 @@ function parseContenuLegacy(
     parseItemLegacy(item, index, idsProgrammes),
   )
   if (new Set(items.map((item) => item.id)).size !== items.length) {
-    throw new BackupError('Le fichier contient des éléments en double.')
+    throw new BackupError(textes().backup.elementsDoublons)
   }
 
   // `teintes` est absent des sauvegardes v1 : elles valent alors {}.

@@ -19,6 +19,7 @@
  * l'invisible et dériver la couleur d'encre qui rendra le libellé lisible.
  */
 import type { Category, Topic } from '../types'
+import { textes } from '../i18n'
 import {
   couleurRetenue,
   estCouleurPersonnalisee,
@@ -43,16 +44,9 @@ export type TeinteNommee = (typeof TEINTES)[number]
 /** Ce qu'une catégorie peut porter : une des huit, ou une couleur libre. */
 export type Teinte = TeinteNommee | CouleurPersonnalisee
 
-/** Libellés affichés dans le sélecteur, pour que la couleur soit nommable. */
-export const NOM_TEINTE: Record<TeinteNommee, string> = {
-  ardoise: 'Ardoise',
-  prune: 'Prune',
-  olive: 'Olive',
-  terre: 'Terre',
-  bleu: 'Bleu',
-  teal: 'Sarcelle',
-  mauve: 'Mauve',
-  ocre: 'Ocre',
+/** Le libellé d'une teinte, pour que la couleur soit nommable au clavier. */
+export function nomTeinte(teinte: TeinteNommee): string {
+  return textes().teintes[teinte]
 }
 
 export function estTeinteNommee(valeur: unknown): valeur is TeinteNommee {
@@ -94,8 +88,14 @@ export function cleCategorie(nom: string): string {
   return nom.trim().toLocaleLowerCase('fr')
 }
 
-/** Les sujets sans catégorie ne sont pas perdus : ils forment leur propre groupe. */
-export const SANS_CATEGORIE = 'Sans catégorie'
+/**
+ * Les sujets sans catégorie ne sont pas perdus : ils forment leur propre
+ * groupe. Ce n'est pas une catégorie de la base — c'est le nom que l'affichage
+ * donne à leur absence, et il se traduit comme le reste de l'interface.
+ */
+export function sansCategorie(): string {
+  return textes().commun.sansCategorie
+}
 
 /** La catégorie portant ce nom, à la casse près, ou null. */
 export function trouverCategorie(nom: string, categories: Category[]): Category | null {
@@ -138,14 +138,27 @@ export function categorieHomonyme(
  * Ce sont des catégories ordinaires, pas des lignes protégées : elles se
  * renomment, se recolorent et se suppriment comme les autres.
  */
-export const CATEGORIES_PROPOSEES: { name: string; tint: TeinteNommee }[] = [
-  { name: 'Études', tint: 'bleu' },
-  { name: 'Travail', tint: 'ardoise' },
-  { name: 'Langues', tint: 'teal' },
-  { name: 'Développement', tint: 'prune' },
-  { name: 'Lecture', tint: 'olive' },
-  { name: 'Personnel', tint: 'terre' },
-]
+const CLES_PROPOSEES = [
+  { cle: 'etudes', tint: 'bleu' },
+  { cle: 'travail', tint: 'ardoise' },
+  { cle: 'langues', tint: 'teal' },
+  { cle: 'developpement', tint: 'prune' },
+  { cle: 'lecture', tint: 'olive' },
+  { cle: 'personnel', tint: 'terre' },
+] as const
+
+/**
+ * Leur nom suit la langue au moment où on les crée, et **pas ensuite** : ce
+ * sont des catégories ordinaires dès qu'elles existent, avec le nom qu'elles
+ * ont reçu. Traduire après coup renommerait des données que l'utilisateur a pu
+ * modifier — et rien ne distingue plus une proposée d'une catégorie à lui.
+ */
+export function propositionsCategories(): { name: string; tint: TeinteNommee }[] {
+  return CLES_PROPOSEES.map(({ cle, tint }) => ({
+    name: textes().categoriesProposees[cle],
+    tint,
+  }))
+}
 
 /**
  * Les six, matérialisées. `nouvelId` est injectable comme dans `migration.ts` :
@@ -159,7 +172,7 @@ export function categoriesProposees(
   maintenant: string,
   nouvelId: NouvelId = newId,
 ): Category[] {
-  return CATEGORIES_PROPOSEES.map(({ name, tint }) => ({
+  return propositionsCategories().map(({ name, tint }) => ({
     id: nouvelId(),
     name,
     tint,

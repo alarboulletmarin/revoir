@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useToast } from '../state/useToast'
+import { useTextes } from '../state/usePreferences'
 
 /**
  * Deuxième et dernier usage autorisé du toast (section 8.10) : une nouvelle
@@ -16,18 +17,19 @@ import { useToast } from '../state/useToast'
 export function UpdatePrompt() {
   const { needRefresh, updateServiceWorker } = useMiseAJour()
   const { afficherToast } = useToast()
+  const t = useTextes()
 
   useEffect(() => {
     if (!needRefresh) return
     afficherToast({
-      texte: 'Une nouvelle version est disponible.',
+      texte: t.toast.miseAJour,
       action: {
-        libelle: 'Mettre à jour',
+        libelle: t.toast.mettreAJour,
         onAction: () => void updateServiceWorker(true),
       },
       duree: 0,
     })
-  }, [needRefresh, updateServiceWorker, afficherToast])
+  }, [needRefresh, updateServiceWorker, afficherToast, t])
 
   return null
 }

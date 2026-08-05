@@ -3,8 +3,10 @@
 import { useCallback } from 'react'
 import type { ReviewEntry } from '../types'
 import { lire, ecrire } from './usePreference'
+import { textes } from '../i18n'
 import { useDonnees } from './useDonnees'
 import { useToast } from './useToast'
+import { useTextes } from './usePreferences'
 
 /**
  * Le recalage a-t-il déjà été expliqué sur cet appareil ?
@@ -28,9 +30,9 @@ const estVrai = (valeur: unknown): valeur is true => valeur === true
  * relit à chaque fois cesse d'être lue.
  */
 function detailRecalage(): string {
-  if (lire(CLE_RECALAGE_VU, estVrai) === true) return 'Prochaines dates ajustées'
+  if (lire(CLE_RECALAGE_VU, estVrai) === true) return textes().toast.recalageCourt
   ecrire(CLE_RECALAGE_VU, true)
-  return 'Les suivantes gardent leurs écarts, à partir d’aujourd’hui'
+  return textes().toast.recalageLong
 }
 
 /**
@@ -45,6 +47,7 @@ function detailRecalage(): string {
 export function useValidation() {
   const { valider, devalider, restaurerRevisions } = useDonnees()
   const { afficherToast } = useToast()
+  const t = useTextes()
 
   /** La validation par identifiant : c'est ce que connaît une cellule. */
   const validerRevision = useCallback(
@@ -53,15 +56,15 @@ export function useValidation() {
       if (!effet) return
 
       afficherToast({
-        texte: 'Révision enregistrée',
+        texte: t.toast.revisionEnregistree,
         detail: effet.deplacees > 0 ? detailRecalage() : undefined,
         action: {
-          libelle: 'Annuler',
+          libelle: t.commun.annuler,
           onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
         },
       })
     },
-    [valider, restaurerRevisions, afficherToast],
+    [valider, restaurerRevisions, afficherToast, t],
   )
 
   const validerEntree = useCallback(
