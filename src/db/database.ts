@@ -1,9 +1,17 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import type { Item } from '../types'
+import type { Teinte, Teintes } from '../lib/categories'
 
 const DB_NAME = 'revoir'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE = 'items'
+const STORE_TEINTES = 'teintes'
+
+/** Une teinte choisie par l'utilisateur, indexée par clé de catégorie. */
+export interface TeinteEnregistree {
+  cle: string
+  teinte: Teinte
+}
 
 interface RevoirDB extends DBSchema {
   // Le volume de données reste petit (quelques dizaines d'éléments) : on lit
@@ -12,15 +20,24 @@ interface RevoirDB extends DBSchema {
     key: string
     value: Item
   }
+  teintes: {
+    key: string
+    value: TeinteEnregistree
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<RevoirDB>> | null = null
 
 function getDB(): Promise<IDBPDatabase<RevoirDB>> {
   dbPromise ??= openDB<RevoirDB>(DB_NAME, DB_VERSION, {
+    // Les migrations sont cumulatives : une base en v1 doit pouvoir passer
+    // en v2 sans perdre ses éléments.
     upgrade(db) {
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains(STORE_TEINTES)) {
+        db.createObjectStore(STORE_TEINTES, { keyPath: 'cle' })
       }
     },
   })
@@ -54,4 +71,25 @@ export async function replaceAllItems(items: Item[]): Promise<void> {
 export async function clearItems(): Promise<void> {
   const db = await getDB()
   await db.clear(STORE)
+}
+
+export async function getAllTeintes(): Promise<Teintes> {
+  const db = await getDB()
+  const stockees = await db.getAll(STORE_TEINTES)
+  return Object.fromEntries(stockees.map(({ cle, teinte }) => [cle, teinte]))
+}
+
+export async function putTeinte(cle: string, teinte: Teinte): Promise<void> {
+  const db = await getDB()
+  await db.put(STORE_TEINTES, { cle, teinte })
+}
+
+export async function replaceAllTeintes(teintes: Teintes): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(STORE_TEINTES, 'readwrite')
+  await tx.store.clear()
+  await Promise.all(
+    Object.entries(teintes).map(([cle, teinte]) => tx.store.put({ cle, teinte })),
+  )
+  await tx.done
 }

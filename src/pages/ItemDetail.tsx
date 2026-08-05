@@ -1,100 +1,150 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useItems } from '../state/useItems'
+import { useToast } from '../state/useToast'
+import { useTitrePage } from '../state/useTitrePage'
 import { getSchedule } from '../lib/schedules'
-import {
-  formatIsoDate,
-  formatLong,
-  formatRelative,
-  todayKey,
-} from '../lib/dates'
+import { formatIsoDate, formatLong, formatRelative, todayKey } from '../lib/dates'
 import { itemProgress } from '../lib/stats'
-import { ProgressBar } from '../components/ProgressBar'
+import { Frise } from '../components/Frise'
+import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { IconCheck } from '../components/Icons'
+import { Bouton, LienBouton } from '../components/Bouton'
+import { IconeArchive, IconeCoche, IconeCorbeille } from '../components/Icons'
+import { ChipCategorie } from '../components/ChipCategorie'
 
 export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, loading, setReviewDone, setArchived, removeItem } = useItems()
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const today = todayKey()
+  const { items, teintes, loading, valider, devalider, restaurer, setArchived, removeItem } =
+    useItems()
+  const { afficherToast } = useToast()
+  const [confirmerSuppression, setConfirmerSuppression] = useState(false)
+  const aujourdhui = todayKey()
 
-  const item = items.find((candidate) => candidate.id === id)
+  const item = items.find((candidat) => candidat.id === id)
+  useTitrePage(item?.title ?? 'Élément')
 
   if (!item) {
     return loading ? (
-      <p className="loading">Chargement…</p>
+      <p className="discret">Chargement…</p>
     ) : (
-      <div className="stack">
-        <p className="muted">Cet élément n’existe pas ou plus.</p>
-        <Link to="/" className="button button--ghost">
+      <div className="etat-vide">
+        <p className="discret">Cet élément n'existe pas ou plus.</p>
+        <LienBouton vers="/" variante="discret">
           Retour au tableau de bord
-        </Link>
+        </LienBouton>
       </div>
     )
   }
 
-  const schedule = getSchedule(item.schedule)
-  const done = item.reviews.filter((review) => review.done)
-  const remaining = item.reviews.length - done.length
-  const createdAt = formatIsoDate(item.createdAt)
+  const programme = getSchedule(item.schedule)
+  const faites = item.reviews.filter((review) => review.done).length
+  const restantes = item.reviews.length - faites
+  const creeLe = formatIsoDate(item.createdAt)
+
+  const basculer = (offset: number, faite: boolean) => {
+    if (faite) {
+      devalider(item.id, offset)
+      return
+    }
+    const effet = valider(item.id, offset)
+    if (!effet) return
+    afficherToast({
+      texte: 'Révision enregistrée',
+      detail: effet.deplacees > 0 ? 'Prochaines dates ajustées' : undefined,
+      action: { libelle: 'Annuler', onAction: () => restaurer(effet.precedent) },
+    })
+  }
+
+  const archiver = () => {
+    setArchived(item.id, !item.archived)
+    afficherToast({
+      texte: item.archived ? 'Élément désarchivé' : 'Élément archivé',
+      action: {
+        libelle: 'Annuler',
+        onAction: () => setArchived(item.id, item.archived),
+      },
+    })
+  }
 
   return (
-    <div className="stack">
-      <div className="detail__head">
-        <h1 className="page-title">{item.title}</h1>
-        <div className="detail__badges">
-          {item.category && <span className="tag">{item.category}</span>}
-          <span className="tag tag--soft">{schedule.label}</span>
-          {item.archived && <span className="tag tag--warn">Archivé</span>}
+    <>
+      <div className="fiche__entete">
+        <h1 className="page__titre">{item.title}</h1>
+        <div className="fiche__badges">
+          <ChipCategorie categorie={item.category} teintes={teintes} />
+          <span className="chip chip--accent">{programme.label}</span>
+          {item.archived && <span className="chip chip--retard">Archivé</span>}
         </div>
-        {createdAt && <p className="page-subtitle">Créé le {createdAt}</p>}
+        {creeLe && <p className="page__intro">Créé le {creeLe}</p>}
       </div>
 
-      <section className="card section">
-        <h2 className="section__title">Progression</h2>
-        <ProgressBar value={itemProgress(item)} label={`Progression de ${item.title}`} />
-        <p className="muted detail__counts">
-          {done.length} révision{done.length > 1 ? 's' : ''} effectuée
-          {done.length > 1 ? 's' : ''} · {remaining} restante{remaining > 1 ? 's' : ''}
-        </p>
+      {/* La frise en grand, avec ses libellés : c'est ici qu'elle se lit. */}
+      <section className="fiche__bloc">
+        <h2 className="section__titre">Programme</h2>
+        <Frise
+          origine={item.startDate}
+          reviews={item.reviews}
+          aujourdhui={aujourdhui}
+          libelles="decalage"
+          intitule={item.title}
+        />
+        <div className="restantes">
+          <AnneauProgression
+            part={itemProgress(item) / 100}
+            label={`Progression : ${itemProgress(item)} %`}
+          />
+          <p className="discret discret--petit chiffres" aria-live="polite">
+            {faites} révision{faites > 1 ? 's' : ''} effectuée{faites > 1 ? 's' : ''} ·{' '}
+            {restantes} restante{restantes > 1 ? 's' : ''}
+          </p>
+        </div>
       </section>
 
-      <section className="card section">
-        <h2 className="section__title">Révisions</h2>
-        <p className="muted detail__start">Date de départ : {formatLong(item.startDate)}</p>
-        <ul className="review-list">
+      <section className="fiche__bloc">
+        <h2 className="section__titre">Échéances</h2>
+        <p className="discret discret--petit">
+          Départ le {formatLong(item.startDate)}
+        </p>
+        <ul className="liste-revisions">
           {item.reviews.map((review) => {
-            const late = !review.done && review.date < today
-            const isToday = review.date === today
+            const enRetard = !review.done && review.date < aujourdhui
+            const classes = ['echeance', review.done ? 'echeance--faite' : null]
+              .filter(Boolean)
+              .join(' ')
+
             return (
-              <li
-                key={review.offset}
-                className={`review-row${review.done ? ' review-row--done' : ''}`}
-              >
+              <li key={review.offset} className={classes}>
                 <button
                   type="button"
-                  className="review-row__check"
+                  className="item-revision__case"
                   role="checkbox"
                   aria-checked={review.done}
-                  aria-label={`${review.done ? 'Annuler' : 'Marquer comme effectuée'} la révision J+${review.offset}`}
-                  onClick={() => void setReviewDone(item.id, review.offset, !review.done)}
+                  aria-label={`${review.done ? 'Décocher' : 'Marquer comme revu'} la révision J+${review.offset}`}
+                  onClick={() => basculer(review.offset, review.done)}
                 >
-                  {review.done && <IconCheck width="16" height="16" strokeWidth="2.2" />}
+                  <span className="item-revision__cercle">
+                    {review.done && <IconeCoche className="item-revision__coche" />}
+                  </span>
                 </button>
-                <div className="review-row__body">
-                  <span className="review-row__title">
+
+                <div className="echeance__corps">
+                  <span className="echeance__titre">
                     J+{review.offset} · {formatLong(review.date)}
                   </span>
-                  <span className="review-row__meta">
-                    {review.done ? (
-                      <span>Effectuée</span>
-                    ) : (
-                      <span className={late ? 'review-row__late' : undefined}>
-                        {isToday ? 'aujourd’hui' : formatRelative(review.date, today)}
-                      </span>
-                    )}
+                  <span
+                    className={
+                      review.done
+                        ? 'echeance__etat echeance__etat--fait'
+                        : enRetard
+                          ? 'echeance__etat echeance__etat--retard'
+                          : 'echeance__etat'
+                    }
+                  >
+                    {review.done
+                      ? 'effectuée'
+                      : formatRelative(review.date, aujourdhui)}
                   </span>
                 </div>
               </li>
@@ -103,45 +153,40 @@ export function ItemDetail() {
         </ul>
       </section>
 
-      <section className="card section">
-        <h2 className="section__title">Actions</h2>
-        <div className="detail__actions">
-          <Link to={`/element/${item.id}/modifier`} className="button button--ghost">
+      <section className="fiche__bloc">
+        <h2 className="section__titre">Actions</h2>
+        <div className="fiche__actions">
+          <LienBouton vers={`/element/${item.id}/modifier`} variante="discret">
             Modifier
-          </Link>
-          <button
-            type="button"
-            className="button button--ghost"
-            onClick={() => void setArchived(item.id, !item.archived)}
-          >
+          </LienBouton>
+          <Bouton variante="discret" onClick={archiver}>
+            <IconeArchive width="18" height="18" />
             {item.archived ? 'Désarchiver' : 'Archiver'}
-          </button>
-          <button
-            type="button"
-            className="button button--danger"
-            onClick={() => setConfirmDelete(true)}
-          >
+          </Bouton>
+          <Bouton variante="danger" onClick={() => setConfirmerSuppression(true)}>
+            <IconeCorbeille width="18" height="18" />
             Supprimer
-          </button>
+          </Bouton>
         </div>
-        <p className="muted detail__hint">
-          Un élément archivé disparaît du tableau de bord et du calendrier, sans être
-          supprimé.
+        <p className="discret discret--petit">
+          Un élément archivé sort du tableau de bord et du calendrier. Il reste dans
+          l'export.
         </p>
       </section>
 
+      {/* La seule action qui demande une confirmation (règle métier n°3). */}
       <ConfirmDialog
-        open={confirmDelete}
+        open={confirmerSuppression}
         title="Supprimer cet élément ?"
         message={`« ${item.title} » et ses ${item.reviews.length} révisions seront définitivement supprimés.`}
         confirmLabel="Supprimer"
         danger
-        onCancel={() => setConfirmDelete(false)}
+        onCancel={() => setConfirmerSuppression(false)}
         onConfirm={() => {
-          setConfirmDelete(false)
+          setConfirmerSuppression(false)
           void removeItem(item.id).then(() => navigate('/', { replace: true }))
         }}
       />
-    </div>
+    </>
   )
 }

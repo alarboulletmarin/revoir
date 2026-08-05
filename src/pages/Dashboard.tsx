@@ -1,163 +1,212 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useItems } from '../state/useItems'
-import { formatLong, todayKey } from '../lib/dates'
+import { useValidation } from '../state/useValidation'
+import { useMediaQuery } from '../state/useMediaQuery'
+import { useTitrePage } from '../state/useTitrePage'
+import { formatLong, formatRelative, formatShort, todayKey } from '../lib/dates'
 import {
   computeStats,
   loadForDays,
+  nextReviewDay,
   overdueEntries,
   todayEntries,
   upcomingEntries,
 } from '../lib/stats'
-import type { ReviewEntry } from '../types'
-import { ReviewRow } from '../components/ReviewRow'
-import { StatGrid } from '../components/StatGrid'
-import { LoadBars } from '../components/LoadBars'
-import { EmptyState } from '../components/EmptyState'
+import { Cellule } from '../components/Cellule'
+import { ItemRevision } from '../components/ItemRevision'
+import { BarresCharge } from '../components/BarresCharge'
+import { AnneauProgression } from '../components/AnneauProgression'
+import { MiniMois } from '../components/MiniMois'
+import { GroupesMatiere } from '../components/GroupesMatiere'
+import { LienBouton } from '../components/Bouton'
+import { grouperParMatiere } from '../lib/matieres'
+
+/** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
+const ITEMS_HERO_ETROIT = 3
+const ITEMS_HERO_LARGE = 6
+const LIGNES_PROCHAINES = 3
 
 export function Dashboard() {
-  const { items, loading, setReviewDone } = useItems()
-  const today = todayKey()
+  useTitrePage("Aujourd'hui")
+  const { items, teintes, loading } = useItems()
+  const { validerEntree, devaliderEntree } = useValidation()
+  const large = useMediaQuery('(min-width: 480px)')
+  const tablette = useMediaQuery('(min-width: 768px)')
+  const aujourdhui = todayKey()
 
-  const view = useMemo(
+  const vue = useMemo(
     () => ({
-      overdue: overdueEntries(items, today),
-      today: todayEntries(items, today),
-      upcoming: upcomingEntries(items, 8, today),
-      stats: computeStats(items, today),
-      load: loadForDays(items, 7, today),
+      dujour: todayEntries(items, aujourdhui).filter((entree) => !entree.review.done),
+      retard: overdueEntries(items, aujourdhui),
+      prochaines: upcomingEntries(items, LIGNES_PROCHAINES, aujourdhui),
+      stats: computeStats(items, aujourdhui),
+      charge: loadForDays(items, 14, aujourdhui),
+      prochainJour: nextReviewDay(items, aujourdhui),
+      matieres: grouperParMatiere(items),
     }),
-    [items, today],
+    [items, aujourdhui],
   )
 
-  const toggle = (entry: ReviewEntry, done: boolean) => {
-    void setReviewDone(entry.item.id, entry.review.offset, done)
-  }
-
   if (loading) {
-    return <p className="loading">Chargement…</p>
+    return <p className="discret">Chargement…</p>
   }
 
   if (items.length === 0) {
-    return (
-      <EmptyState title="Aucun élément pour le moment">
-        <p>
-          Ajoutez ce que vous souhaitez revoir : un titre, une catégorie, une date de
-          départ. Revoir se charge de planifier les révisions.
-        </p>
-        <Link to="/nouveau" className="button">
-          Ajouter un élément
-        </Link>
-      </EmptyState>
-    )
+    return <PremierUsage />
   }
 
-  const remainingToday = view.today.filter((entry) => !entry.review.done)
+  const plafond = large ? ITEMS_HERO_LARGE : ITEMS_HERO_ETROIT
+  const visibles = vue.dujour.slice(0, plafond)
+  const reste = vue.dujour.length - visibles.length
+  const sansRetard = vue.retard.length === 0
 
   return (
-    <div className="stack">
-      <section className="section">
-        <h1 className="page-title">Aujourd’hui</h1>
-        <p className="page-subtitle">{formatLong(today)}</p>
-      </section>
+    <>
+      <div className="page__entete">
+        <h1 className="page__titre">Aujourd'hui</h1>
+        <p className="page__intro">{formatLong(aujourdhui)}</p>
+      </div>
 
-      {view.overdue.length > 0 && (
-        <section className="card card--warn section">
-          <h2 className="section__title">
-            En retard <span className="count">{view.overdue.length}</span>
-          </h2>
-          <ul className="review-list">
-            {view.overdue.map((entry) => (
-              <ReviewRow
-                key={`${entry.item.id}-${entry.review.offset}`}
-                entry={entry}
-                today={today}
-                onToggle={toggle}
-              />
-            ))}
-          </ul>
+      <div className={sansRetard ? 'bento bento--sans-retard' : 'bento'}>
+        {/* L'unique cellule --accent pleine de l'écran (section 3). */}
+        <Cellule zone="aujourdhui" accent>
+          <output className="hero__chiffre">{vue.dujour.length}</output>
+          <p className="cellule__label">
+            {vue.dujour.length > 1 ? 'révisions aujourd’hui' : 'révision aujourd’hui'}
+          </p>
+
+          {vue.dujour.length === 0 ? (
+            <p className="hero__vide">
+              Rien à revoir aujourd'hui.
+              {vue.prochainJour && (
+                <>
+                  {' '}
+                  Prochaine révision&nbsp;: {formatShort(vue.prochainJour.date)},{' '}
+                  {vue.prochainJour.count} élément
+                  {vue.prochainJour.count > 1 ? 's' : ''}.
+                </>
+              )}
+            </p>
+          ) : (
+            <>
+              <ul className="hero__liste">
+                {visibles.map((entree) => (
+                  <ItemRevision
+                    key={`${entree.item.id}-${entree.review.offset}`}
+                    entry={entree}
+                    aujourdhui={aujourdhui}
+                    onValider={validerEntree}
+                    onDevalider={devaliderEntree}
+                    masquerDate
+                    frise={false}
+                  />
+                ))}
+              </ul>
+              {reste > 0 && (
+                <p className="hero__pied">
+                  <LienBouton vers="/revisions/aujourdhui" variante="texte">
+                    Tout voir ({vue.dujour.length})
+                  </LienBouton>
+                </p>
+              )}
+            </>
+          )}
+        </Cellule>
+
+        {/* Disparaît du DOM à zéro : la grille se recompose (section 7.2). */}
+        {!sansRetard && (
+          <Cellule zone="retard" vers="/revisions/retard" label="en retard">
+            <span className="retard__valeur">
+              <span className="retard__point" aria-hidden="true" />
+              <output className="cellule__chiffre">{vue.retard.length}</output>
+            </span>
+          </Cellule>
+        )}
+
+        <Cellule zone="restantes" label="révisions restantes">
+          <div className="restantes">
+            <AnneauProgression
+              part={vue.stats.progress / 100}
+              label={`Progression : ${vue.stats.progress} %`}
+            />
+            <output className="cellule__chiffre">{vue.stats.remainingReviews}</output>
+          </div>
+        </Cellule>
+
+        <Cellule zone="charge" label="charge sur 14 jours">
+          <BarresCharge charge={vue.charge} aujourdhui={aujourdhui} />
+        </Cellule>
+
+        <Cellule zone="prochaines" label="prochaines révisions">
+          {vue.prochaines.length === 0 ? (
+            <p className="discret discret--petit">Aucune révision planifiée</p>
+          ) : (
+            <div className="prochaines">
+              {vue.prochaines.map((entree) => (
+                <Link
+                  key={`${entree.item.id}-${entree.review.offset}`}
+                  to={`/element/${entree.item.id}`}
+                  className="prochaines__ligne"
+                >
+                  <span className="prochaines__titre">{entree.item.title}</span>
+                  <time className="prochaines__date" dateTime={entree.review.date}>
+                    {formatRelative(entree.review.date, aujourdhui)}
+                  </time>
+                </Link>
+              ))}
+              <p className="hero__pied">
+                <LienBouton vers="/revisions/prochaines" variante="texte">
+                  Tout voir
+                </LienBouton>
+              </p>
+            </div>
+          )}
+        </Cellule>
+
+        {/*
+          ≥ 768px uniquement (section 7.2). La cellule n'est pas seulement
+          masquée : « calendrier » n'existe pas dans les zones de la grille
+          sous 768px, et une cellule qui vise une zone inconnue fait créer à
+          la grille des colonnes implicites qui écrasent tout le bento.
+        */}
+        {tablette && (
+          <Cellule zone="calendrier" vers="/calendrier" label="ce mois-ci">
+            <MiniMois items={items} aujourdhui={aujourdhui} />
+          </Cellule>
+        )}
+      </div>
+
+      {/*
+        Sous le bento, jamais dedans : le tableau de bord reste une réponse,
+        et cette liste-ci est une consultation. Chaque matière se replie.
+      */}
+      {vue.matieres.length > 0 && (
+        <section className="pile pile--serree">
+          <h2 className="section__titre">Par matière</h2>
+          <GroupesMatiere
+            matieres={vue.matieres}
+            teintes={teintes}
+            aujourdhui={aujourdhui}
+          />
         </section>
       )}
+    </>
+  )
+}
 
-      <section className="card section">
-        <h2 className="section__title">
-          À revoir aujourd’hui <span className="count">{remainingToday.length}</span>
-        </h2>
-        {view.today.length === 0 ? (
-          <p className="muted">Rien de prévu aujourd’hui.</p>
-        ) : (
-          <ul className="review-list">
-            {view.today.map((entry) => (
-              <ReviewRow
-                key={`${entry.item.id}-${entry.review.offset}`}
-                entry={entry}
-                today={today}
-                onToggle={toggle}
-                hideDate
-              />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="card section">
-        <h2 className="section__title">Prochaines révisions</h2>
-        {view.upcoming.length === 0 ? (
-          <p className="muted">Aucune révision à venir.</p>
-        ) : (
-          <ul className="review-list">
-            {view.upcoming.map((entry) => (
-              <ReviewRow
-                key={`${entry.item.id}-${entry.review.offset}`}
-                entry={entry}
-                today={today}
-                onToggle={toggle}
-              />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="card section">
-        <h2 className="section__title">Charge des 7 prochains jours</h2>
-        <LoadBars load={view.load} />
-      </section>
-
-      <section className="card section">
-        <h2 className="section__title">Statistiques</h2>
-        <StatGrid
-          stats={[
-            { label: 'Éléments actifs', value: view.stats.activeItems },
-            { label: 'Révisions effectuées', value: view.stats.doneReviews },
-            { label: 'Révisions restantes', value: view.stats.remainingReviews },
-            { label: 'Aujourd’hui', value: view.stats.todayReviews },
-            { label: 'En retard', value: view.stats.overdueReviews, tone: 'warn' },
-            { label: 'Progression', value: view.stats.progress, suffix: ' %' },
-          ]}
-        />
-      </section>
-
-      <section className="section">
-        <h2 className="section__title">Tous les éléments</h2>
-        <ul className="item-list">
-          {items
-            .filter((item) => !item.archived)
-            .map((item) => (
-              <li key={item.id}>
-                <Link to={`/element/${item.id}`} className="item-link">
-                  <span className="item-link__title">{item.title}</span>
-                  <span className="item-link__meta">
-                    {item.category && <span className="tag">{item.category}</span>}
-                    <span>
-                      {item.reviews.filter((review) => review.done).length}/
-                      {item.reviews.length}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-        </ul>
-      </section>
+function PremierUsage() {
+  return (
+    <div className="etat-vide">
+      <h1 className="page__titre">Rien à revoir pour l'instant.</h1>
+      <p className="discret">
+        Créez un élément : un titre, une catégorie, une date de départ et un
+        programme. Revoir calcule les dates de révision et ne stocke jamais ce que
+        vous apprenez.
+      </p>
+      <LienBouton vers="/nouveau" variante="primaire">
+        Créer un élément
+      </LienBouton>
     </div>
   )
 }

@@ -1,12 +1,24 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useItems } from '../state/useItems'
-import { DEFAULT_SCHEDULE, SCHEDULES, getSchedule, previewDates } from '../lib/schedules'
+import { useTitrePage } from '../state/useTitrePage'
+import {
+  DEFAULT_SCHEDULE,
+  SCHEDULES,
+  buildReviews,
+  listerDecalages,
+  previewDates,
+} from '../lib/schedules'
 import { formatShort, todayKey } from '../lib/dates'
-import { usedCategories } from '../lib/stats'
+import { chargeParDate, usedCategories } from '../lib/stats'
 import type { ScheduleId } from '../types'
+import { teinteDe } from '../lib/categories'
+import { Champ, GroupeChamp } from '../components/Champ'
+import { Bouton } from '../components/Bouton'
+import { Frise } from '../components/Frise'
+import { SelecteurTeinte } from '../components/SelecteurTeinte'
 
-const SUGGESTED_CATEGORIES = [
+const CATEGORIES_SUGGEREES = [
   'Études',
   'Travail',
   'Développement',
@@ -19,200 +31,223 @@ const SUGGESTED_CATEGORIES = [
 export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, loading, createItem, editItem } = useItems()
-  const listId = useId()
+  const { items, teintes, definirTeinte, loading, createItem, editItem } = useItems()
+  const listeCategories = useId()
 
-  const existing = mode === 'edit' ? items.find((item) => item.id === id) : undefined
+  useTitrePage(mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément')
 
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
-  const [startDate, setStartDate] = useState(todayKey)
-  const [schedule, setSchedule] = useState<ScheduleId>(DEFAULT_SCHEDULE)
-  const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const existant = mode === 'edit' ? items.find((item) => item.id === id) : undefined
+
+  const [titre, setTitre] = useState('')
+  const [categorie, setCategorie] = useState('')
+  const [depart, setDepart] = useState(todayKey)
+  const [programme, setProgramme] = useState<ScheduleId>(DEFAULT_SCHEDULE)
+  const [soumis, setSoumis] = useState(false)
+  const [enregistrement, setEnregistrement] = useState(false)
 
   // Les éléments arrivent de façon asynchrone : on remplit le formulaire dès
   // que l'élément visé est disponible.
   useEffect(() => {
-    if (!existing) return
-    setTitle(existing.title)
-    setCategory(existing.category)
-    setStartDate(existing.startDate)
-    setSchedule(existing.schedule)
-  }, [existing])
+    if (!existant) return
+    setTitre(existant.title)
+    setCategorie(existant.category)
+    setDepart(existant.startDate)
+    setProgramme(existant.schedule)
+  }, [existant])
 
-  const preview = useMemo(() => {
-    // Le champ date peut être vide pendant la saisie : pas de prévisualisation
-    // tant qu'il n'y a rien à calculer.
-    if (startDate === '') return []
-    const dates = previewDates(startDate, schedule)
-    return getSchedule(schedule).offsets.map((offset, index) => ({
-      offset,
-      date: dates[index],
+  /**
+   * Règle métier n°4 : l'aperçu montre les dates générées **et** la charge
+   * déjà planifiée sur chacune. C'est ce qui distingue l'app d'un simple
+   * générateur de dates.
+   */
+  const apercu = useMemo(() => {
+    if (depart === '') return []
+    const dates = previewDates(depart, programme)
+    const charge = chargeParDate(items, dates, existant?.id)
+    return dates.map((date, index) => ({
+      offset: SCHEDULES.find((s) => s.id === programme)!.offsets[index],
+      date,
+      charge: charge.get(date) ?? 0,
     }))
-  }, [startDate, schedule])
+  }, [depart, programme, items, existant?.id])
 
-  const categories = useMemo(() => {
-    const used = usedCategories(items)
-    return [...new Set([...used, ...SUGGESTED_CATEGORIES])]
-  }, [items])
+  const categories = useMemo(
+    () => [...new Set([...usedCategories(items), ...CATEGORIES_SUGGEREES])],
+    [items],
+  )
 
-  const titleError = title.trim() === '' ? 'Le titre est obligatoire.' : null
-  const dateError = startDate === '' ? 'La date de départ est obligatoire.' : null
+  const erreurTitre = titre.trim() === '' ? 'Le titre est obligatoire.' : null
+  const erreurDate = depart === '' ? 'La date de départ est obligatoire.' : null
 
-  if (mode === 'edit' && !existing) {
+  if (mode === 'edit' && !existant) {
     return loading ? (
-      <p className="loading">Chargement…</p>
+      <p className="discret">Chargement…</p>
     ) : (
-      <p className="muted">Cet élément n’existe pas ou plus.</p>
+      <p className="discret">Cet élément n'existe pas ou plus.</p>
     )
   }
 
-  const submit = async (event: FormEvent) => {
+  const soumettre = async (event: FormEvent) => {
     event.preventDefault()
-    setSubmitted(true)
-    if (titleError || dateError || saving) return
+    setSoumis(true)
+    if (erreurTitre || erreurDate || enregistrement) return
 
-    setSaving(true)
-    const draft = { title, category, startDate, schedule }
+    setEnregistrement(true)
+    const brouillon = { title: titre, category: categorie, startDate: depart, schedule: programme }
     try {
-      if (mode === 'edit' && existing) {
-        await editItem(existing.id, draft)
-        navigate(`/element/${existing.id}`, { replace: true })
+      if (mode === 'edit' && existant) {
+        await editItem(existant.id, brouillon)
+        navigate(`/element/${existant.id}`, { replace: true })
       } else {
-        const created = await createItem(draft)
-        navigate(`/element/${created.id}`, { replace: true })
+        const cree = await createItem(brouillon)
+        navigate(`/element/${cree.id}`, { replace: true })
       }
     } finally {
-      setSaving(false)
+      setEnregistrement(false)
     }
   }
 
   return (
-    <div className="stack">
-      <h1 className="page-title">
-        {mode === 'edit' ? 'Modifier l’élément' : 'Nouvel élément'}
+    <>
+      <h1 className="page__titre">
+        {mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément'}
       </h1>
 
-      <form className="card section form" onSubmit={submit} noValidate>
-        <div className="field">
-          <label className="field__label" htmlFor="title">
-            Titre
-          </label>
-          <input
-            id="title"
-            className="input"
-            type="text"
-            value={title}
-            maxLength={120}
-            autoComplete="off"
-            placeholder="Hooks React, Chapitre 5, Vocabulaire espagnol…"
-            onChange={(event) => setTitle(event.target.value)}
-            aria-invalid={submitted && titleError !== null}
-            aria-describedby={submitted && titleError ? 'title-error' : undefined}
-          />
-          {submitted && titleError && (
-            <p className="field__error" id="title-error">
-              {titleError}
-            </p>
-          )}
-        </div>
+      <form className="formulaire" onSubmit={soumettre} noValidate>
+        <Champ
+          label="Titre"
+          type="text"
+          value={titre}
+          maxLength={120}
+          autoComplete="off"
+          onChange={(event) => setTitre(event.target.value)}
+          erreur={soumis ? erreurTitre : null}
+        />
 
-        <div className="field">
-          <label className="field__label" htmlFor="category">
-            Catégorie
-          </label>
-          <input
-            id="category"
-            className="input"
-            type="text"
-            value={category}
-            maxLength={60}
-            list={listId}
-            autoComplete="off"
-            placeholder="Études, Travail, Langues…"
-            onChange={(event) => setCategory(event.target.value)}
-          />
-          <datalist id={listId}>
-            {categories.map((name) => (
-              <option key={name} value={name} />
-            ))}
-          </datalist>
-        </div>
+        <Champ
+          label="Catégorie"
+          type="text"
+          value={categorie}
+          maxLength={60}
+          list={listeCategories}
+          autoComplete="off"
+          onChange={(event) => setCategorie(event.target.value)}
+          aide="Facultatif."
+        />
+        <datalist id={listeCategories}>
+          {categories.map((nom) => (
+            <option key={nom} value={nom} />
+          ))}
+        </datalist>
 
-        <div className="field">
-          <label className="field__label" htmlFor="startDate">
-            Date de départ
-          </label>
-          <input
-            id="startDate"
-            className="input"
-            type="date"
-            value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
-            aria-invalid={submitted && dateError !== null}
+        {/*
+          La couleur appartient à la matière, pas à l'élément : la choisir ici
+          la change partout où cette matière apparaît.
+        */}
+        {categorie.trim() !== '' && (
+          <SelecteurTeinte
+            groupe="teinte-matiere"
+            legende={`Couleur de « ${categorie.trim()} »`}
+            valeur={teinteDe(categorie, teintes)}
+            onChange={(teinte) => definirTeinte(categorie, teinte)}
           />
-          {submitted && dateError && <p className="field__error">{dateError}</p>}
-        </div>
+        )}
 
-        <fieldset className="field field--fieldset">
-          <legend className="field__label">Configuration</legend>
-          <div className="choices">
+        <Champ
+          label="Date de départ"
+          type="date"
+          value={depart}
+          onChange={(event) => setDepart(event.target.value)}
+          erreur={soumis ? erreurDate : null}
+        />
+
+        <GroupeChamp legende="Programme">
+          <div className="programmes">
             {SCHEDULES.map((option) => (
               <label
                 key={option.id}
-                className={`choice${schedule === option.id ? ' choice--active' : ''}`}
+                className={
+                  programme === option.id ? 'programme programme--actif' : 'programme'
+                }
               >
                 <input
+                  className="programme__radio"
                   type="radio"
-                  name="schedule"
+                  name="programme"
                   value={option.id}
-                  checked={schedule === option.id}
-                  onChange={() => setSchedule(option.id)}
+                  checked={programme === option.id}
+                  onChange={() => setProgramme(option.id)}
                 />
-                <span className="choice__label">{option.label}</span>
-                <span className="choice__description">{option.description}</span>
-                <span className="choice__offsets">
-                  {option.offsets.map((offset) => `J+${offset}`).join(' · ')}
+                <span className="programme__entete">
+                  <span className="programme__nom">{option.label}</span>
+                  <span className="programme__compte">
+                    {option.offsets.length} révisions · {option.description}
+                  </span>
+                </span>
+                {/* On choisit un rythme, pas un mot (section 8.7). */}
+                <Frise
+                  origine={depart || todayKey()}
+                  reviews={buildReviews(depart || todayKey(), option.id)}
+                  aujourdhui={depart || todayKey()}
+                  variante="mini"
+                  intitule={`Programme ${option.label}`}
+                />
+                {/*
+                  Les jours écrits sous la frise : sous 480px elle n'a pas de
+                  libellés, et c'est alors la seule façon de lire le rythme.
+                */}
+                <span className="programme__jours">
+                  {listerDecalages(option.offsets)}
                 </span>
               </label>
             ))}
           </div>
-        </fieldset>
+        </GroupeChamp>
 
-        <div className="preview">
-          <h2 className="preview__title">
-            Prochaines révisions <span className="count">{preview.length}</span>
-          </h2>
-          <ul className="preview__list">
-            {preview.map((entry) => (
-              <li key={entry.offset} className="preview__item">
-                <span className="preview__offset">J+{entry.offset}</span>
-                <span>{formatShort(entry.date)}</span>
-              </li>
-            ))}
-          </ul>
-          {mode === 'edit' && (
-            <p className="muted preview__note">
-              Les révisions déjà effectuées restent cochées si leur décalage existe
-              toujours dans la configuration choisie.
-            </p>
-          )}
-        </div>
+        {apercu.length > 0 && (
+          <section className="apercu">
+            <h2 className="section__titre">Dates générées</h2>
 
-        <div className="form__actions">
-          <button
-            type="button"
-            className="button button--ghost"
-            onClick={() => navigate(-1)}
-          >
+            <Frise
+              origine={depart}
+              reviews={buildReviews(depart, programme)}
+              aujourdhui={depart}
+              libelles="date"
+              intitule="Aperçu du programme"
+            />
+
+            <ul className="apercu__dates">
+              {apercu.map((ligne) => (
+                <li key={ligne.offset} className="apercu__ligne">
+                  <span className="apercu__decalage">J+{ligne.offset}</span>
+                  <span className="apercu__date">{formatShort(ligne.date)}</span>
+                  <span className="apercu__charge">
+                    {ligne.charge === 0
+                      ? 'rien de prévu'
+                      : `déjà ${ligne.charge} révision${ligne.charge > 1 ? 's' : ''}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {mode === 'edit' && (
+              <p className="discret discret--petit">
+                Les révisions déjà effectuées restent cochées si leur décalage existe
+                toujours dans le programme choisi.
+              </p>
+            )}
+          </section>
+        )}
+
+        <div className="formulaire__actions">
+          <Bouton variante="discret" onClick={() => navigate(-1)}>
             Annuler
-          </button>
-          <button type="submit" className="button" disabled={saving}>
-            {mode === 'edit' ? 'Enregistrer' : 'Ajouter'}
-          </button>
+          </Bouton>
+          <Bouton variante="primaire" type="submit" disabled={enregistrement}>
+            {mode === 'edit' ? "Modifier l'élément" : "Créer l'élément"}
+          </Bouton>
         </div>
       </form>
-    </div>
+    </>
   )
 }

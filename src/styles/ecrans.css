@@ -1,0 +1,939 @@
+/*
+ * Écrans : grille bento du tableau de bord, formulaire, fiche d'élément,
+ * calendrier, réglages.
+ *
+ * Le bento est réservé au tableau de bord (section 7.2). Les autres écrans
+ * sont en colonne simple.
+ */
+
+/* ============================================================ bento ===== */
+
+.bento {
+  display: grid;
+  min-width: 0;
+  gap: var(--e-3);
+  /* Obligatoire : le français est plus long que l'anglais et casserait une
+     grille à hauteur fixe (section 7.2). */
+  grid-auto-rows: minmax(96px, auto);
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas:
+    'aujourdhui aujourdhui'
+    'aujourdhui aujourdhui'
+    'retard     restantes'
+    'charge     charge'
+    'prochaines prochaines';
+}
+
+/* La cellule « retard » disparaît du DOM à zéro : la grille se recompose. */
+.bento--sans-retard {
+  grid-template-areas:
+    'aujourdhui aujourdhui'
+    'aujourdhui aujourdhui'
+    'restantes  restantes'
+    'charge     charge'
+    'prochaines prochaines';
+}
+
+@media (min-width: 768px) {
+  .bento {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+      'aujourdhui aujourdhui retard     restantes'
+      'aujourdhui aujourdhui charge     charge'
+      'prochaines prochaines calendrier calendrier'
+      'prochaines prochaines calendrier calendrier';
+  }
+
+  .bento--sans-retard {
+    grid-template-areas:
+      'aujourdhui aujourdhui restantes  restantes'
+      'aujourdhui aujourdhui charge     charge'
+      'prochaines prochaines calendrier calendrier'
+      'prochaines prochaines calendrier calendrier';
+  }
+}
+
+/* ---------------------------------------------------- cellule héros ---- */
+
+.hero__chiffre {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-display);
+  font-weight: 600;
+  line-height: var(--l-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__liste {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+  padding-top: var(--e-2);
+}
+
+.hero__pied {
+  display: flex;
+  min-width: 0;
+  justify-content: flex-end;
+  padding-top: var(--e-1);
+}
+
+/* Sur --accent plein, --surface exige 15px minimum (section 3). */
+.hero__vide {
+  min-width: 0;
+  color: var(--surface);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.cellule--accent .item-revision__titre,
+.cellule--accent .item-revision__date {
+  color: var(--surface);
+}
+
+.cellule--accent .item-revision__meta {
+  color: var(--surface);
+}
+
+/* Tout le jeu de couleurs de la case bascule d'un bloc (voir composants.css). */
+.cellule--accent .item-revision {
+  --cercle-trait: var(--surface);
+  --cercle-survol: var(--surface);
+  --cercle-fait: var(--surface);
+  --coche-couleur: var(--accent);
+}
+
+/* Paysage mobile : on agrandit, jamais l'inverse (section 7.4). */
+@media (min-height: 560px) {
+  .hero__liste {
+    gap: var(--e-2);
+  }
+}
+
+/* -------------------------------------------------- cellule retard ----- */
+
+.retard__valeur {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--retard-texte);
+}
+
+/* --retard n'est jamais utilisé en texte : ici c'est une pastille. */
+.retard__point {
+  width: var(--e-2);
+  height: var(--e-2);
+  flex-shrink: 0;
+  border-radius: var(--r-pilule);
+  background-color: var(--retard);
+}
+
+/* ------------------------------------------------ anneau restantes ----- */
+
+.restantes {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+/*
+ * Le seul `conic-gradient` du projet, prescrit par la section 7.2. Les arrêts
+ * sont francs : c'est un arc, pas un dégradé.
+ */
+.anneau {
+  position: relative;
+  width: var(--e-7);
+  height: var(--e-7);
+  flex-shrink: 0;
+  border-radius: var(--r-pilule);
+  background: conic-gradient(
+    var(--accent) calc(var(--part) * 1turn),
+    var(--trait) 0
+  );
+}
+
+.anneau::after {
+  content: '';
+  position: absolute;
+  inset: var(--e-2);
+  border-radius: var(--r-pilule);
+  background-color: var(--surface);
+}
+
+/* ------------------------------------------------- barres de charge ---- */
+
+.charge {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  gap: var(--charge-gap);
+  height: var(--e-7);
+}
+
+.charge__jour {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--e-1);
+}
+
+.charge__barre {
+  width: 100%;
+  min-height: var(--charge-plancher);
+  border-radius: var(--charge-rayon);
+  background-color: var(--accent);
+}
+
+.charge__point {
+  width: var(--charge-plancher);
+  height: var(--charge-plancher);
+  border-radius: var(--r-pilule);
+  background-color: var(--encre);
+  margin-inline: auto;
+}
+
+/* Réserve la place du point sous chaque barre pour aligner les bases. */
+.charge__place {
+  height: var(--charge-plancher);
+}
+
+/* ------------------------------------------------ cellule prochaines --- */
+
+.prochaines {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+/* Chaque ligne est un lien : elle doit faire 44px de haut comme les autres. */
+.prochaines__ligne {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.prochaines__titre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prochaines__date {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------- mini-calendrier ----- */
+
+/* Sa cellule n'est montée qu'au-delà de 768px (section 7.2). */
+.mini-mois {
+  display: grid;
+  min-width: 0;
+  gap: var(--e-1);
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.mini-mois__jour {
+  display: flex;
+  min-width: 0;
+  aspect-ratio: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-radius: var(--r-pilule);
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-mois__jour--hors {
+  opacity: 0.4;
+}
+
+.mini-mois__jour--aujourdhui {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.mini-mois__points {
+  display: flex;
+  gap: 1px;
+  height: var(--charge-plancher);
+}
+
+.mini-mois__point {
+  width: var(--charge-plancher);
+  height: var(--charge-plancher);
+  border-radius: var(--r-pilule);
+  background-color: var(--accent);
+}
+
+/* ================================================ listes de révisions == */
+
+.liste-revisions {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.groupe-jour {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.groupe-jour__titre {
+  min-width: 0;
+  color: var(--encre-2);
+  font-family: var(--police-ui);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ======================================================== formulaire === */
+
+.formulaire {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.formulaire__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.formulaire__actions .btn {
+  flex: 1 1 auto;
+}
+
+/* ---------------------------------------------- sélecteur de programme - */
+
+/*
+ * Trois cartes, chacune montrant sa frise : on choisit un rythme, pas un mot
+ * (section 8.7).
+ */
+.programmes {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.programme {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 1.5px solid var(--trait);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-3);
+  cursor: pointer;
+  transition: border-color var(--duree-court) var(--courbe),
+    background-color var(--duree-court) var(--courbe);
+}
+
+.programme--actif {
+  border-color: var(--accent);
+  background-color: var(--accent-doux);
+}
+
+.programme__entete {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.programme__nom {
+  min-width: 0;
+  font-size: var(--t-md);
+  font-weight: 500;
+  line-height: var(--l-md);
+}
+
+.programme__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le rythme en clair. Il enroule : « Ultime » fait dix décalages. */
+.programme__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pas de radio natif visible (section 8.7), mais il reste focusable. */
+.programme__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.programme:has(.programme__radio:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------- aperçu ----- */
+
+.apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+.apercu__dates {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.apercu__ligne {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: var(--e-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.apercu__decalage {
+  width: var(--e-6);
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+}
+
+.apercu__date {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* La charge existante : ce qui distingue l'aperçu d'un générateur de dates. */
+.apercu__charge {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+}
+
+/* ============================================================ fiche ==== */
+
+.fiche__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.fiche__badges {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.fiche__bloc {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+@media (min-width: 768px) {
+  .fiche__bloc {
+    padding: var(--e-5);
+  }
+}
+
+.fiche__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.echeance {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: var(--e-2);
+}
+
+.echeance__corps {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e-2);
+  padding-block: var(--e-2);
+}
+
+.echeance__titre {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.echeance--faite .echeance__titre {
+  color: var(--encre-2);
+  text-decoration: line-through;
+}
+
+.echeance__etat {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+}
+
+.echeance__etat--retard {
+  color: var(--retard-texte);
+}
+
+.echeance__etat--fait {
+  color: var(--fait-texte);
+}
+
+/* ======================================================= calendrier ==== */
+
+.calendrier {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  /*
+   * Padding horizontal nul à 320px : 7 colonnes de 44px font 308px, la marge
+   * de page et le padding de carte ne tiennent pas en plus (section 7.4).
+   */
+  padding: var(--e-4) 0;
+}
+
+@media (min-width: 380px) {
+  .calendrier {
+    padding: var(--e-4);
+  }
+}
+
+.calendrier__entete {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2);
+  padding-inline: var(--e-2);
+}
+
+.calendrier__mois {
+  min-width: 0;
+  font-size: var(--t-md);
+  line-height: var(--l-md);
+  text-align: center;
+}
+
+.calendrier__fleche {
+  display: flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-carte);
+  color: var(--encre-2);
+}
+
+.calendrier__fleche:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+.calendrier__jours,
+.calendrier__grille {
+  display: grid;
+  min-width: 0;
+  gap: var(--e-1);
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendrier__jours {
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  text-align: center;
+}
+
+.calendrier__case {
+  display: flex;
+  min-width: 0;
+  aspect-ratio: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-1);
+  border: 1px solid transparent;
+  border-radius: var(--r-pilule);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 380px) {
+  .calendrier__case {
+    min-height: var(--cible);
+  }
+}
+
+.calendrier__case--hors {
+  color: var(--encre-2);
+  opacity: 0.5;
+}
+
+.calendrier__case--aujourdhui {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.calendrier__case--choisi {
+  border-color: transparent;
+  background-color: var(--accent);
+  color: var(--surface);
+  font-weight: 500;
+}
+
+.calendrier__points {
+  display: flex;
+  height: var(--charge-plancher);
+  gap: 1px;
+}
+
+.calendrier__point {
+  width: var(--charge-plancher);
+  height: var(--charge-plancher);
+  border-radius: var(--r-pilule);
+  background-color: var(--accent);
+}
+
+.calendrier__case--choisi .calendrier__point {
+  background-color: var(--surface);
+}
+
+.calendrier__point--fait {
+  background-color: var(--fait);
+}
+
+/* ------------------------------------------------ panneau du jour ----- */
+
+/* Animation autorisée n°2 (section 6). */
+.panneau {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  max-height: 70dvh;
+  min-width: 0;
+  max-width: var(--largeur-page);
+  flex-direction: column;
+  gap: var(--e-3);
+  overflow-y: auto;
+  margin-inline: auto;
+  border-top: var(--bordure);
+  border-radius: var(--r-carte) var(--r-carte) 0 0;
+  background-color: var(--surface);
+  padding: var(--e-4) var(--marge-page) calc(var(--e-4) + var(--bas-securise));
+  animation: panneau-entree var(--duree-moyen) var(--courbe);
+}
+
+@keyframes panneau-entree {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.panneau__entete {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+}
+
+.panneau__titre {
+  min-width: 0;
+  font-size: var(--t-md);
+  line-height: var(--l-md);
+}
+
+/* Un seul conteneur scrollable par écran (section 7.4). */
+body[data-panneau='ouvert'] {
+  overflow: hidden;
+}
+
+/* ========================================================= réglages ==== */
+
+.reglages__bloc {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+@media (min-width: 768px) {
+  .reglages__bloc {
+    padding: var(--e-5);
+  }
+}
+
+.reglages__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+.archive {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-block: var(--e-1);
+}
+
+.archive__corps {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  /* Sans quoi la chip de matière s'étire sur toute la largeur de la carte. */
+  align-items: flex-start;
+  gap: var(--e-1);
+}
+
+/* C'est le titre qui cède la place, pas le bouton. */
+.archive .btn {
+  flex-shrink: 0;
+}
+
+.archive__titre {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--t-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ======================================================= état vide ===== */
+
+.etat-vide {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  align-items: flex-start;
+}
+
+/* ================================ éléments regroupés par matière ======== */
+
+.matieres {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.matiere {
+  min-width: 0;
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+}
+
+/*
+ * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
+ * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
+ */
+.matiere__entete {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  padding: var(--e-2) var(--e-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.matiere__entete::-webkit-details-marker {
+  display: none;
+}
+
+.matiere__entete:hover {
+  background-color: var(--surface-survol);
+  border-radius: var(--r-carte);
+}
+
+/*
+ * Le chevron bascule sans transition : la section 6 n'autorise que trois
+ * animations, et celle-ci n'en fait pas partie.
+ */
+.matiere__chevron {
+  flex-shrink: 0;
+  color: var(--encre-2);
+}
+
+/* Replié : le chevron pointe à droite. Déplié : vers le bas. */
+.matiere[open] .matiere__chevron {
+  transform: rotate(90deg);
+}
+
+.matiere__nom {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: var(--t-base);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matiere__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.matiere__elements {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .matiere__elements {
+    display: inline;
+  }
+}
+
+.matiere__liste {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+  border-top: var(--bordure);
+  padding: var(--e-2) var(--e-4) var(--e-3);
+}
+
+.matiere__element {
+  min-width: 0;
+}
+
+.matiere__lien {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-1) var(--e-3);
+  border-radius: var(--r-carte);
+  padding-block: var(--e-1);
+}
+
+.matiere__titre {
+  min-width: 0;
+  flex: 1 1 100%;
+  overflow: hidden;
+  font-size: var(--t-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matiere__etat {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.matiere__lien .frise {
+  flex: 1 1 var(--e-7);
+  min-width: 0;
+}
+
+/* ------------------------------------------- matières dans les réglages - */
+
+.matieres-reglage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.matiere-reglage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.matiere-reglage__nom {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  font-size: var(--t-base);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

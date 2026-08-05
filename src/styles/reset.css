@@ -1,9 +1,15 @@
+/*
+ * Normalisation minimale. Tout ce qui est chiffré ici vient de tokens.css :
+ * ce fichier ne doit contenir aucune valeur en dur hors 0, 1 et 100 %.
+ */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* Section 7.4 : aucun composant ne porte de marge externe. On part de zéro. */
 * {
   margin: 0;
 }
@@ -14,8 +20,14 @@ html {
 
 body {
   min-height: 100dvh;
-  line-height: 1.5;
+  background-color: var(--papier);
+  color: var(--encre);
+  font-family: var(--police-ui);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
   -webkit-font-smoothing: antialiased;
+  /* Un seul conteneur scrollable par écran (section 7.4) : le document. */
+  overflow-x: hidden;
 }
 
 img,
@@ -33,23 +45,48 @@ select {
   color: inherit;
 }
 
+/*
+ * Section 7.4 : sous 16px, iOS zoome au focus. --t-champ est le plancher,
+ * il n'est jamais redéfini plus bas.
+ */
+input,
+textarea,
+select {
+  font-size: var(--t-champ);
+  line-height: var(--l-champ);
+}
+
 button {
   background: none;
   border: none;
+  padding: 0;
+  color: inherit;
   cursor: pointer;
 }
 
 h1,
 h2,
-h3,
-h4 {
+h3 {
+  font-family: var(--police-titre);
+  font-size: inherit;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: var(--l-lg);
   text-wrap: balance;
 }
 
 p {
   text-wrap: pretty;
+}
+
+/* Un mot long ne doit jamais déborder de sa carte (section 7.4). */
+p,
+h1,
+h2,
+h3,
+li,
+dd,
+dt {
+  overflow-wrap: anywhere;
 }
 
 ul,
@@ -63,8 +100,30 @@ a {
   text-decoration: none;
 }
 
+/* Chiffres tabulaires : non négociable (section 4). */
+time,
+output {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section 8.4 : jamais `outline: none` sans remplacement. */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--encre);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background-color: var(--accent-doux);
+  color: var(--encre);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

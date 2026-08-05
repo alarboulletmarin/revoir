@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Bouton } from './Bouton'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -13,6 +14,10 @@ interface ConfirmDialogProps {
 /**
  * S'appuie sur <dialog> natif : gestion du focus, de la touche Échap et de
  * l'arrière-plan inerte sans code supplémentaire.
+ *
+ * Réservé à la suppression et au remplacement des données par un import —
+ * les deux seules actions destructrices. Le reste s'annule, ne se confirme
+ * pas (règle métier n°3).
  */
 export function ConfirmDialog({
   open,
@@ -33,20 +38,18 @@ export function ConfirmDialog({
   }, [open])
 
   return (
-    <dialog ref={ref} className="dialog" onCancel={onCancel} onClose={onCancel}>
-      <h2 className="dialog__title">{title}</h2>
-      <p className="dialog__message">{message}</p>
-      <div className="dialog__actions">
-        <button type="button" className="button button--ghost" onClick={onCancel}>
-          Annuler
-        </button>
-        <button
-          type="button"
-          className={`button${danger ? ' button--danger' : ''}`}
-          onClick={onConfirm}
-        >
-          {confirmLabel}
-        </button>
+    <dialog ref={ref} className="dialogue" onCancel={onCancel} onClose={onCancel}>
+      <div className="dialogue__corps">
+        <h2 className="dialogue__titre">{title}</h2>
+        <p className="dialogue__message">{message}</p>
+        <div className="dialogue__actions">
+          <Bouton variante="discret" onClick={onCancel}>
+            Annuler
+          </Bouton>
+          <Bouton variante={danger ? 'danger' : 'primaire'} onClick={onConfirm}>
+            {confirmLabel}
+          </Bouton>
+        </div>
       </div>
     </dialog>
   )

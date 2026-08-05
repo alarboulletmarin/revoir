@@ -4,28 +4,34 @@ import { addDaysToKey, type DateKey } from './dates'
 export interface Schedule {
   id: ScheduleId
   label: string
+  /** Portée du programme : « sur un mois ». Complète le nombre de révisions. */
   description: string
   /** Les décalages en jours par rapport à la date de départ. */
   offsets: number[]
+}
+
+/** « J+1 · J+3 · J+7 · J+14 · J+30 » — le rythme écrit en toutes lettres. */
+export function listerDecalages(offsets: number[]): string {
+  return offsets.map((offset) => `J+${offset}`).join(' · ')
 }
 
 export const SCHEDULES: Schedule[] = [
   {
     id: 'simple',
     label: 'Simple',
-    description: 'Cinq révisions étalées sur un mois.',
+    description: 'sur un mois',
     offsets: [1, 3, 7, 14, 30],
   },
   {
     id: 'pousse',
     label: 'Poussé',
-    description: 'Sept révisions étalées sur deux mois.',
+    description: 'sur deux mois',
     offsets: [1, 2, 4, 7, 14, 30, 60],
   },
   {
     id: 'ultime',
     label: 'Ultime',
-    description: 'Dix révisions étalées sur une année.',
+    description: 'sur une année',
     offsets: [1, 2, 4, 7, 14, 30, 60, 90, 180, 365],
   },
 ]

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Planifier ses revisions grace a la repetition espacee, sans stocker le contenu a apprendre.",
+  "description": "Planifier ses révisions grâce à la répétition espacée, sans stocker le contenu à apprendre.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

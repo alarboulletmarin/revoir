@@ -1,25 +1,42 @@
 import type { Item, Review, ScheduleId } from '../types'
 import { isScheduleId } from './schedules'
+import { cleCategorie, estTeinte, type Teintes } from './categories'
 
 export const BACKUP_APP = 'revoir'
-export const BACKUP_VERSION = 1
+/** v2 ajoute `teintes`. Les sauvegardes v1 restent importables telles quelles. */
+export const BACKUP_VERSION = 2
 
 export interface Backup {
   app: typeof BACKUP_APP
   version: number
-  exportédAt: string
+  exporteLe: string
   items: Item[]
+  teintes: Teintes
+}
+
+/** Ce qu'un fichier de sauvegarde restitue une fois validé. */
+export interface ContenuSauvegarde {
+  items: Item[]
+  teintes: Teintes
 }
 
 /** Erreur levée quand un fichier importé n'est pas une sauvegarde exploitable. */
 export class BackupError extends Error {}
 
-export function buildBackup(items: Item[], exportédAt = new Date().toISOString()): Backup {
-  return { app: BACKUP_APP, version: BACKUP_VERSION, exportédAt, items }
+export function buildBackup(
+  items: Item[],
+  teintes: Teintes = {},
+  exporteLe = new Date().toISOString(),
+): Backup {
+  return { app: BACKUP_APP, version: BACKUP_VERSION, exporteLe, items, teintes }
 }
 
-export function serializeBackup(items: Item[], exportédAt?: string): string {
-  return JSON.stringify(buildBackup(items, exportédAt), null, 2)
+export function serializeBackup(
+  items: Item[],
+  teintes: Teintes = {},
+  exporteLe?: string,
+): string {
+  return JSON.stringify(buildBackup(items, teintes, exporteLe), null, 2)
 }
 
 /** Nom de fichier proposé au téléchargement : « revoir-2026-03-14.json ». */
@@ -89,10 +106,26 @@ function parseItem(value: unknown, index: number): Item {
 }
 
 /**
+ * Les teintes sont un confort, pas une donnée : une valeur inconnue est
+ * ignorée plutôt que de faire échouer tout l'import. La matière retombera
+ * sur sa teinte dérivée du nom.
+ */
+function parseTeintes(value: unknown): Teintes {
+  if (!isRecord(value)) return {}
+  const teintes: Teintes = {}
+  for (const [cle, teinte] of Object.entries(value)) {
+    if (typeof cle === 'string' && cle.trim() !== '' && estTeinte(teinte)) {
+      teintes[cleCategorie(cle)] = teinte
+    }
+  }
+  return teintes
+}
+
+/**
  * Valide et normalise un fichier de sauvegarde. C'est le seul point d'entrée
  * de données extérieures à l'application : tout y est vérifié champ par champ.
  */
-export function parseBackup(raw: string): Item[] {
+export function parseBackup(raw: string): ContenuSauvegarde {
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
@@ -113,5 +146,6 @@ export function parseBackup(raw: string): Item[] {
   if (ids.size !== items.length) {
     throw new BackupError('Le fichier contient des éléments en double.')
   }
-  return items
+  // `teintes` est absent des sauvegardes v1 : parseTeintes rend alors {}.
+  return { items, teintes: parseTeintes(parsed.teintes) }
 }

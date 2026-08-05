@@ -1,12 +1,17 @@
 /**
- * Icônes dessinées à la main : quelques traits SVG suffisent ici, autant
- * éviter une dépendance supplémentaire pour six symboles.
+ * Les six icônes du projet, et pas une de plus (section 11) : plus,
+ * calendrier, coche, chevron, archive, corbeille. SVG inline, aucune
+ * librairie — pour six symboles, une dépendance ne se justifie pas.
+ *
+ * Ce qui n'est pas dans cette liste s'écrit en toutes lettres : la
+ * navigation, la fermeture d'une boîte de dialogue et les réglages sont
+ * des libellés, pas des pictogrammes.
  */
 import type { SVGProps } from 'react'
 
-type IconProps = SVGProps<SVGSVGElement>
+type IconeProps = SVGProps<SVGSVGElement>
 
-function Icon({ children, ...props }: IconProps) {
+function Icone({ children, ...props }: IconeProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -26,71 +31,62 @@ function Icon({ children, ...props }: IconProps) {
   )
 }
 
-export function IconToday(props: IconProps) {
+export function IconePlus(props: IconeProps) {
   return (
-    <Icon {...props}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 7.5V12l3 1.8" />
-    </Icon>
+    <Icone {...props}>
+      <path d="M12 5.5v13M5.5 12h13" />
+    </Icone>
   )
 }
 
-export function IconCalendar(props: IconProps) {
+export function IconeCalendrier(props: IconeProps) {
   return (
-    <Icon {...props}>
+    <Icone {...props}>
       <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
       <path d="M3.5 9.5h17M8 3.5V6.5M16 3.5V6.5" />
-    </Icon>
+    </Icone>
   )
 }
 
-export function IconSettings(props: IconProps) {
+export function IconeCoche(props: IconeProps) {
   return (
-    <Icon {...props}>
-      <path d="M4 7h16M4 12h16M4 17h16" />
-      <circle cx="9" cy="7" r="2" fill="var(--surface)" />
-      <circle cx="15" cy="12" r="2" fill="var(--surface)" />
-      <circle cx="8" cy="17" r="2" fill="var(--surface)" />
-    </Icon>
-  )
-}
-
-export function IconPlus(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M12 5.5v13M5.5 12h13" />
-    </Icon>
-  )
-}
-
-export function IconCheck(props: IconProps) {
-  return (
-    <Icon {...props}>
+    <Icone {...props}>
       <path d="M5 12.5 10 17.5 19 7" />
-    </Icon>
+    </Icone>
   )
 }
 
-export function IconChevronLeft(props: IconProps) {
+/** Un seul chevron, pivoté par le CSS selon `direction`. */
+export function IconeChevron({
+  direction = 'droite',
+  className,
+  ...props
+}: IconeProps & { direction?: 'gauche' | 'droite' }) {
   return (
-    <Icon {...props}>
-      <path d="M14.5 5.5 8 12l6.5 6.5" />
-    </Icon>
-  )
-}
-
-export function IconChevronRight(props: IconProps) {
-  return (
-    <Icon {...props}>
+    <Icone
+      className={[`icone-chevron--${direction}`, className].filter(Boolean).join(' ')}
+      {...props}
+    >
       <path d="M9.5 5.5 16 12l-6.5 6.5" />
-    </Icon>
+    </Icone>
   )
 }
 
-export function IconClose(props: IconProps) {
+export function IconeArchive(props: IconeProps) {
   return (
-    <Icon {...props}>
-      <path d="M6 6l12 12M18 6 6 18" />
-    </Icon>
+    <Icone {...props}>
+      <path d="M3.5 7.5h17V19a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19z" />
+      <path d="M2.8 3.5h18.4v4H2.8zM9.5 12h5" />
+    </Icone>
+  )
+}
+
+export function IconeCorbeille(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M4.5 6.5h15M9.5 6.5V4.2a.7.7 0 0 1 .7-.7h3.6a.7.7 0 0 1 .7.7v2.3" />
+      <path d="M6.5 6.5 7.4 20a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13.5" />
+      <path d="M10.5 10.5v6.5M13.5 10.5v6.5" />
+    </Icone>
   )
 }

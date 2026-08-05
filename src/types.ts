@@ -2,13 +2,18 @@
 export type ScheduleId = 'simple' | 'pousse' | 'ultime'
 
 /**
- * Une révision planifiée. Sa date est figée au moment de la création de
- * l'élément : marquer une révision en retard ne décale jamais les suivantes.
+ * Une révision planifiée.
+ *
+ * `date` est l'échéance courante, pas une valeur figée : valider une révision
+ * en retard recale les échéances suivantes sur la date réelle de validation
+ * (voir `lib/recalage.ts`). `doneAt` conserve, lui, le moment exact de la
+ * validation — c'est de lui que la frise tire la position d'une graduation
+ * faite, pour montrer le rythme réel et non le rythme prévu.
  */
 export interface Review {
   /** Nombre de jours après la date de départ (le « n » de J+n). */
   offset: number
-  /** Date de la révision, au format 'yyyy-MM-dd'. */
+  /** Échéance courante, au format 'yyyy-MM-dd'. */
   date: string
   done: boolean
   /** Horodatage ISO du moment où la révision a été cochée, sinon null. */

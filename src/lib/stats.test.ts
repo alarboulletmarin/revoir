@@ -4,10 +4,12 @@ import { buildReviews } from './schedules'
 import {
   activeItems,
   allEntries,
+  chargeParDate,
   computeStats,
   entriesForDate,
   itemProgress,
   loadForDays,
+  nextReviewDay,
   overdueEntries,
   todayEntries,
   upcomingEntries,
@@ -192,5 +194,65 @@ describe('usedCategories', () => {
       makeItem('D', '2026-03-01', { category: '  ' }),
     ]
     expect(usedCategories(items)).toEqual(['Études', 'Langues'])
+  })
+})
+
+describe('chargeParDate', () => {
+  it('compte les révisions déjà planifiées sur chaque date demandée', () => {
+    // Trois éléments partant du 1er mars en « simple » : chacun pose une
+    // révision le 2, le 4, le 8, le 15 et le 31 mars.
+    const items = [
+      makeItem('A', '2026-03-01'),
+      makeItem('B', '2026-03-01'),
+      makeItem('C', '2026-03-01'),
+    ]
+    const charge = chargeParDate(items, ['2026-03-04', '2026-03-08', '2026-03-09'])
+
+    expect(charge.get('2026-03-04')).toBe(3)
+    expect(charge.get('2026-03-08')).toBe(3)
+    expect(charge.get('2026-03-09')).toBe(0)
+  })
+
+  it('rend une entrée pour chaque date, même vide', () => {
+    const charge = chargeParDate([], ['2026-03-04', '2026-03-05'])
+    expect([...charge.keys()]).toEqual(['2026-03-04', '2026-03-05'])
+    expect([...charge.values()]).toEqual([0, 0])
+  })
+
+  it('ignore les éléments archivés et les révisions déjà faites', () => {
+    const items = [
+      makeItem('A', '2026-03-01', { archived: true }),
+      makeItem('B', '2026-03-01', { doneOffsets: [3] }),
+      makeItem('C', '2026-03-01'),
+    ]
+    // Le 4 mars est le J+3 : A est archivé, B l'a déjà fait, reste C.
+    expect(chargeParDate(items, ['2026-03-04']).get('2026-03-04')).toBe(1)
+  })
+
+  it('exclut l’élément en cours de modification', () => {
+    const items = [makeItem('A', '2026-03-01'), makeItem('B', '2026-03-01')]
+    // makeItem utilise le titre comme identifiant.
+    expect(chargeParDate(items, ['2026-03-04'], 'A').get('2026-03-04')).toBe(1)
+  })
+})
+
+describe('nextReviewDay', () => {
+  it('trouve le prochain jour chargé et son effectif', () => {
+    // Départ le 8 mars : J+1 tombe le 9, soit demain pour un « aujourd'hui »
+    // au 10 mars… donc on prend un départ qui pose des dates futures.
+    const items = [makeItem('A', '2026-03-10'), makeItem('B', '2026-03-10')]
+    expect(nextReviewDay(items, TODAY)).toEqual({ date: '2026-03-11', count: 2 })
+  })
+
+  it('saute les jours dont les révisions sont déjà faites', () => {
+    const items = [makeItem('A', '2026-03-10', { doneOffsets: [1] })]
+    expect(nextReviewDay(items, TODAY)).toEqual({ date: '2026-03-13', count: 1 })
+  })
+
+  it('ne rend rien quand plus aucune révision n’est planifiée', () => {
+    expect(nextReviewDay([], TODAY)).toBeNull()
+    expect(
+      nextReviewDay([makeItem('A', '2026-03-10', { archived: true })], TODAY),
+    ).toBeNull()
   })
 })

@@ -4,6 +4,7 @@ import {
   buildReviews,
   getSchedule,
   isScheduleId,
+  listerDecalages,
   previewDates,
   rebuildReviews,
 } from './schedules'
@@ -106,5 +107,33 @@ describe('rebuildReviews', () => {
     const previous = buildReviews('2026-03-01', 'simple')
     const next = rebuildReviews('2026-03-05', 'simple', previous)
     expect(next[0].date).toBe('2026-03-06')
+  })
+})
+
+describe('listerDecalages', () => {
+  it('écrit le rythme en toutes lettres', () => {
+    expect(listerDecalages(getSchedule('simple').offsets)).toBe(
+      'J+1 · J+3 · J+7 · J+14 · J+30',
+    )
+  })
+
+  it('couvre le programme le plus long', () => {
+    expect(listerDecalages(getSchedule('ultime').offsets)).toBe(
+      'J+1 · J+2 · J+4 · J+7 · J+14 · J+30 · J+60 · J+90 · J+180 · J+365',
+    )
+  })
+
+  it('rend une chaîne vide sans décalage', () => {
+    expect(listerDecalages([])).toBe('')
+  })
+})
+
+describe('portée des programmes', () => {
+  it('décrit la durée, le nombre étant affiché à côté', () => {
+    expect(SCHEDULES.map((s) => s.description)).toEqual([
+      'sur un mois',
+      'sur deux mois',
+      'sur une année',
+    ])
   })
 })

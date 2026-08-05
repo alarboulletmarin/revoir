@@ -71,10 +71,14 @@ export function entriesForDate(items: Item[], date: DateKey): ReviewEntry[] {
   return allEntries(items).filter((entry) => entry.review.date === date)
 }
 
-/** Nombre de révisions non effectuées par jour, sur les `days` prochains jours. */
+/**
+ * Nombre de révisions non effectuées par jour, sur les `days` prochains jours.
+ * 14 par défaut : c'est le nombre de barres de la cellule « charge »
+ * (section 8.8 du design system).
+ */
 export function loadForDays(
   items: Item[],
-  days = 7,
+  days = 14,
   today: DateKey = todayKey(),
 ): DayLoad[] {
   const counts = new Map<DateKey, number>()
@@ -89,6 +93,48 @@ export function loadForDays(
     }
   }
   return [...counts.entries()].map(([date, count]) => ({ date, count }))
+}
+
+/**
+ * Charge déjà planifiée sur des dates données — règle métier n°4.
+ *
+ * C'est ce qui différencie l'aperçu du formulaire d'un simple générateur de
+ * dates : avant de créer un élément, on voit que le 14 mars porte déjà cinq
+ * révisions. `exclureId` sert à la modification, pour que l'élément en cours
+ * d'édition ne se compte pas lui-même.
+ */
+export function chargeParDate(
+  items: Item[],
+  dates: DateKey[],
+  exclureId?: string,
+): Map<DateKey, number> {
+  const charge = new Map<DateKey, number>(dates.map((date) => [date, 0]))
+  for (const item of activeItems(items)) {
+    if (item.id === exclureId) continue
+    for (const review of item.reviews) {
+      if (review.done) continue
+      const actuelle = charge.get(review.date)
+      if (actuelle !== undefined) charge.set(review.date, actuelle + 1)
+    }
+  }
+  return charge
+}
+
+/**
+ * Premier jour à venir portant au moins une révision, avec son effectif.
+ * Alimente la deuxième ligne de l'état vide : « Prochaine révision : jeudi
+ * 6 août, 3 éléments. » (section 8.9)
+ */
+export function nextReviewDay(
+  items: Item[],
+  today: DateKey = todayKey(),
+): DayLoad | null {
+  const next = allEntries(items).find(
+    (entry) => !entry.review.done && entry.review.date > today,
+  )
+  if (!next) return null
+  const date = next.review.date
+  return { date, count: entriesForDate(items, date).filter((e) => !e.review.done).length }
 }
 
 export function computeStats(items: Item[], today: DateKey = todayKey()): Stats {

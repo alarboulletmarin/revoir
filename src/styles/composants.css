@@ -1,0 +1,725 @@
+/*
+ * Composants réutilisables : frise, item de révision, cellule, boutons,
+ * champs, toast, dialogue de confirmation.
+ *
+ * Règles tenues partout dans ce fichier :
+ *   — aucune valeur en dur, tout vient de tokens.css ;
+ *   — aucun composant ne porte de marge externe ;
+ *   — aucune imbrication de sélecteurs au-delà de deux niveaux ;
+ *   — aucune ombre portée.
+ */
+
+/* =========================================================== frise ====== */
+
+.frise {
+  /*
+   * Recolorable par le contexte : sur la cellule héros (fond --accent plein),
+   * le jeu de couleurs s'inverse sans toucher au composant.
+   *
+   * Le rail et les graduations sont deux valeurs distinctes, et pas par
+   * coquetterie : --trait sur --surface tient à 1,2:1, très en dessous des
+   * 3:1 que la WCAG demande pour un objet graphique porteur d'information.
+   * Ce sont les graduations qui portent l'information — où tombent les
+   * échéances et à quelle distance — donc elles passent en --encre-2 (5,4:1).
+   * Le rail ne fait que les relier : il reste en --trait, comme le veut la
+   * section 2, et comme la règle graduée dont la frise s'inspire.
+   */
+  --frise-rail: var(--trait);
+  --frise-graduation: var(--encre-2);
+  --frise-actif: var(--accent);
+  --frise-curseur: var(--encre);
+
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.frise__piste {
+  position: relative;
+  height: var(--e-6);
+  min-width: 0;
+}
+
+.frise--mini .frise__piste {
+  height: var(--e-5);
+}
+
+.frise__segments {
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+/*
+ * `flex-basis: 0` avec `flex-grow: √jours` : la largeur d'un segment est
+ * exactement sa part de la frise (section 2).
+ */
+.frise__segment {
+  position: relative;
+  min-width: 0;
+  flex-basis: 0;
+}
+
+.frise__segment::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background-color: var(--frise-rail);
+}
+
+.frise__trace {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background-color: var(--frise-actif);
+}
+
+/*
+ * Graduations franches (section 2). L'échéance faite se distingue par sa
+ * hauteur et par sa couleur, et non plus en atténuant l'opacité de celle à
+ * venir : cette atténuation la ramenait sous le seuil de lisibilité, quand
+ * « franches » demande exactement l'inverse.
+ */
+.frise__graduation {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1px;
+  height: var(--e-2);
+  transform: translateY(-50%);
+  background-color: var(--frise-graduation);
+}
+
+.frise__graduation--faite {
+  height: var(--e-3);
+  background-color: var(--frise-actif);
+}
+
+.frise__graduation--origine {
+  right: auto;
+  left: 0;
+}
+
+/* Seul élément qui dépasse la frise (section 2). */
+.frise__curseur {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: var(--e-4);
+  transform: translate(-50%, -50%);
+  background-color: var(--frise-curseur);
+}
+
+.frise__libelles {
+  position: relative;
+  display: none;
+  height: var(--e-4);
+  min-width: 0;
+}
+
+/* Sous 480px, les libellés J+1 / J+2 se chevauchent (section 7.4). */
+@media (min-width: 480px) {
+  .frise__libelles {
+    display: block;
+  }
+}
+
+.frise__libelle {
+  position: absolute;
+  top: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.frise__libelle--centre {
+  transform: translateX(-50%);
+}
+
+.frise__libelle--fin {
+  transform: translateX(-100%);
+}
+
+/* =================================================== item de révision === */
+
+.item-revision {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: var(--e-2);
+  border-radius: var(--r-carte);
+  padding-right: var(--e-2);
+  transition: opacity var(--duree-moyen) var(--courbe);
+}
+
+.item-revision--faite {
+  opacity: 0.55;
+}
+
+/* Cible de validation dédiée, 44 × 44px (section 8.2). */
+.item-revision__case {
+  display: flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-carte);
+}
+
+/*
+ * Les couleurs de la case passent par des variables plutôt que par des
+ * sélecteurs contextuels : sur la cellule héros, un survol tracé en --accent
+ * disparaîtrait dans le fond, et il faut pouvoir tout réassigner d'un bloc
+ * sans imbriquer trois niveaux de sélecteurs.
+ */
+.item-revision__cercle {
+  display: flex;
+  width: var(--e-5);
+  height: var(--e-5);
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--cercle-trait, var(--trait));
+  border-radius: var(--r-pilule);
+  transition: background-color var(--duree-court) var(--courbe),
+    border-color var(--duree-court) var(--courbe);
+}
+
+.item-revision__case:hover .item-revision__cercle {
+  border-color: var(--cercle-survol, var(--accent));
+}
+
+.item-revision--faite .item-revision__cercle,
+.echeance--faite .item-revision__cercle {
+  border-color: var(--cercle-fait, var(--fait));
+  background-color: var(--cercle-fait, var(--fait));
+}
+
+.item-revision__coche {
+  width: var(--e-3);
+  height: var(--e-3);
+  color: var(--coche-couleur, var(--surface));
+  /* Animation autorisée n°1 (section 6). */
+  animation: coche var(--duree-court) var(--courbe);
+}
+
+@keyframes coche {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.item-revision__corps {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-1);
+  padding-block: var(--e-2);
+}
+
+.item-revision__titre {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: var(--t-md);
+  line-height: var(--l-md);
+  overflow-wrap: anywhere;
+}
+
+.item-revision--faite .item-revision__titre {
+  text-decoration: line-through;
+}
+
+/*
+ * Métadonnées et frise partagent une ligne dès qu'il y a la place. À 320px la
+ * frise passe seule à la ligne : `flex-basis: 100%` la fait déborder du wrap.
+ */
+.item-revision__meta {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.item-revision__date {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-revision__retard {
+  flex-shrink: 0;
+  color: var(--retard-texte);
+}
+
+.item-revision__corps .frise {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 480px) {
+  .item-revision__corps {
+    flex-flow: row wrap;
+    align-items: center;
+    column-gap: var(--e-3);
+  }
+
+  .item-revision__titre {
+    flex: 1 1 100%;
+  }
+
+  .item-revision__corps .frise {
+    flex: 1 1 var(--e-7);
+    min-width: 0;
+  }
+}
+
+/* ========================================================= cellule ====== */
+
+.cellule {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+  color: var(--encre);
+}
+
+@media (min-width: 768px) {
+  .cellule {
+    padding: var(--e-5);
+  }
+}
+
+/* Une seule par écran : c'est elle qui porte la hiérarchie (section 3). */
+.cellule--accent {
+  border-color: transparent;
+  background-color: var(--accent);
+  color: var(--surface);
+}
+
+.cellule--action {
+  transition: background-color var(--duree-court) var(--courbe),
+    transform var(--duree-court) var(--courbe);
+}
+
+.cellule--action:hover {
+  background-color: var(--surface-survol);
+}
+
+.cellule--action:active {
+  transform: scale(0.995);
+}
+
+.cellule__chiffre {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-xl);
+  font-weight: 600;
+  line-height: var(--l-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.cellule__label {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: var(--l-sm);
+}
+
+/*
+ * Sur fond --accent plein, --surface n'est lisible qu'à partir de 15px et en
+ * poids 500 (section 3) : le label passe donc de --t-sm à --t-base.
+ */
+.cellule--accent .cellule__label {
+  color: var(--surface);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+/* Sur fond --accent plein, tout le jeu repasse en --surface. */
+.cellule--accent .frise {
+  --frise-rail: var(--surface);
+  --frise-graduation: var(--surface);
+  --frise-actif: var(--surface);
+  --frise-curseur: var(--surface);
+}
+
+.cellule--accent .chip {
+  border-color: var(--surface);
+  color: var(--surface);
+}
+
+/* ========================================================= boutons ====== */
+
+.btn {
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-carte);
+  padding-inline: var(--e-4);
+  font-size: var(--t-base);
+  font-weight: 500;
+  line-height: var(--l-base);
+  text-align: center;
+  /* Un libellé de bouton ne se coupe pas en deux : « Désarchive / r ». */
+  white-space: nowrap;
+  transition: background-color var(--duree-court) var(--courbe),
+    border-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.btn--primaire {
+  min-height: var(--e-7);
+  background-color: var(--accent);
+  color: var(--surface);
+}
+
+.btn--primaire:hover {
+  opacity: 0.92;
+}
+
+.btn--discret {
+  border-color: var(--trait);
+  background-color: var(--surface);
+  color: var(--encre);
+}
+
+.btn--discret:hover {
+  background-color: var(--surface-survol);
+}
+
+.btn--texte {
+  padding-inline: var(--e-2);
+  color: var(--accent);
+}
+
+.btn--texte:hover {
+  text-decoration: underline;
+}
+
+.btn--danger {
+  border-color: var(--retard);
+  color: var(--retard-texte);
+}
+
+.btn--danger:hover {
+  background-color: var(--surface-survol);
+}
+
+.btn--large {
+  width: 100%;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.icone-chevron--gauche {
+  transform: rotate(180deg);
+}
+
+/* ========================================================== champs ====== */
+
+.champ {
+  display: flex;
+  min-width: 0;
+  /* Un fieldset ignore `min-width: 0` sans cette déclaration : son contenu
+     déborderait de la carte à 320px. */
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 0;
+  padding: 0;
+}
+
+.champ__label {
+  min-width: 0;
+  padding: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: var(--l-sm);
+}
+
+/*
+ * `appearance: none` est ce qui aligne les champs entre eux : sans lui,
+ * Safari et Firefox donnent à `input[type="date"]` sa largeur intrinsèque —
+ * celle du format de date plus le sélecteur natif — et ignorent le
+ * `width: 100%`. Le champ ressort alors plus large que les champs texte.
+ */
+.champ__saisie {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--e-7);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding-inline: var(--e-3);
+  color: var(--encre);
+  transition: border-color var(--duree-court) var(--courbe);
+}
+
+/* iOS centre verticalement la valeur d'un champ date et lui ajoute une
+   marge interne : les deux la désalignent du texte des autres champs. */
+.champ__saisie::-webkit-date-and-time-value {
+  margin: 0;
+  text-align: left;
+}
+
+/* Le sélecteur natif reste, mais poussé au bord droit du champ. */
+.champ__saisie::-webkit-calendar-picker-indicator {
+  margin-inline-start: auto;
+}
+
+.champ__saisie:focus-visible {
+  border-color: var(--accent);
+}
+
+.champ__aide {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.champ__erreur {
+  min-width: 0;
+  color: var(--retard-texte);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/* =========================================================== toast ====== */
+
+.toast {
+  position: fixed;
+  right: var(--marge-page);
+  bottom: var(--bas-toast);
+  left: var(--marge-page);
+  z-index: 4;
+  display: flex;
+  min-width: 0;
+  max-width: 480px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2);
+  margin-inline: auto;
+  border-radius: var(--r-carte);
+  background-color: var(--encre);
+  padding: var(--e-2) var(--e-2) var(--e-2) var(--e-4);
+  color: var(--papier);
+  /* Animation autorisée n°3 (section 6). */
+  animation: toast-entree var(--duree-moyen) var(--courbe);
+}
+
+@keyframes toast-entree {
+  from {
+    opacity: 0;
+    transform: translateY(var(--e-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast__texte {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-1);
+}
+
+.toast__message {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.toast__detail {
+  min-width: 0;
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  opacity: 0.8;
+}
+
+.toast__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--e-1);
+}
+
+.toast .btn--texte {
+  color: var(--papier);
+}
+
+.toast :focus-visible {
+  outline-color: var(--papier);
+}
+
+/* ======================================================== dialogue ====== */
+
+/*
+ * Seule la suppression demande une confirmation (règle métier n°3).
+ * <dialog> natif : focus piégé, Échap géré, arrière-plan inerte sans code.
+ */
+.dialogue {
+  width: calc(100% - var(--e-6));
+  max-width: 400px;
+  min-width: 0;
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-5);
+  color: var(--encre);
+}
+
+.dialogue::backdrop {
+  background-color: color-mix(in srgb, var(--encre) 40%, transparent);
+}
+
+.dialogue__corps {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.dialogue__titre {
+  min-width: 0;
+  font-size: var(--t-md);
+  line-height: var(--l-md);
+}
+
+.dialogue__message {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.dialogue__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--e-2);
+}
+
+/* ================================================ teintes de matière ==== */
+
+/*
+ * La teinte n'est jamais une surface pleine : trait, texte et pastille
+ * seulement, pour ne pas concurrencer l'unique cellule --accent de l'écran.
+ */
+.chip--matiere {
+  border-color: var(--teinte, var(--trait));
+  color: var(--teinte, var(--encre-2));
+}
+
+.pastille {
+  display: inline-block;
+  width: var(--e-2);
+  height: var(--e-2);
+  flex-shrink: 0;
+  border-radius: var(--r-pilule);
+  background-color: var(--teinte, var(--encre-2));
+}
+
+/* --------------------------------------------- sélecteur de teinte ----- */
+
+.teintes {
+  display: flex;
+  min-width: 0;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: 0;
+  padding: 0;
+}
+
+.teintes__liste {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-1);
+}
+
+/* Cible de 44px, pastille de 24px au centre. */
+.teintes__choix {
+  position: relative;
+  display: flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pilule);
+  cursor: pointer;
+}
+
+.teintes__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.teintes__pastille {
+  width: var(--e-5);
+  height: var(--e-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pilule);
+  background-color: var(--teinte);
+  transition: transform var(--duree-court) var(--courbe);
+}
+
+/* La sélection se lit à l'anneau, pas seulement à la couleur. */
+.teintes__choix--actif .teintes__pastille {
+  border-color: var(--papier);
+  outline: 2px solid var(--teinte);
+  outline-offset: 1px;
+}
+
+.teintes__choix:has(.teintes__radio:focus-visible) {
+  outline: 2px solid var(--encre);
+  outline-offset: 2px;
+}
