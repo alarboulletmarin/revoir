@@ -6,18 +6,27 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { Item, ScheduleId } from '../types'
+import type { Item, Programme, ScheduleId } from '../types'
 import {
   deleteItem,
+  deleteProgramme,
   getAllItems,
+  getAllProgrammes,
   getAllTeintes,
   putItem,
+  putProgramme,
   putTeinte,
   replaceAllItems,
+  replaceAllProgrammes,
   replaceAllTeintes,
 } from '../db/database'
 import { cleCategorie, type Teinte, type Teintes } from '../lib/categories'
-import { buildReviews, rebuildReviews } from '../lib/schedules'
+import {
+  buildReviews,
+  rebuildReviews,
+  tousLesProgrammes,
+  type Schedule,
+} from '../lib/schedules'
 import { devaliderRevision, validerRevision } from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
 
@@ -46,6 +55,19 @@ export interface ItemsContextValue {
   /** Choix explicites de teinte par matière. Le reste dérive du nom. */
   teintes: Teintes
   definirTeinte: (categorie: string, teinte: Teinte) => void
+  /** Les rythmes créés par l'utilisateur, dans l'ordre de création. */
+  programmes: Programme[]
+  /** Les trois intégrés puis les créés : ce que proposent les formulaires. */
+  programmesDisponibles: Schedule[]
+  creerProgramme: (label: string, offsets: number[]) => Promise<Programme>
+  /**
+   * Refuse de supprimer un programme encore porté par un élément — ses
+   * révisions sont déjà écrites, mais sa fiche et son formulaire n'auraient
+   * plus de rythme à nommer.
+   */
+  supprimerProgramme: (id: string) => Promise<boolean>
+  /** Combien d'éléments portent ce programme, archivés compris. */
+  compterUsages: (id: ScheduleId) => number
   createItem: (draft: ItemDraft) => Promise<Item>
   editItem: (id: string, draft: ItemDraft) => Promise<void>
   removeItem: (id: string) => Promise<void>
@@ -55,7 +77,11 @@ export interface ItemsContextValue {
   devalider: (id: string, offset: number) => void
   /** Remet un élément dans l'état exact fourni. Sert au bouton « Annuler ». */
   restaurer: (item: Item) => void
-  importItems: (items: Item[], teintes: Teintes) => Promise<void>
+  importItems: (
+    items: Item[],
+    teintes: Teintes,
+    programmes: Programme[],
+  ) => Promise<void>
 }
 
 export const ItemsContext = createContext<ItemsContextValue | null>(null)
@@ -70,16 +96,18 @@ function newId(): string {
 export function ItemsProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([])
   const [teintes, setTeintes] = useState<Teintes>({})
+  const [programmes, setProgrammes] = useState<Programme[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([getAllItems(), getAllTeintes()])
-      .then(([stored, couleurs]) => {
+    Promise.all([getAllItems(), getAllTeintes(), getAllProgrammes()])
+      .then(([stored, couleurs, rythmes]) => {
         if (cancelled) return
         setItems(stored)
         setTeintes(couleurs)
+        setProgrammes(rythmes)
       })
       .catch(() => {
         if (!cancelled) {
@@ -126,7 +154,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
         category: draft.category.trim(),
         startDate: draft.startDate,
         schedule: draft.schedule,
-        reviews: buildReviews(draft.startDate, draft.schedule),
+        reviews: buildReviews(draft.startDate, draft.schedule, programmes),
         archived: false,
         createdAt: now,
         updatedAt: now,
@@ -134,7 +162,7 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       await persist(item)
       return item
     },
-    [persist],
+    [persist, programmes],
   )
 
   const editItem = useCallback(
@@ -147,11 +175,16 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
         category: draft.category.trim(),
         startDate: draft.startDate,
         schedule: draft.schedule,
-        reviews: rebuildReviews(draft.startDate, draft.schedule, existing.reviews),
+        reviews: rebuildReviews(
+          draft.startDate,
+          draft.schedule,
+          existing.reviews,
+          programmes,
+        ),
         updatedAt: new Date().toISOString(),
       })
     },
-    [items, persist],
+    [items, persist, programmes],
   )
 
   const removeItem = useCallback(async (id: string) => {
@@ -214,22 +247,82 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
     putTeinte(cle, teinte).catch(() => setError("L'enregistrement local a échoué."))
   }, [])
 
-  const importItems = useCallback(async (imported: Item[], couleurs: Teintes) => {
-    setItems(imported)
-    setTeintes(couleurs)
+  /**
+   * Un programme personnalisé n'est jamais modifié après coup : les révisions
+   * d'un élément sont écrites à sa création, les rejouer changerait un rythme
+   * déjà entamé. On crée, on supprime — quand plus rien ne s'en sert.
+   */
+  const creerProgramme = useCallback(async (label: string, offsets: number[]) => {
+    const programme: Programme = {
+      id: newId(),
+      label: label.trim(),
+      offsets,
+      createdAt: new Date().toISOString(),
+    }
+    setProgrammes((actuels) => [...actuels, programme])
     try {
-      await Promise.all([replaceAllItems(imported), replaceAllTeintes(couleurs)])
+      await putProgramme(programme)
       setError(null)
     } catch {
-      setError("L'import n'a pas pu être enregistré localement.")
+      setError("L'enregistrement local a échoué.")
     }
+    return programme
   }, [])
+
+  const compterUsages = useCallback(
+    (id: ScheduleId) => items.filter((item) => item.schedule === id).length,
+    [items],
+  )
+
+  const supprimerProgramme = useCallback(
+    async (id: string) => {
+      if (items.some((item) => item.schedule === id)) return false
+      setProgrammes((actuels) => actuels.filter((programme) => programme.id !== id))
+      try {
+        await deleteProgramme(id)
+        setError(null)
+      } catch {
+        setError('La suppression locale a échoué.')
+      }
+      return true
+    },
+    [items],
+  )
+
+  const importItems = useCallback(
+    async (imported: Item[], couleurs: Teintes, rythmes: Programme[]) => {
+      setItems(imported)
+      setTeintes(couleurs)
+      setProgrammes(rythmes)
+      try {
+        await Promise.all([
+          replaceAllItems(imported),
+          replaceAllTeintes(couleurs),
+          replaceAllProgrammes(rythmes),
+        ])
+        setError(null)
+      } catch {
+        setError("L'import n'a pas pu être enregistré localement.")
+      }
+    },
+    [],
+  )
+
+  const programmesDisponibles = useMemo(
+    () => tousLesProgrammes(programmes),
+    [programmes],
+  )
 
   const value = useMemo<ItemsContextValue>(
     () => ({
       items,
       teintes,
       definirTeinte,
+      programmes,
+      programmesDisponibles,
+      creerProgramme,
+      supprimerProgramme,
+      compterUsages,
       loading,
       error,
       createItem,
@@ -245,6 +338,11 @@ export function ItemsProvider({ children }: { children: ReactNode }) {
       items,
       teintes,
       definirTeinte,
+      programmes,
+      programmesDisponibles,
+      creerProgramme,
+      supprimerProgramme,
+      compterUsages,
       loading,
       error,
       createItem,

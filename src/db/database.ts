@@ -1,11 +1,12 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
-import type { Item } from '../types'
+import type { Item, Programme } from '../types'
 import type { Teinte, Teintes } from '../lib/categories'
 
 const DB_NAME = 'revoir'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const STORE = 'items'
 const STORE_TEINTES = 'teintes'
+const STORE_PROGRAMMES = 'programmes'
 
 /** Une teinte choisie par l'utilisateur, indexée par clé de catégorie. */
 export interface TeinteEnregistree {
@@ -24,6 +25,10 @@ interface RevoirDB extends DBSchema {
     key: string
     value: TeinteEnregistree
   }
+  programmes: {
+    key: string
+    value: Programme
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<RevoirDB>> | null = null
@@ -38,6 +43,9 @@ function getDB(): Promise<IDBPDatabase<RevoirDB>> {
       }
       if (!db.objectStoreNames.contains(STORE_TEINTES)) {
         db.createObjectStore(STORE_TEINTES, { keyPath: 'cle' })
+      }
+      if (!db.objectStoreNames.contains(STORE_PROGRAMMES)) {
+        db.createObjectStore(STORE_PROGRAMMES, { keyPath: 'id' })
       }
     },
   })
@@ -91,5 +99,31 @@ export async function replaceAllTeintes(teintes: Teintes): Promise<void> {
   await Promise.all(
     Object.entries(teintes).map(([cle, teinte]) => tx.store.put({ cle, teinte })),
   )
+  await tx.done
+}
+
+export async function getAllProgrammes(): Promise<Programme[]> {
+  const db = await getDB()
+  const programmes = await db.getAll(STORE_PROGRAMMES)
+  // L'ordre de création est celui de l'affichage : IndexedDB rend les clés
+  // triées, qui ne veulent rien dire ici.
+  return programmes.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
+
+export async function putProgramme(programme: Programme): Promise<void> {
+  const db = await getDB()
+  await db.put(STORE_PROGRAMMES, programme)
+}
+
+export async function deleteProgramme(id: string): Promise<void> {
+  const db = await getDB()
+  await db.delete(STORE_PROGRAMMES, id)
+}
+
+export async function replaceAllProgrammes(programmes: Programme[]): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(STORE_PROGRAMMES, 'readwrite')
+  await tx.store.clear()
+  await Promise.all(programmes.map((programme) => tx.store.put(programme)))
   await tx.done
 }

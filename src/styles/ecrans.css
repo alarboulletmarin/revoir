@@ -952,6 +952,81 @@ body[data-panneau='ouvert'] {
   gap: var(--e-2);
 }
 
+/* -------------------------------------------- programmes personnalisés -- */
+
+/*
+ * Un programme créé se présente comme les trois intégrés, sans le radio : ici
+ * on ne choisit pas, on inspecte. Même carte, mêmes règles — un rythme se lit
+ * à sa frise, pas à son nom (section 8.7).
+ */
+.rythmes {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.rythme {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3);
+}
+
+.rythme__entete {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+}
+
+.rythme__nom {
+  min-width: 0;
+  font-size: var(--t-md);
+  font-weight: 500;
+  line-height: var(--l-md);
+}
+
+.rythme__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.rythme__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.rythme__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/*
+ * L'aperçu du rythme en cours de saisie : la même frise que la carte, pour
+ * qu'on voie ce que le champ a retenu avant de valider.
+ */
+.rythme__apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  padding: var(--e-3);
+}
+
 .archive {
   display: flex;
   min-width: 0;

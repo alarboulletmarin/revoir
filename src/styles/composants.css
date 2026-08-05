@@ -860,13 +860,44 @@
   opacity: 0;
 }
 
+/*
+ * Le sélecteur du système, étendu sur toute la cible : le doigt n'a pas à
+ * viser, et le clavier l'atteint comme n'importe quel champ. Même parti pris
+ * que le champ date (section 8.6).
+ */
+.teintes__pipette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .teintes__pastille {
+  display: flex;
   width: var(--e-5);
   height: var(--e-5);
+  align-items: center;
+  justify-content: center;
   border: 1.5px solid transparent;
   border-radius: var(--r-pilule);
   background-color: var(--teinte);
   transition: transform var(--duree-court) var(--courbe);
+}
+
+/*
+ * Tant qu'aucune couleur libre n'est choisie, le cercle n'a pas de couleur à
+ * montrer : il se donne à lire comme une place vide, cerclée du trait et
+ * marquée d'un « + ». Une fois choisie, `--teinte` le remplit et le « + »
+ * disparaît — c'est une pastille comme les huit autres.
+ */
+.teintes__pastille--libre {
+  border-color: var(--teinte, var(--trait));
+  background-color: var(--teinte, transparent);
+  color: var(--encre-2);
 }
 
 /* La sélection se lit à l'anneau, pas seulement à la couleur. */
@@ -876,7 +907,8 @@
   outline-offset: 1px;
 }
 
-.teintes__choix:has(.teintes__radio:focus-visible) {
+.teintes__choix:has(.teintes__radio:focus-visible),
+.teintes__choix:has(.teintes__pipette:focus-visible) {
   outline: 2px solid var(--encre);
   outline-offset: 2px;
 }

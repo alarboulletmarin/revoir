@@ -1,5 +1,25 @@
-/** Identifiant d'un des trois programmes de répétition proposés. */
-export type ScheduleId = 'simple' | 'pousse' | 'ultime'
+/** Identifiant d'un des trois programmes intégrés. */
+export type ScheduleIdIntegre = 'simple' | 'pousse' | 'ultime'
+
+/**
+ * Identifiant du programme d'un élément : l'un des trois intégrés, ou celui
+ * d'un programme créé par l'utilisateur. Ce n'est donc plus une union fermée —
+ * un identifiant se résout contre les programmes connus, il ne se devine pas.
+ */
+export type ScheduleId = string
+
+/**
+ * Un rythme créé par l'utilisateur. Les trois programmes intégrés ont la même
+ * forme, mais ne sont pas stockés : ils sont dans le code.
+ */
+export interface Programme {
+  id: string
+  label: string
+  /** Décalages en jours, strictement croissants, à partir de 1. */
+  offsets: number[]
+  /** Horodatage ISO. */
+  createdAt: string
+}
 
 /**
  * Une révision planifiée.

@@ -115,6 +115,21 @@ Trois règles, sans exception :
 
 Une matière sans couleur choisie en reçoit une, dérivée de son nom par hachage : elle est donc stable d'un appareil à l'autre, et aucune configuration n'est nécessaire pour que l'app soit utilisable.
 
+#### Couleurs libres
+
+Le sélecteur propose un neuvième cercle, marqué d'un « + », qui ouvre le sélecteur de couleurs du système. La couleur choisie n'est pas retenue telle quelle : **elle est ramenée dans le registre des huit**, sans quoi les trois règles ci-dessus tomberaient en même temps — un jaune vif est illisible en chip, un rouge est interdit (section 11), et une couleur qui crie plus fort que ses voisines rend la pastille bruyante.
+
+Le registre se mesure en OKLab, pas en HSL : à saturation HSL égale, un rouge crie bien plus fort qu'un ocre. Les huit y sont d'une régularité qui n'est pas un hasard.
+
+| | Clarté OKLab | Chroma OKLab |
+|---|---|---|
+| Les huit | 0,489 → 0,505 | 0,038 → 0,079 |
+| Après normalisation | 0,497 | dans la bande |
+
+La normalisation **conserve la teinte exactement** — c'est elle que l'utilisateur a choisie —, pose la clarté au milieu de celle des huit et ramène la chroma dans leur bande. Un gris reste gris : en dessous de 0,004 de chroma, aucune teinte ne lui est imposée. Un rouge vif ressort en brique, un bleu électrique en ardoise soutenue, et tous restent lisibles en texte. Le cercle montre le résultat en direct : rien n'est décidé dans le dos.
+
+`lib/couleurs.ts` est le seul endroit qui connaît ces nombres, et `lib/categories.ts` le seul point de passage : sélecteur, import et migration l'empruntent tous.
+
 ---
 
 ## 4. Typographie
@@ -352,7 +367,22 @@ Fond `--surface`, 1px `--trait`, `--r-carte`, hauteur 48px, padding `--e-3`. Foc
 
 ### 8.7 Sélecteur de programme
 
-Trois cartes empilées (Simple / Poussé / Ultime), chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
+Des cartes empilées, chacune affichant **sa frise en miniature** — on choisit un rythme, pas un mot. Sélection : bordure 1,5px `--accent` + fond `#F1F4F2`. Pas de radio natif visible.
+
+Les trois programmes intégrés (Simple / Poussé / Ultime) viennent en premier, puis les programmes créés par l'utilisateur, dans l'ordre de création.
+
+#### Programmes personnalisés
+
+Un programme est un nom et une suite de jours. Il se crée dans les réglages : un champ pour le nom, un champ pour le rythme, et la frise de ce qui sera créé juste en dessous.
+
+Le champ de rythme est permissif — « 1 3 7 14 30 », « 1,3,7 » et « J+1 · J+3 » se valent — puis normalisé : trié, dédupliqué, borné à 20 révisions et 3650 jours. **Ce qui a été écarté doit se voir** : l'aperçu écrit la suite retenue en toutes lettres, sinon un nombre disparaîtrait en silence.
+
+La portée (« sur un mois », « sur deux mois », « sur une année ») est dérivée du dernier décalage, dans les mêmes mots que les trois intégrés. En deçà de 25 jours elle s'écrit en jours : vingt jours ne sont pas un mois.
+
+Deux règles tiennent le modèle :
+
+1. **Un programme ne se modifie pas.** Les révisions d'un élément sont écrites à sa création ; rejouer un rythme déjà entamé déplacerait des échéances que l'utilisateur a en tête. On crée, on supprime.
+2. **Un programme utilisé ne se supprime pas.** Sa carte l'annonce — « Utilisé par 3 éléments » — et le bouton disparaît. Sans cela, une fiche n'aurait plus de rythme à nommer.
 
 ### 8.8 Barres de charge
 
@@ -448,6 +478,7 @@ Dates : relatif jusqu'à 7 jours (« aujourd'hui », « demain », « il y a 3 j
 - [ ] Les compteurs qui changent sont dans une région `aria-live="polite"`
 - [ ] La validation d'une révision est annulable pendant 5 secondes
 - [ ] `env(safe-area-inset-*)` appliqué sur le FAB et la barre de navigation
+- [ ] Une navigation remonte en haut de page — sauf le retour arrière, où le navigateur restaure la position
 - [ ] Aucune ombre portée dans le CSS produit
 
 ---

@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
+import type { Programme } from '../types'
 import {
+  RYTHME_MAX_REVISIONS,
   SCHEDULES,
   buildReviews,
+  decrirePortee,
   getSchedule,
   isScheduleId,
   listerDecalages,
+  normaliserRythme,
   previewDates,
   rebuildReviews,
+  tousLesProgrammes,
 } from './schedules'
 
 describe('SCHEDULES', () => {
@@ -24,7 +29,6 @@ describe('SCHEDULES', () => {
   })
 
   it('retombe sur le programme par défaut pour un identifiant inconnu', () => {
-    // @ts-expect-error on simule une donnée importée corrompue
     expect(getSchedule('inexistant').id).toBe('simple')
   })
 
@@ -135,5 +139,92 @@ describe('portée des programmes', () => {
       'sur deux mois',
       'sur une année',
     ])
+  })
+})
+
+describe('normaliserRythme', () => {
+  it('lit une suite de jours quel que soit le séparateur', () => {
+    expect(normaliserRythme('1 3 7 14 30')).toEqual([1, 3, 7, 14, 30])
+    expect(normaliserRythme('1,3,7')).toEqual([1, 3, 7])
+    expect(normaliserRythme('J+1 · J+3 · J+7')).toEqual([1, 3, 7])
+    expect(normaliserRythme('7;3;1')).toEqual([1, 3, 7])
+  })
+
+  it('trie et déduplique', () => {
+    expect(normaliserRythme('30 1 7 1 3 30')).toEqual([1, 3, 7, 30])
+  })
+
+  it('écarte zéro, le négatif et le trop lointain', () => {
+    // Le signe n'est pas lu : « -5 » donne 5. Un décalage est un nombre de
+    // jours après le départ, il n'y a rien avant.
+    expect(normaliserRythme('0 1 4000')).toEqual([1])
+    expect(normaliserRythme('-5 10')).toEqual([5, 10])
+  })
+
+  it('plafonne le nombre de révisions', () => {
+    const saisie = Array.from({ length: 30 }, (_, index) => index + 1).join(' ')
+    expect(normaliserRythme(saisie)).toHaveLength(RYTHME_MAX_REVISIONS)
+  })
+
+  it('rend une liste vide pour une saisie sans nombre', () => {
+    expect(normaliserRythme('')).toEqual([])
+    expect(normaliserRythme('bientôt')).toEqual([])
+  })
+})
+
+describe('decrirePortee', () => {
+  it('décrit les trois programmes intégrés dans les mots de la spécification', () => {
+    expect(getSchedule('simple').description).toBe('sur un mois')
+    expect(getSchedule('pousse').description).toBe('sur deux mois')
+    expect(getSchedule('ultime').description).toBe('sur une année')
+  })
+
+  it('décrit un rythme court en jours plutôt que de l’arrondir au mois', () => {
+    expect(decrirePortee([1, 3, 7])).toBe('sur 7 jours')
+    expect(decrirePortee([1])).toBe('sur 1 jour')
+    expect(decrirePortee([1, 20])).toBe('sur 20 jours')
+  })
+
+  it('décrit un rythme long en mois puis en années', () => {
+    expect(decrirePortee([1, 90])).toBe('sur trois mois')
+    expect(decrirePortee([1, 730])).toBe('sur 2 années')
+  })
+})
+
+describe('programmes personnalisés', () => {
+  const PERSO: Programme = {
+    id: 'p-1',
+    label: 'Examen blanc',
+    offsets: [2, 5, 9, 20],
+    createdAt: '2026-08-05T10:00:00.000Z',
+  }
+
+  it('vient après les trois intégrés', () => {
+    expect(tousLesProgrammes([PERSO]).map((schedule) => schedule.id)).toEqual([
+      'simple',
+      'pousse',
+      'ultime',
+      'p-1',
+    ])
+  })
+
+  it('se résout comme les intégrés, et se décrit tout seul', () => {
+    const schedule = getSchedule('p-1', [PERSO])
+    expect(schedule.label).toBe('Examen blanc')
+    expect(schedule.description).toBe('sur 20 jours')
+    expect(schedule.personnel).toBe(true)
+  })
+
+  it('produit les révisions de son rythme', () => {
+    expect(buildReviews('2026-03-01', 'p-1', [PERSO]).map((r) => r.date)).toEqual([
+      '2026-03-03',
+      '2026-03-06',
+      '2026-03-10',
+      '2026-03-21',
+    ])
+  })
+
+  it("n'est pas reconnu par isScheduleId, réservé aux trois intégrés", () => {
+    expect(isScheduleId('p-1')).toBe(false)
   })
 })

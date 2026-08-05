@@ -4,8 +4,8 @@ import { useItems } from '../state/useItems'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   DEFAULT_SCHEDULE,
-  SCHEDULES,
   buildReviews,
+  getSchedule,
   listerDecalages,
   previewDates,
 } from '../lib/schedules'
@@ -31,7 +31,16 @@ const CATEGORIES_SUGGEREES = [
 export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, teintes, definirTeinte, loading, createItem, editItem } = useItems()
+  const {
+    items,
+    teintes,
+    definirTeinte,
+    loading,
+    createItem,
+    editItem,
+    programmes,
+    programmesDisponibles,
+  } = useItems()
   const listeCategories = useId()
 
   useTitrePage(mode === 'edit' ? "Modifier l'élément" : 'Nouvel élément')
@@ -62,14 +71,15 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
    */
   const apercu = useMemo(() => {
     if (depart === '') return []
-    const dates = previewDates(depart, programme)
+    const { offsets } = getSchedule(programme, programmes)
+    const dates = previewDates(depart, programme, programmes)
     const charge = chargeParDate(items, dates, existant?.id)
     return dates.map((date, index) => ({
-      offset: SCHEDULES.find((s) => s.id === programme)!.offsets[index],
+      offset: offsets[index],
       date,
       charge: charge.get(date) ?? 0,
     }))
-  }, [depart, programme, items, existant?.id])
+  }, [depart, programme, programmes, items, existant?.id])
 
   const categories = useMemo(
     () => [...new Set([...usedCategories(items), ...CATEGORIES_SUGGEREES])],
@@ -163,7 +173,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
 
         <GroupeChamp legende="Programme">
           <div className="programmes">
-            {SCHEDULES.map((option) => (
+            {programmesDisponibles.map((option) => (
               <label
                 key={option.id}
                 className={
@@ -187,7 +197,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
                 {/* On choisit un rythme, pas un mot (section 8.7). */}
                 <Frise
                   origine={depart || todayKey()}
-                  reviews={buildReviews(depart || todayKey(), option.id)}
+                  reviews={buildReviews(depart || todayKey(), option.id, programmes)}
                   aujourdhui={depart || todayKey()}
                   variante="mini"
                   intitule={`Programme ${option.label}`}
@@ -210,7 +220,7 @@ export function ItemForm({ mode }: { mode: 'create' | 'edit' }) {
 
             <Frise
               origine={depart}
-              reviews={buildReviews(depart, programme)}
+              reviews={buildReviews(depart, programme, programmes)}
               aujourdhui={depart}
               libelles="date"
               intitule="Aperçu du programme"

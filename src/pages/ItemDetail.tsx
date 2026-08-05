@@ -16,8 +16,17 @@ import { ChipCategorie } from '../components/ChipCategorie'
 export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { items, teintes, loading, valider, devalider, restaurer, setArchived, removeItem } =
-    useItems()
+  const {
+    items,
+    teintes,
+    loading,
+    valider,
+    devalider,
+    restaurer,
+    setArchived,
+    removeItem,
+    programmes,
+  } = useItems()
   const { afficherToast } = useToast()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
   const aujourdhui = todayKey()
@@ -38,7 +47,7 @@ export function ItemDetail() {
     )
   }
 
-  const programme = getSchedule(item.schedule)
+  const programme = getSchedule(item.schedule, programmes)
   const faites = item.reviews.filter((review) => review.done).length
   const restantes = item.reviews.length - faites
   const creeLe = formatIsoDate(item.createdAt)
