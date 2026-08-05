@@ -571,6 +571,16 @@
   color: var(--fait-texte);
 }
 
+/*
+ * Le report, au bout de la ligne. En variante « texte » : la ligne porte déjà
+ * une case à cocher, et deux boutons dessinés se disputeraient le geste
+ * principal, qui reste la validation.
+ */
+.echeance__report {
+  flex-shrink: 0;
+  align-self: center;
+}
+
 /* ======================================================= calendrier ==== */
 
 .calendrier {

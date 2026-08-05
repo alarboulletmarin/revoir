@@ -39,7 +39,7 @@ import {
   tousLesProgrammes,
   type Schedule,
 } from '../lib/schedules'
-import { devaliderRevision, validerRevision } from '../lib/recalage'
+import { devaliderRevision, reporterRevision, validerRevision } from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
 
 export interface SujetDraft {
@@ -66,6 +66,15 @@ export interface ValidationEffectuee {
   retard: number
   /** Échéances à venir déplacées par le recalage. */
   deplacees: number
+}
+
+/** Ce qu'un report renvoie à l'appelant pour construire son toast. */
+export interface ReportEffectue {
+  topicId: string
+  /** Les révisions du sujet telles qu'avant — la cible d'« Annuler ». */
+  precedentes: Review[]
+  /** La nouvelle échéance. */
+  date: DateKey
 }
 
 export interface DonneesContextValue {
@@ -106,6 +115,8 @@ export interface DonneesContextValue {
    * rythme à nommer.
    */
   supprimerProgramme: (id: string) => Promise<boolean>
+  /** Remet un programme supprimé, tel quel. Sert à « Annuler ». */
+  restaurerProgramme: (programme: Programme) => void
   /** Combien de sujets portent ce programme, archivés compris. */
   compterUsages: (id: ScheduleId) => number
 
@@ -118,6 +129,11 @@ export interface DonneesContextValue {
   /** Validation optimiste : l'état change tout de suite, l'écriture suit. */
   valider: (reviewId: string) => ValidationEffectuee | null
   devalider: (reviewId: string) => void
+  /**
+   * Repousse une échéance d'un jour, sans toucher aux suivantes (règle métier
+   * n°6). Renvoie null si la révision est déjà faite ou introuvable.
+   */
+  reporter: (reviewId: string) => ReportEffectue | null
   /** Remet les révisions d'un sujet dans l'état fourni. Sert à « Annuler ». */
   restaurerRevisions: (topicId: string, precedentes: Review[]) => void
 
@@ -391,6 +407,26 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
     [reviews, persistRevisions],
   )
 
+  /**
+   * Règle métier n°6 : « pas aujourd'hui ». Même forme que la validation —
+   * écriture immédiate, révisions d'avant renvoyées pour « Annuler » —, mais
+   * une seule échéance bouge : un report ne dit rien du rythme réel.
+   */
+  const reporter = useCallback(
+    (reviewId: string): ReportEffectue | null => {
+      const cible = reviews.find((review) => review.id === reviewId)
+      if (!cible) return null
+
+      const precedentes = revisionsDe(cible.topicId, reviews)
+      const resultat = reporterRevision(precedentes, reviewId, todayKey())
+      if (resultat.date === null) return null
+
+      persistRevisions(cible.topicId, resultat.reviews)
+      return { topicId: cible.topicId, precedentes, date: resultat.date }
+    },
+    [reviews, persistRevisions],
+  )
+
   const devalider = useCallback(
     (reviewId: string) => {
       const cible = reviews.find((review) => review.id === reviewId)
@@ -464,6 +500,25 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
     [topics],
   )
 
+  /**
+   * Le programme revient avec son identifiant et sa date de création : les
+   * sujets qui le désignaient — il n'y en a aucun, sinon la suppression aurait
+   * été refusée — et l'ordre d'affichage sont donc rendus intacts.
+   */
+  const restaurerProgramme = useCallback(
+    (programme: Programme) => {
+      setProgrammes((actuels) =>
+        actuels.some((candidat) => candidat.id === programme.id)
+          ? actuels
+          : [...actuels, programme].sort((a, b) =>
+              a.createdAt.localeCompare(b.createdAt),
+            ),
+      )
+      echecEcriture(putProgramme(programme))
+    },
+    [echecEcriture],
+  )
+
   const importer = useCallback(async (contenu: ContenuSauvegarde) => {
     setCategories(contenu.categories)
     setTopics(contenu.topics)
@@ -497,6 +552,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       creerProgramme,
       modifierProgramme,
       supprimerProgramme,
+      restaurerProgramme,
       compterUsages,
       createTopic,
       editTopic,
@@ -505,6 +561,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       definirPratique,
       valider,
       devalider,
+      reporter,
       restaurerRevisions,
       importer,
     }),
@@ -522,6 +579,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       creerProgramme,
       modifierProgramme,
       supprimerProgramme,
+      restaurerProgramme,
       compterUsages,
       createTopic,
       editTopic,
@@ -530,6 +588,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       definirPratique,
       valider,
       devalider,
+      reporter,
       restaurerRevisions,
       importer,
     ],

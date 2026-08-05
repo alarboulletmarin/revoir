@@ -7,6 +7,7 @@ import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import { useToast } from '../state/useToast'
 import { estListeDeChaines, usePreference } from '../state/usePreference'
 import { useAujourdhui } from '../state/useAujourdhui'
+import { libelleReport, useReport } from '../state/useReport'
 import { formatLong, formatIsoDate } from '../lib/dates'
 import { CLE_SANS_CATEGORIE, grouperParCategorie, revisionsDe } from '../lib/sujets'
 import { etatRevision, resumeCategorie, statsCategorie, type ModeColonnes } from '../lib/suivi'
@@ -42,6 +43,7 @@ export function Suivi() {
     definirPratique,
   } = useDonnees()
   const { afficherToast } = useToast()
+  const reporter = useReport()
   const large = useMediaQuery('(min-width: 768px)')
   const aujourdhui = useAujourdhui()
   const champFiltre = useId()
@@ -250,6 +252,10 @@ export function Suivi() {
           devalider(reviewId)
           setVisee(null)
         }}
+        onReporter={(reviewId) => {
+          reporter(reviewId, aujourdhui)
+          setVisee(null)
+        }}
         onPratique={definirPratique}
       />
     </>
@@ -262,6 +268,7 @@ interface PanneauCelluleProps {
   onFermer: () => void
   onValider: (reviewId: string) => void
   onDevalider: (reviewId: string) => void
+  onReporter: (reviewId: string) => void
   onPratique: (topicId: string, statut: PracticeStatus) => void
 }
 
@@ -280,6 +287,7 @@ function PanneauCellule({
   onFermer,
   onValider,
   onDevalider,
+  onReporter,
   onPratique,
 }: PanneauCelluleProps) {
   const { topics, reviews } = useDonnees()
@@ -333,9 +341,14 @@ function PanneauCellule({
                 Annuler la validation
               </Bouton>
             ) : (
-              <Bouton variante="primaire" onClick={() => onValider(review.id)}>
-                Marquer comme effectuée
-              </Bouton>
+              <>
+                <Bouton variante="primaire" onClick={() => onValider(review.id)}>
+                  Marquer comme effectuée
+                </Bouton>
+                <Bouton variante="discret" onClick={() => onReporter(review.id)}>
+                  {libelleReport(review, aujourdhui)}
+                </Bouton>
+              </>
             )}
             <Link to={`/sujet/${topic.id}`} className="btn btn--discret">
               Voir le sujet

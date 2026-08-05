@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
 import { useAujourdhui } from '../state/useAujourdhui'
+import { libelleReport, useReport } from '../state/useReport'
 import { useTitrePage } from '../state/useTitrePage'
 import { getSchedule } from '../lib/schedules'
 import { formatIsoDate, formatLong, formatRelative } from '../lib/dates'
 import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
+import type { ModeleSujet } from './SujetForm'
 import { Frise } from '../components/Frise'
 import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -32,6 +34,7 @@ export function SujetDetail() {
     programmes,
   } = useDonnees()
   const { afficherToast } = useToast()
+  const reporter = useReport()
   const [confirmerSuppression, setConfirmerSuppression] = useState(false)
   const aujourdhui = useAujourdhui()
 
@@ -79,6 +82,16 @@ export function SujetDetail() {
         onAction: () => restaurerRevisions(effet.topicId, effet.precedentes),
       },
     })
+  }
+
+  const dupliquer = () => {
+    const modele: ModeleSujet = {
+      titre: topic.title,
+      categoryId: topic.categoryId,
+      scheduleId: topic.scheduleId,
+      depuis: topic.title,
+    }
+    navigate('/nouveau', { state: { modele } })
   }
 
   const archiver = () => {
@@ -182,6 +195,22 @@ export function SujetDetail() {
                     {faite ? 'effectuée' : formatRelative(review.dueDate, aujourdhui)}
                   </span>
                 </div>
+
+                {/*
+                  « Pas aujourd'hui » : une échéance recule d'un jour sans que
+                  les suivantes bougent. Rien à reporter sur une révision faite,
+                  d'où l'absence du bouton plutôt qu'un bouton inerte.
+                */}
+                {!faite && (
+                  <Bouton
+                    variante="texte"
+                    className="echeance__report"
+                    aria-label={`${libelleReport(review, aujourdhui)} : révision J+${review.intervalInDays}`}
+                    onClick={() => reporter(review.id, aujourdhui)}
+                  >
+                    Reporter
+                  </Bouton>
+                )}
               </li>
             )
           })}
@@ -194,6 +223,15 @@ export function SujetDetail() {
           <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="discret">
             Modifier
           </LienBouton>
+          {/*
+            Le chapitre suivant se prépare comme le précédent : même catégorie,
+            même programme, titre à retoucher, date d'aujourd'hui. C'est le
+            formulaire de création qui s'ouvre — rien n'est écrit tant qu'il
+            n'est pas soumis.
+          */}
+          <Bouton variante="discret" onClick={dupliquer}>
+            Dupliquer
+          </Bouton>
           <Bouton variante="discret" onClick={archiver}>
             <IconeArchive width="18" height="18" />
             {archive ? 'Désarchiver' : 'Archiver'}

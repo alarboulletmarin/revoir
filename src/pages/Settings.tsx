@@ -1,6 +1,8 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Link } from 'react-router-dom'
+import type { Programme } from '../types'
 import { useDonnees } from '../state/useDonnees'
+import { useToast } from '../state/useToast'
 import { useTitrePage } from '../state/useTitrePage'
 import {
   BackupError,
@@ -29,8 +31,10 @@ export function Settings() {
     setArchived,
     programmes,
     supprimerProgramme,
+    restaurerProgramme,
     compterUsages,
   } = useDonnees()
+  const { afficherToast } = useToast()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
@@ -38,9 +42,23 @@ export function Settings() {
   const archives = archivedTopics(topics)
   const rangees = categoriesTriees(categories)
 
-  const supprimer = (id: string, label: string) => {
-    void supprimerProgramme(id).then((fait) => {
-      if (fait) setRetour({ ton: 'ok', message: `Programme « ${label} » supprimé.` })
+  /*
+   * On annule, on ne confirme pas (règle métier n°3). Un programme supprimable
+   * n'est suivi par aucun sujet — il n'emporte donc rien —, mais il a pu
+   * demander quelques gestes à composer, et un message de constat ne les rendait
+   * pas. Le toast, lui, les rend.
+   */
+  const supprimer = (programme: Programme) => {
+    void supprimerProgramme(programme.id).then((fait) => {
+      if (!fait) return
+      afficherToast({
+        texte: 'Programme supprimé',
+        detail: programme.label,
+        action: {
+          libelle: 'Annuler',
+          onAction: () => restaurerProgramme(programme),
+        },
+      })
     })
   }
 
@@ -209,10 +227,7 @@ export function Settings() {
                       {usages > 0 ? 'Renommer' : 'Modifier'}
                     </LienBouton>
                     {usages === 0 && (
-                      <Bouton
-                        variante="danger"
-                        onClick={() => supprimer(programme.id, programme.label)}
-                      >
+                      <Bouton variante="danger" onClick={() => supprimer(programme)}>
                         Supprimer
                       </Bouton>
                     )}
