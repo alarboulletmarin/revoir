@@ -6,6 +6,11 @@ import type { Programme } from '../types'
 import { useDonnees } from '../state/useDonnees'
 import { useToast } from '../state/useToast'
 import { useTitrePage } from '../state/useTitrePage'
+import { usePreferences, useTextes } from '../state/usePreferences'
+import { THEMES, type Theme } from '../state/theme'
+import { LANGUES, type Langue } from '../i18n'
+import { fr } from '../i18n/fr'
+import { en } from '../i18n/en'
 import {
   BackupError,
   backupFileName,
@@ -13,19 +18,33 @@ import {
   serializeBackup,
   type ContenuSauvegarde,
 } from '../lib/backup'
+import { echeancesIcs, nomFichierIcs, serialiserIcs } from '../lib/ics'
+import { TYPE_ICS, TYPE_JSON, telecharger } from '../lib/telechargement'
 import { REFERENCE, SOURCE } from '../lib/build'
 import { archivedTopics, categoriesTriees } from '../lib/sujets'
 import { decrirePortee, listerDecalages, reviewsDepuisOffsets } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { Bascule } from '../components/Bascule'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { Frise } from '../components/Frise'
 import { ChipCategorie } from '../components/ChipCategorie'
 
 type Retour = { ton: 'ok' | 'erreur'; message: string } | null
 
+/**
+ * Chaque langue se nomme dans sa propre langue.
+ *
+ * « Français » ne se traduit pas par « French » dans un sélecteur : quelqu'un
+ * qui ouvre l'application dans une langue qu'il ne lit pas doit pouvoir y
+ * reconnaître la sienne. C'est le seul endroit du projet qui lise deux
+ * dictionnaires à la fois.
+ */
+const NOM_LANGUE: Record<Langue, string> = { fr: fr.nom, en: en.nom }
+
 export function Settings() {
-  useTitrePage('Réglages')
+  const t = useTextes()
+  useTitrePage(t.reglages.titre)
   const {
     categories,
     topics,
@@ -37,9 +56,11 @@ export function Settings() {
     restaurerProgramme,
     compterUsages,
   } = useDonnees()
+  const { theme, definirTheme, langue, definirLangue } = usePreferences()
   const { afficherToast } = useToast()
   const champFichier = useRef<HTMLInputElement>(null)
   const [retour, setRetour] = useState<Retour>(null)
+  const [retourIcs, setRetourIcs] = useState<Retour>(null)
   const [enAttente, setEnAttente] = useState<ContenuSauvegarde | null>(null)
 
   const archives = archivedTopics(topics)
@@ -55,10 +76,10 @@ export function Settings() {
     void supprimerProgramme(programme.id).then((fait) => {
       if (!fait) return
       afficherToast({
-        texte: 'Programme supprimé',
+        texte: t.reglages.programmes.supprime,
         detail: programme.label,
         action: {
-          libelle: 'Annuler',
+          libelle: t.commun.annuler,
           onAction: () => restaurerProgramme(programme),
         },
       })
@@ -67,24 +88,35 @@ export function Settings() {
 
   const exporter = () => {
     // Les sujets archivés font partie de l'export (règle métier n°5).
-    const blob = new Blob(
-      [serializeBackup({ categories, topics, reviews, programmes })],
-      { type: 'application/json' },
+    telecharger(
+      serializeBackup({ categories, topics, reviews, programmes }),
+      backupFileName(),
+      TYPE_JSON,
     )
-    const url = URL.createObjectURL(blob)
-    const lien = document.createElement('a')
-    lien.href = url
-    lien.download = backupFileName()
-    document.body.append(lien)
-    lien.click()
-    lien.remove()
-    // Libérer l'URL dans le même tour de boucle annulerait parfois le
-    // téléchargement avant qu'il ne démarre.
-    setTimeout(() => URL.revokeObjectURL(url), 0)
-    setRetour({
-      ton: 'ok',
-      message: `${topics.length} sujet${topics.length > 1 ? 's' : ''} exporté${topics.length > 1 ? 's' : ''}.`,
-    })
+    setRetour({ ton: 'ok', message: t.reglages.sauvegarde.exportes(topics.length) })
+  }
+
+  /*
+   * L'export calendrier, à côté de la sauvegarde parce que c'est la même
+   * question — « comment je sors mes données d'ici ? » —, et distinct d'elle
+   * parce que la réponse n'est pas la même : le JSON revient, l'`.ics` non.
+   *
+   * Un compte à zéro n'est pas une erreur, c'est un fait : tout est fait, il
+   * n'y a rien à mettre dans un agenda. Livrer un fichier vide laisserait
+   * croire à un import silencieusement raté.
+   */
+  const exporterCalendrier = () => {
+    const echeances = echeancesIcs(topics, reviews, categories, programmes)
+    if (echeances.length === 0) {
+      setRetourIcs({ ton: 'erreur', message: t.ics.aucune })
+      return
+    }
+    telecharger(
+      serialiserIcs(echeances, t.ics.nomCalendrier),
+      nomFichierIcs(),
+      TYPE_ICS,
+    )
+    setRetourIcs({ ton: 'ok', message: t.ics.exportees(echeances.length) })
   }
 
   const lireFichier = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +134,7 @@ export function Settings() {
         message:
           erreur instanceof BackupError
             ? erreur.message
-            : "Ce fichier n'a pas pu être lu.",
+            : t.reglages.sauvegarde.illisible,
       })
     }
   }
@@ -111,31 +143,57 @@ export function Settings() {
     if (!enAttente) return
     const nombre = enAttente.topics.length
     void importer(enAttente).then(() => {
-      setRetour({
-        ton: 'ok',
-        message: `${nombre} sujet${nombre > 1 ? 's' : ''} importé${nombre > 1 ? 's' : ''}.`,
-      })
+      setRetour({ ton: 'ok', message: t.reglages.sauvegarde.importes(nombre) })
     })
     setEnAttente(null)
   }
 
   return (
     <>
-      <h1 className="page__titre">Réglages</h1>
+      <h1 className="page__titre">{t.reglages.titre}</h1>
+
+      {/*
+        L'apparence et la langue en tête : ce sont les deux réglages qui
+        changent l'écran sous les doigts, et les seuls qu'on vienne chercher
+        sans savoir où ils sont. Ni l'une ni l'autre n'appartient aux données —
+        d'où leur absence de l'export, dite juste en dessous.
+      */}
+      <section className="reglages__bloc">
+        <h2 className="section__titre">{t.reglages.apparence.titre}</h2>
+        <p className="discret">{t.reglages.apparence.intro}</p>
+        <Bascule<Theme>
+          legende={t.reglages.apparence.legende}
+          legendeMasquee
+          valeur={theme}
+          options={THEMES.map((valeur) => ({
+            valeur,
+            libelle: t.reglages.apparence[valeur],
+          }))}
+          onChange={definirTheme}
+        />
+      </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">Sauvegarde</h2>
-        <p className="discret">
-          Vos données restent sur cet appareil. L'export produit un fichier JSON que
-          vous pouvez conserver puis réimporter, ici ou sur un autre appareil. Les
-          sujets archivés y figurent.
-        </p>
+        <h2 className="section__titre">{t.reglages.langue.titre}</h2>
+        <p className="discret">{t.reglages.langue.intro}</p>
+        <Bascule<Langue>
+          legende={t.reglages.langue.legende}
+          legendeMasquee
+          valeur={langue}
+          options={LANGUES.map((valeur) => ({ valeur, libelle: NOM_LANGUE[valeur] }))}
+          onChange={definirLangue}
+        />
+      </section>
+
+      <section className="reglages__bloc">
+        <h2 className="section__titre">{t.reglages.sauvegarde.titre}</h2>
+        <p className="discret">{t.reglages.sauvegarde.intro}</p>
         <div className="reglages__actions">
           <Bouton variante="primaire" onClick={exporter}>
-            Exporter les données
+            {t.reglages.sauvegarde.exporter}
           </Bouton>
           <Bouton variante="discret" onClick={() => champFichier.current?.click()}>
-            Importer un fichier
+            {t.reglages.sauvegarde.importer}
           </Bouton>
           <input
             ref={champFichier}
@@ -160,15 +218,45 @@ export function Settings() {
       </section>
 
       {/*
+        L'export calendrier de **tous** les sujets vit ici, et pas sur la vue
+        Calendrier : celle-ci répond à « quand ? », elle n'est pas un écran
+        d'outils, et le bento du tableau de bord n'est pas davantage l'endroit
+        d'un bouton de fichier. L'export d'un sujet seul, lui, est sur sa fiche,
+        parmi ses autres actions — c'est là qu'on l'a en tête.
+      */}
+      <section className="reglages__bloc">
+        <h2 className="section__titre">{t.reglages.calendrier.titre}</h2>
+        <p className="discret">{t.reglages.calendrier.intro}</p>
+        <p className="discret discret--petit">{t.reglages.calendrier.note}</p>
+        <div className="reglages__actions">
+          <Bouton variante="discret" onClick={exporterCalendrier}>
+            {t.reglages.calendrier.exporter}
+          </Bouton>
+        </div>
+        {retourIcs && (
+          <p
+            className={
+              retourIcs.ton === 'erreur'
+                ? 'banniere banniere--retard'
+                : 'banniere banniere--fait'
+            }
+            role="status"
+          >
+            {retourIcs.message}
+          </p>
+        )}
+      </section>
+
+      {/*
         Un aperçu et un lien, pas la gestion elle-même : renommer, recolorer et
         supprimer tiennent sur leur propre écran, et les Réglages sont déjà
         longs. Les chips disent d'un coup d'œil ce qu'il y a, ce qu'une liste
         d'éditeurs empilés dirait moins bien.
       */}
       <section className="reglages__bloc">
-        <h2 className="section__titre">Catégories</h2>
+        <h2 className="section__titre">{t.reglages.categories.titre}</h2>
         {rangees.length === 0 ? (
-          <p className="discret">Aucune catégorie pour le moment.</p>
+          <p className="discret">{t.reglages.categories.aucune}</p>
         ) : (
           <ul className="reglages__apercu">
             {rangees.map((categorie) => (
@@ -179,16 +267,13 @@ export function Settings() {
           </ul>
         )}
         <div className="reglages__actions">
-          <LienBouton vers="/categories">Gérer les catégories</LienBouton>
+          <LienBouton vers="/categories">{t.reglages.categories.gerer}</LienBouton>
         </div>
       </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">Programmes</h2>
-        <p className="discret">
-          Les trois programmes intégrés — Simple, Poussé, Ultime — couvrent la
-          plupart des besoins. Vous pouvez composer les vôtres.
-        </p>
+        <h2 className="section__titre">{t.reglages.programmes.titre}</h2>
+        <p className="discret">{t.reglages.programmes.intro}</p>
 
         {programmes.length > 0 && (
           <ul className="rythmes">
@@ -199,9 +284,10 @@ export function Settings() {
                   <div className="rythme__entete">
                     <span className="rythme__nom">{programme.label}</span>
                     <span className="rythme__compte">
-                      {programme.offsets.length} révision
-                      {programme.offsets.length > 1 ? 's' : ''} ·{' '}
-                      {decrirePortee(programme.offsets)}
+                      {t.reglages.programmes.compte(
+                        programme.offsets.length,
+                        decrirePortee(programme.offsets),
+                      )}
                     </span>
                   </div>
                   <Frise
@@ -213,7 +299,7 @@ export function Settings() {
                     )}
                     aujourdhui={todayKey()}
                     variante="mini"
-                    intitule={`Programme ${programme.label}`}
+                    intitule={t.reglages.programmes.intitule(programme.label)}
                   />
                   <span className="rythme__jours">
                     {listerDecalages(programme.offsets)}
@@ -227,19 +313,19 @@ export function Settings() {
                       vers={`/programmes/${programme.id}/modifier`}
                       variante="discret"
                     >
-                      {usages > 0 ? 'Renommer' : 'Modifier'}
+                      {usages > 0
+                        ? t.reglages.programmes.renommer
+                        : t.reglages.programmes.modifier}
                     </LienBouton>
                     {usages === 0 && (
                       <Bouton variante="danger" onClick={() => supprimer(programme)}>
-                        Supprimer
+                        {t.commun.supprimer}
                       </Bouton>
                     )}
                   </div>
                   {usages > 0 && (
                     <p className="discret discret--petit">
-                      {usages > 1
-                        ? `Suivi par ${usages} sujets : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
-                        : 'Suivi par un sujet : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}
+                      {t.reglages.programmes.usages(usages)}
                     </p>
                   )}
                 </li>
@@ -250,15 +336,15 @@ export function Settings() {
 
         <div className="reglages__actions">
           <LienBouton vers="/programmes/nouveau" variante="discret">
-            Créer un programme
+            {t.reglages.programmes.creer}
           </LienBouton>
         </div>
       </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">Sujets archivés</h2>
+        <h2 className="section__titre">{t.reglages.archives.titre}</h2>
         {archives.length === 0 ? (
-          <p className="discret">Aucun sujet archivé.</p>
+          <p className="discret">{t.reglages.archives.aucun}</p>
         ) : (
           <ul className="liste-revisions">
             {archives.map((topic) => (
@@ -273,7 +359,7 @@ export function Settings() {
                   />
                 </Link>
                 <Bouton variante="discret" onClick={() => setArchived(topic.id, false)}>
-                  Désarchiver
+                  {t.reglages.archives.desarchiver}
                 </Bouton>
               </li>
             ))}
@@ -282,16 +368,9 @@ export function Settings() {
       </section>
 
       <section className="reglages__bloc">
-        <h2 className="section__titre">À propos</h2>
-        <p className="discret">
-          Revoir planifie des révisions espacées sans jamais stocker ce que vous
-          apprenez. Aucun compte, aucun serveur, aucune mesure d'audience : tout est
-          enregistré dans le stockage local de votre navigateur.
-        </p>
-        <p className="discret">
-          Effacer les données du site depuis votre navigateur supprime donc toutes vos
-          révisions. Pensez à exporter régulièrement.
-        </p>
+        <h2 className="section__titre">{t.reglages.apropos.titre}</h2>
+        <p className="discret">{t.reglages.apropos.intro}</p>
+        <p className="discret">{t.reglages.apropos.effacement}</p>
         {/*
           La licence dans l'application, pas seulement dans le dépôt : c'est ce
           qui rend le projet trouvable depuis le produit. Les notices des
@@ -306,29 +385,32 @@ export function Settings() {
           a bougé depuis ne désigne plus le code qu'on a réellement reçu.
         */}
         <p className="discret">
-          Logiciel libre sous licence AGPL-3.0.{' '}
+          {t.reglages.apropos.licence}{' '}
           <a className="lien" href={SOURCE} target="_blank" rel="noreferrer noopener">
-            Code source
+            {t.reglages.apropos.source}
           </a>{' '}
           <span className="discret">({REFERENCE})</span> ·{' '}
           <a className="lien" href="/THIRD-PARTY.txt">
-            Licences des composants tiers
+            {t.reglages.apropos.tiers}
           </a>
         </p>
         <div className="reglages__actions">
-          <LienBouton vers="/aide">Comment ça marche</LienBouton>
+          <LienBouton vers="/aide">{t.reglages.apropos.commentCaMarche}</LienBouton>
         </div>
       </section>
 
       <ConfirmDialog
         open={enAttente !== null}
-        title="Remplacer les données actuelles ?"
+        title={t.reglages.sauvegarde.confirmerTitre}
         message={
           enAttente
-            ? `L'import de ${enAttente.topics.length} sujet${enAttente.topics.length > 1 ? 's' : ''} remplacera vos ${topics.length} sujet${topics.length > 1 ? 's' : ''} actuel${topics.length > 1 ? 's' : ''}.`
+            ? t.reglages.sauvegarde.confirmerMessage(
+                enAttente.topics.length,
+                topics.length,
+              )
             : ''
         }
-        confirmLabel="Importer"
+        confirmLabel={t.reglages.sauvegarde.confirmerAction}
         danger
         onCancel={() => setEnAttente(null)}
         onConfirm={confirmerImport}

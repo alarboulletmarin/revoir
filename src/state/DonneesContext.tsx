@@ -31,6 +31,7 @@ import {
   replaceAll,
   replaceReviewsOfTopic,
 } from '../db/database'
+import { textes } from '../i18n'
 import { detacherCategorie, type Teinte } from '../lib/categories'
 import type { ContenuSauvegarde } from '../lib/backup'
 import { newId } from '../lib/ids'
@@ -170,10 +171,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
            * deux cas la base est intacte — une transaction de mise à jour qui
            * lève est annulée —, et le conseil utile est le même.
            */
-          setError(
-            'Impossible de lire les données locales. Elles ne sont pas perdues : ' +
-              'réessayez, et exportez-les depuis les réglages dès que possible.',
-          )
+          setError(textes().erreurs.lecture)
         }
       })
       .finally(() => {
@@ -191,7 +189,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const echecEcriture = useMemo(
-    () => signaler("L'enregistrement local a échoué."),
+    () => signaler(textes().erreurs.ecriture),
     [signaler],
   )
 
@@ -286,7 +284,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
         await deleteCategoryDetachingTopics(id, detaches)
         setError(null)
       } catch {
-        setError('La suppression locale a échoué.')
+        setError(textes().erreurs.suppression)
       }
     },
     [topics],
@@ -352,7 +350,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
         await deleteTopicWithReviews(id)
         setError(null)
       } catch {
-        setError('La suppression locale a échoué.')
+        setError(textes().erreurs.suppression)
       }
     },
     [topics],
@@ -495,7 +493,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
         await deleteProgramme(id)
         setError(null)
       } catch {
-        setError('La suppression locale a échoué.')
+        setError(textes().erreurs.suppression)
       }
       return true
     },
@@ -530,7 +528,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       await replaceAll(contenu)
       setError(null)
     } catch {
-      setError("L'import n'a pas pu être enregistré localement.")
+      setError(textes().erreurs.import)
     }
   }, [])
 

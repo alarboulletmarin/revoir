@@ -3,7 +3,7 @@
 /**
  * Le signe de l'application : la frise réduite à un logotype.
  *
- * Ce n'est pas une septième icône (section 11) — c'est l'identité de l'app,
+ * Ce n'est pas une dixième icône (section 11) — c'est l'identité de l'app,
  * la même forme que celle installée sur l'écran d'accueil, et elle n'a donc
  * pas sa place dans Icons.tsx.
  *

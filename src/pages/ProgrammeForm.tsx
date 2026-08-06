@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
+import { useRetour } from '../state/useRetour'
 import {
   ECHELLE_RYTHME,
   RYTHME_MAX_REVISIONS,
@@ -43,8 +45,12 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
   const navigate = useNavigate()
   const { programmes, creerProgramme, modifierProgramme, compterUsages, loading } =
     useDonnees()
+  const revenir = useRetour()
+  const t = useTextes()
 
-  useTitrePage(mode === 'edit' ? 'Modifier le programme' : 'Nouveau programme')
+  const titre =
+    mode === 'edit' ? t.programmeForm.titreEdition : t.programmeForm.titreCreation
+  useTitrePage(titre)
 
   const existant = mode === 'edit' ? programmes.find((p) => p.id === id) : undefined
   const usages = existant ? compterUsages(existant.id) : 0
@@ -92,22 +98,22 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
 
   const erreurNom =
     nom.trim() === ''
-      ? 'Le nom est obligatoire.'
+      ? t.programmeForm.erreurNom
       : programmes.some(
             (programme) =>
               programme.id !== existant?.id &&
               programme.label.toLocaleLowerCase('fr') === nom.trim().toLocaleLowerCase('fr'),
           )
-        ? 'Un programme porte déjà ce nom.'
+        ? t.programmeForm.erreurHomonyme
         : null
 
-  const erreurRythme = jours.length === 0 ? 'Choisissez au moins une échéance.' : null
+  const erreurRythme = jours.length === 0 ? t.programmeForm.erreurRythme : null
 
   if (mode === 'edit' && !existant) {
     return loading ? (
-      <p className="discret">Chargement…</p>
+      <p className="discret">{t.commun.chargement}</p>
     ) : (
-      <p className="discret">Ce programme n'existe pas ou plus.</p>
+      <p className="discret">{t.programmeForm.introuvable}</p>
     )
   }
 
@@ -131,48 +137,44 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">
-        {mode === 'edit' ? 'Modifier le programme' : 'Nouveau programme'}
-      </h1>
+      <h1 className="page__titre">{titre}</h1>
 
       <form className="formulaire" onSubmit={soumettre} noValidate>
         <Champ
-          label="Nom du programme"
+          label={t.programmeForm.champNom}
           type="text"
           value={nom}
           maxLength={40}
           autoComplete="off"
           onChange={(event) => setNom(event.target.value)}
           erreur={soumis ? erreurNom : null}
-          aide="Par exemple : Examen blanc, Vocabulaire, Permis."
+          aide={t.programmeForm.aideNom}
         />
 
         {rythmeFige ? (
-          <GroupeChamp legende="Rythme">
+          <GroupeChamp legende={t.programmeForm.rythme}>
             <div className="rythme__apercu">
               <Frise
                 origine={todayKey()}
                 reviews={reviewsDepuisOffsets('apercu', todayKey(), existant!.offsets)}
                 aujourdhui={todayKey()}
-                intitule="Rythme du programme"
+                intitule={t.programmeForm.rythmeIntitule}
               />
               <span className="rythme__jours">
-                {existant!.offsets.length} révision
-                {existant!.offsets.length > 1 ? 's' : ''} ·{' '}
-                {decrirePortee(existant!.offsets)} ·{' '}
-                {listerDecalages(existant!.offsets)}
+                {t.programmeForm.detailFige(
+                  existant!.offsets.length,
+                  decrirePortee(existant!.offsets),
+                  listerDecalages(existant!.offsets),
+                )}
               </span>
             </div>
             <p className="discret discret--petit">
-              {usages > 1
-                ? `${usages} sujets suivent ce programme : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
-                : 'Un sujet suit ce programme : ses révisions sont déjà planifiées, le rythme ne peut plus changer.'}{' '}
-              Le nom, lui, se modifie librement.
+              {t.programmeForm.fige(usages)} {t.programmeForm.figeSuite}
             </p>
           </GroupeChamp>
         ) : (
           <>
-            <GroupeChamp legende="Partir d'un rythme connu">
+            <GroupeChamp legende={t.programmeForm.modeles}>
               <div className="rythme__modeles">
                 {SCHEDULES.map((modele) => (
                   <Bouton
@@ -187,11 +189,8 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             </GroupeChamp>
 
             <fieldset className="champ">
-              <legend className="champ__label">Quand la révision revient-elle ?</legend>
-              <p className="champ__aide">
-                Touchez les échéances à garder. Elles se comptent à partir du jour de
-                départ.
-              </p>
+              <legend className="champ__label">{t.programmeForm.question}</legend>
+              <p className="champ__aide">{t.programmeForm.aideQuestion}</p>
               <div className="jours">
                 {graduations.map((jour) => {
                   const retenu = jours.includes(jour)
@@ -222,8 +221,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
               </div>
               {plein && (
                 <p className="champ__aide" role="status">
-                  {RYTHME_MAX_REVISIONS} échéances au plus : retirez-en une pour
-                  en ajouter une autre.
+                  {t.programmeForm.plein(RYTHME_MAX_REVISIONS)}
                 </p>
               )}
               {soumis && erreurRythme && (
@@ -234,17 +232,16 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             {/* On choisit un rythme, pas une liste de nombres (section 8.7). */}
             {jours.length > 0 && (
               <section className="apercu">
-                <h2 className="section__titre">Le rythme obtenu</h2>
+                <h2 className="section__titre">{t.programmeForm.resultat}</h2>
                 <Frise
                   origine={todayKey()}
                   reviews={reviewsDepuisOffsets('apercu', todayKey(), jours)}
                   aujourdhui={todayKey()}
                   libelles="decalage"
-                  intitule="Aperçu du rythme"
+                  intitule={t.programmeForm.apercuIntitule}
                 />
                 <p className="rythme__jours">
-                  {jours.length} révision{jours.length > 1 ? 's' : ''} ·{' '}
-                  {decrirePortee(jours)}
+                  {t.programmeForm.resume(jours.length, decrirePortee(jours))}
                 </p>
               </section>
             )}
@@ -252,11 +249,11 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
         )}
 
         <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={() => navigate(-1)}>
-            Annuler
+          <Bouton variante="discret" onClick={revenir}>
+            {t.commun.annuler}
           </Bouton>
           <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? 'Enregistrer' : 'Créer le programme'}
+            {mode === 'edit' ? t.commun.enregistrer : t.programmeForm.creer}
           </Bouton>
         </div>
       </form>

@@ -17,6 +17,7 @@ import { IconeCoche } from './Icons'
 import { Frise } from './Frise'
 import { ChipCategorie } from './ChipCategorie'
 import { useDonnees } from '../state/useDonnees'
+import { useTextes } from '../state/usePreferences'
 
 /**
  * Durée de la ligne barrée avant retrait de la liste (section 8.2).
@@ -53,6 +54,7 @@ export function LigneRevision({
   detail = 'frise',
 }: LigneRevisionProps) {
   const { topic, review } = entry
+  const t = useTextes()
   // Les catégories et les révisions viennent du contexte plutôt que d'une
   // prop : le composant est appelé depuis quatre écrans, et ce sont des
   // données d'affichage, pas d'entrée.
@@ -130,7 +132,11 @@ export function LigneRevision({
         className="ligne-revision__case"
         role="checkbox"
         aria-checked={coche}
-        aria-label={`${faite ? 'Décocher' : 'Marquer comme revu'} : ${topic.title}, révision J+${review.intervalInDays}`}
+        aria-label={
+          faite
+            ? t.ligne.decocher(topic.title, t.programmes.decalage(review.intervalInDays))
+            : t.ligne.valider(topic.title, t.programmes.decalage(review.intervalInDays))
+        }
         onClick={basculer}
       >
         <span className="ligne-revision__cercle">
@@ -160,10 +166,10 @@ export function LigneRevision({
           */}
           {progression && (
             <span className="ligne-revision__progression">
-              Révision {progression.rang} sur {progression.total}
+              {t.ligne.progression(progression.rang, progression.total)}
               {progression.suivante !== null && (
                 <>
-                  {' · Prochaine : '}
+                  {` · ${t.ligne.prochaine}`}
                   <time dateTime={progression.suivante}>
                     {formatEcheance(progression.suivante, review.dueDate)}
                   </time>

@@ -8,6 +8,8 @@ import { useMediaQuery } from '../state/useMediaQuery'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
 import { useValidation } from '../state/useValidation'
 import { estListeDeChaines, usePreference } from '../state/usePreference'
+import { useTextes } from '../state/usePreferences'
+import { textes } from '../i18n'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { libelleReport, useReport } from '../state/useReport'
 import { formatLong, formatIsoDate } from '../lib/dates'
@@ -34,7 +36,8 @@ const estChoixDePli = (valeur: unknown): valeur is string[] | null =>
   valeur === null || estListeDeChaines(valeur)
 
 export function Suivi() {
-  useTitrePage('Suivi')
+  const t = useTextes()
+  useTitrePage(t.suivi.titre)
   const { categories, topics, reviews, loading, devalider, definirPratique } =
     useDonnees()
   const { validerRevision } = useValidation()
@@ -115,18 +118,15 @@ export function Suivi() {
     (groupe) => filtreEffectif === TOUTES || groupe.cle === filtreEffectif,
   )
 
-  if (loading) return <p className="discret">Chargement…</p>
+  if (loading) return <p className="discret">{t.commun.chargement}</p>
 
   if (groupes.length === 0) {
     return (
       <div className="etat-vide">
-        <h1 className="page__titre">Rien à suivre pour l'instant.</h1>
-        <p className="discret">
-          Le suivi montre, catégorie par catégorie, où en est chaque sujet dans son
-          programme.
-        </p>
+        <h1 className="page__titre">{t.suivi.videTitre}</h1>
+        <p className="discret">{t.suivi.videDetail}</p>
         <LienBouton vers="/nouveau" variante="primaire">
-          Créer un sujet
+          {t.suivi.creerSujet}
         </LienBouton>
       </div>
     )
@@ -135,12 +135,12 @@ export function Suivi() {
   return (
     <>
       <div className="page__entete">
-        <h1 className="page__titre">Suivi</h1>
+        <h1 className="page__titre">{t.suivi.titre}</h1>
       </div>
 
       <div className="suivi__reglages">
         <label className="suivi__filtre" htmlFor={champFiltre}>
-          <span className="champ__label">Catégorie</span>
+          <span className="champ__label">{t.suivi.categorie}</span>
           {/* Même gabarit que le champ de choix du formulaire : `appearance:
               none` emporte la flèche native, on la redessine. */}
           <div className="champ-select">
@@ -150,7 +150,7 @@ export function Suivi() {
               value={filtreEffectif}
               onChange={(event) => choisirFiltre(event.target.value)}
             >
-              <option value={TOUTES}>Toutes les catégories</option>
+              <option value={TOUTES}>{t.suivi.toutesCategories}</option>
               {groupes.map((groupe) => (
                 <option key={groupe.cle} value={groupe.cle}>
                   {groupe.nom}
@@ -162,7 +162,7 @@ export function Suivi() {
         </label>
 
         <fieldset className="suivi__mode">
-          <legend className="champ__label">Colonnes</legend>
+          <legend className="champ__label">{t.suivi.colonnes}</legend>
           <div className="suivi__bascule">
             {(['compact', 'intervalles'] as const).map((option) => (
               <label
@@ -181,7 +181,7 @@ export function Suivi() {
                   checked={mode === option}
                   onChange={() => setMode(option)}
                 />
-                {option === 'compact' ? 'Compact' : 'Intervalles'}
+                {option === 'compact' ? t.suivi.compact : t.suivi.intervalles}
               </label>
             ))}
           </div>
@@ -197,7 +197,7 @@ export function Suivi() {
       <details className="suivi__legende">
         <summary className="suivi__legende-titre">
           <IconeChevron className="suivi__chevron" width="16" height="16" />
-          Que veulent dire les formes ?
+          {t.suivi.legendeTitre}
         </summary>
         <LegendeSuivi />
       </details>
@@ -294,6 +294,7 @@ function PanneauCellule({
   onReporter,
   onPratique,
 }: PanneauCelluleProps) {
+  const t = useTextes()
   const { topics, reviews } = useDonnees()
 
   const topic = topics.find((candidat) => candidat.id === visee?.topicId) ?? null
@@ -310,9 +311,12 @@ function PanneauCellule({
     topic === null
       ? ''
       : visee?.type === 'pratique'
-        ? `Pratique · ${topic.title}`
+        ? t.suivi.panneauPratique(topic.title)
         : review
-          ? `Révision J+${review.intervalInDays} · ${topic.title}`
+          ? t.suivi.panneauRevision(
+              t.programmes.decalage(review.intervalInDays),
+              topic.title,
+            )
           : topic.title
 
   return (
@@ -320,7 +324,7 @@ function PanneauCellule({
       {topic !== null && visee?.type === 'pratique' && (
         <SelecteurPratique
           valeur={topic.practiceStatus}
-          legende="Où en est la pratique de ce sujet"
+          legende={t.pratique.legendeSujet}
           onChange={(statut) => {
             onPratique(topic.id, statut)
             onFermer()
@@ -342,12 +346,12 @@ function PanneauCellule({
           <div className="panneau__actions">
             {etatRevision(review, aujourdhui) === 'faite' ? (
               <Bouton variante="discret" onClick={() => onDevalider(review.id)}>
-                Annuler la validation
+                {t.suivi.annulerValidation}
               </Bouton>
             ) : (
               <>
                 <Bouton variante="primaire" onClick={() => onValider(review.id)}>
-                  Marquer comme effectuée
+                  {t.suivi.marquerEffectuee}
                 </Bouton>
                 <Bouton variante="discret" onClick={() => onReporter(review.id)}>
                   {libelleReport(review, aujourdhui)}
@@ -355,7 +359,7 @@ function PanneauCellule({
               </>
             )}
             <Link to={`/sujet/${topic.id}`} className="btn btn--discret">
-              Voir le sujet
+              {t.suivi.voirLeSujet}
             </Link>
           </div>
         </>
@@ -366,18 +370,17 @@ function PanneauCellule({
 
 /** L'état d'une révision, écrit en toutes lettres. */
 function etatEnClair(review: Review, revisions: Review[], aujourdhui: string): string {
+  const t = textes().suivi
   const { rang, total } = progressionEntree(review, revisions)
-  const situation = `Révision ${rang} sur ${total}`
+  const situation = t.situation(rang, total)
 
   if (review.completedAt !== null) {
     const jour = formatIsoDate(review.completedAt)
-    return jour === null
-      ? `${situation} · effectuée`
-      : `${situation} · effectuée le ${jour}`
+    return jour === null ? t.effectuee(situation) : t.effectueeLe(situation, jour)
   }
   const etat = etatRevision(review, aujourdhui)
-  const prevue = `prévue le ${formatLong(review.dueDate)}`
-  if (etat === 'retard') return `${situation} · ${prevue}, en retard`
-  if (etat === 'aujourdhui') return `${situation} · à effectuer aujourd’hui`
-  return `${situation} · ${prevue}`
+  const date = formatLong(review.dueDate)
+  if (etat === 'retard') return t.prevueRetard(situation, date)
+  if (etat === 'aujourdhui') return t.prevueAujourdhui(situation)
+  return t.prevue(situation, date)
 }

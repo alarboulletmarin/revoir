@@ -8,16 +8,21 @@
  * raisonnement qui, ailleurs dans l'app, réserve la confirmation à la
  * suppression : ici on ne confirme pas, on choisit.
  *
- * Des radios natifs : les flèches naviguent dans le groupe, l'état est annoncé,
- * et rien de tout cela n'est à réécrire.
+ * Le gabarit — radios natifs habillés en segments — est celui de `Bascule`,
+ * que le thème et la langue partagent maintenant.
  */
-import { useId } from 'react'
 import type { PracticeStatus } from '../types'
+import { textes } from '../i18n'
+import { useTextes } from '../state/usePreferences'
+import { Bascule } from './Bascule'
 
-export const LIBELLES_PRATIQUE: Record<PracticeStatus, string> = {
-  todo: 'À faire',
-  in_progress: 'En cours',
-  done: 'Terminée',
+/**
+ * Le libellé d'un statut. Une fonction et non une table figée : le tableau de
+ * suivi l'écrit dans ses cellules, la fiche dans son sélecteur, et les deux
+ * doivent changer de langue ensemble.
+ */
+export function libellePratique(statut: PracticeStatus): string {
+  return textes().pratique[statut]
 }
 
 const ORDRE: PracticeStatus[] = ['todo', 'in_progress', 'done']
@@ -25,39 +30,23 @@ const ORDRE: PracticeStatus[] = ['todo', 'in_progress', 'done']
 interface SelecteurPratiqueProps {
   valeur: PracticeStatus
   onChange: (statut: PracticeStatus) => void
+  /** Par défaut, le mot « Pratique » lui-même. */
   legende?: string
 }
 
 export function SelecteurPratique({
   valeur,
   onChange,
-  legende = 'Pratique',
+  legende,
 }: SelecteurPratiqueProps) {
-  const groupe = useId()
+  const t = useTextes()
 
   return (
-    <fieldset className="pratique">
-      <legend className="champ__label">{legende}</legend>
-      <div className="pratique__choix">
-        {ORDRE.map((statut) => (
-          <label
-            key={statut}
-            className={
-              valeur === statut ? 'pratique__option pratique__option--actif' : 'pratique__option'
-            }
-          >
-            <input
-              className="pratique__radio"
-              type="radio"
-              name={groupe}
-              value={statut}
-              checked={valeur === statut}
-              onChange={() => onChange(statut)}
-            />
-            {LIBELLES_PRATIQUE[statut]}
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <Bascule<PracticeStatus>
+      legende={legende ?? t.pratique.legende}
+      valeur={valeur}
+      options={ORDRE.map((statut) => ({ valeur: statut, libelle: t.pratique[statut] }))}
+      onChange={onChange}
+    />
   )
 }

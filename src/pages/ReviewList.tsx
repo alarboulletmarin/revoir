@@ -6,6 +6,8 @@ import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
+import { textes } from '../i18n'
 import { formatLong, formatRelative, type DateKey } from '../lib/dates'
 import { overdueEntries, todayEntries, upcomingEntries } from '../lib/stats'
 import { estFaite } from '../lib/sujets'
@@ -18,20 +20,14 @@ import { LigneRevision } from '../components/LigneRevision'
  */
 const FILTRES = {
   aujourdhui: {
-    titre: "Aujourd'hui",
-    vide: 'Rien à revoir aujourd’hui.',
     entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
       todayEntries(topics, reviews, jour).filter((entree) => !estFaite(entree.review)),
   },
   retard: {
-    titre: 'En retard',
-    vide: 'Aucune révision en retard.',
     entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
       overdueEntries(topics, reviews, jour),
   },
   prochaines: {
-    titre: 'Prochaines révisions',
-    vide: 'Aucune révision planifiée',
     // Sans plafond : cet écran est la destination de « Tout voir ».
     entrees: (topics: Topic[], reviews: Review[], jour: DateKey) =>
       upcomingEntries(topics, reviews, null, jour),
@@ -53,9 +49,11 @@ function Liste({ filtre }: { filtre: Filtre }) {
   const { topics, reviews } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = useAujourdhui()
+  const t = useTextes()
   const config = FILTRES[filtre]
+  const libelles = t.listes[filtre]
 
-  useTitrePage(config.titre)
+  useTitrePage(libelles.titre)
 
   const groupes = useMemo(
     () => grouperParJour(config.entrees(topics, reviews, aujourdhui)),
@@ -65,14 +63,14 @@ function Liste({ filtre }: { filtre: Filtre }) {
   return (
     <>
       <div className="page__entete">
-        <h1 className="page__titre">{config.titre}</h1>
+        <h1 className="page__titre">{libelles.titre}</h1>
         <p className="page__intro" aria-live="polite">
           {compter(groupes)}
         </p>
       </div>
 
       {groupes.length === 0 ? (
-        <p className="discret">{config.vide}</p>
+        <p className="discret">{libelles.vide}</p>
       ) : (
         groupes.map(([jour, entrees]) => (
           <section key={jour} className="groupe-jour">
@@ -111,5 +109,5 @@ function grouperParJour(entrees: ReviewEntry[]): [DateKey, ReviewEntry[]][] {
 
 function compter(groupes: [DateKey, ReviewEntry[]][]): string {
   const total = groupes.reduce((somme, [, entrees]) => somme + entrees.length, 0)
-  return `${total} révision${total > 1 ? 's' : ''}`
+  return textes().commun.revisions(total)
 }

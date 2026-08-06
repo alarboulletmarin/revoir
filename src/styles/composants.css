@@ -651,7 +651,7 @@
  *
  * `appearance: none` est nécessaire — sans lui, iOS repeint le champ à sa
  * façon par-dessus la bordure du design system —, mais il emporte la flèche
- * native au passage. Elle est donc redessinée avec le chevron des sept icônes,
+ * native au passage. Elle est donc redessinée avec le chevron des neuf icônes,
  * pivoté : aucun signe nouveau (section 11).
  *
  * Aucun `font-size` ici : le reset pose --t-champ sur tous les select, et le

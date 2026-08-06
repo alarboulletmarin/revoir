@@ -21,15 +21,16 @@
  */
 import { useId } from 'react'
 import {
-  NOM_TEINTE,
   TEINTES,
   couleurLibre,
   estTeinteNommee,
+  nomTeinte,
   type Teinte,
 } from '../lib/categories'
 import { couleurRetenue } from '../lib/couleurs'
 import { IconePlus } from './Icons'
 import { proprietesTeinte } from './teinte'
+import { useTextes } from '../state/usePreferences'
 
 /**
  * Les huit teintes en dur, uniquement pour amorcer le sélecteur du système :
@@ -68,6 +69,7 @@ export function SelecteurTeinte({
   legende,
   legendeMasquee = false,
 }: SelecteurTeinteProps) {
+  const t = useTextes()
   const id = useId()
   const libre = couleurLibre(valeur)
   // Le sélecteur du système s'ouvre sur la couleur en cours, pas sur du noir.
@@ -96,7 +98,7 @@ export function SelecteurTeinte({
               onChange={() => onChange(teinte)}
             />
             <span className="teintes__pastille" aria-hidden="true" />
-            <span className="invisible">{NOM_TEINTE[teinte]}</span>
+            <span className="invisible">{nomTeinte(teinte)}</span>
           </label>
         ))}
 
@@ -120,7 +122,7 @@ export function SelecteurTeinte({
           <span className="teintes__pastille teintes__pastille--libre" aria-hidden="true">
             {!libre && <IconePlus width="16" height="16" strokeWidth="2" />}
           </span>
-          <span className="invisible">Couleur personnalisée</span>
+          <span className="invisible">{t.teintes.personnalisee}</span>
         </label>
       </div>
     </fieldset>

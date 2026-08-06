@@ -8,6 +8,7 @@
  * notification générique.
  */
 import { Bouton } from './Bouton'
+import { useTextes } from '../state/usePreferences'
 
 interface ToastProps {
   texte: string
@@ -24,6 +25,8 @@ interface ToastProps {
 }
 
 export function Toast({ texte, detail, action, fermable, onFermer }: ToastProps) {
+  const t = useTextes()
+
   return (
     <div className="toast" role="status" aria-live="polite">
       <div className="toast__texte">
@@ -46,7 +49,7 @@ export function Toast({ texte, detail, action, fermable, onFermer }: ToastProps)
         )}
         {fermable && (
           <Bouton variante="texte" className="toast__action" onClick={onFermer}>
-            Fermer
+            {t.commun.fermer}
           </Bouton>
         )}
       </div>

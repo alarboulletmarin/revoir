@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
+import { useRetour } from '../state/useRetour'
 import {
   DEFAULT_SCHEDULE,
   buildReviews,
@@ -56,6 +58,8 @@ function modeleDepuis(state: unknown): ModeleSujet | null {
 export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const revenir = useRetour()
+  const t = useTextes()
   const { state } = useLocation()
   const [modele] = useState(() => (mode === 'create' ? modeleDepuis(state) : null))
   const {
@@ -70,7 +74,8 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
     programmesDisponibles,
   } = useDonnees()
 
-  useTitrePage(mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet')
+  const titre_ = mode === 'edit' ? t.sujetForm.titreEdition : t.sujetForm.titreCreation
+  useTitrePage(titre_)
 
   const existant = mode === 'edit' ? topics.find((topic) => topic.id === id) : undefined
 
@@ -123,14 +128,14 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
     }))
   }, [depart, programme, programmes, topics, reviews, existant?.id])
 
-  const erreurTitre = titre.trim() === '' ? 'Le titre est obligatoire.' : null
-  const erreurDate = depart === '' ? 'La date de départ est obligatoire.' : null
+  const erreurTitre = titre.trim() === '' ? t.sujetForm.erreurTitre : null
+  const erreurDate = depart === '' ? t.sujetForm.erreurDate : null
 
   if (mode === 'edit' && !existant) {
     return loading ? (
-      <p className="discret">Chargement…</p>
+      <p className="discret">{t.commun.chargement}</p>
     ) : (
-      <p className="discret">Ce sujet n'existe pas ou plus.</p>
+      <p className="discret">{t.sujet.introuvable}</p>
     )
   }
 
@@ -161,19 +166,14 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">
-        {mode === 'edit' ? 'Modifier le sujet' : 'Nouveau sujet'}
-      </h1>
+      <h1 className="page__titre">{titre_}</h1>
 
       {/*
         Ce qui a été repris, et ce qui ne l'a pas été. Sans cette phrase, un
         formulaire pré-rempli laisse croire qu'on modifie le sujet d'origine.
       */}
       {modele && (
-        <p className="page__intro">
-          Dupliqué depuis « {modele.depuis} ». Le titre, la catégorie et le
-          programme sont repris ; la date de départ est celle d'aujourd'hui.
-        </p>
+        <p className="page__intro">{t.sujetForm.duplique(modele.depuis)}</p>
       )}
 
       <form className="formulaire" onSubmit={soumettre} noValidate>
@@ -185,18 +185,14 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
           ne passe pas pour un outil scolaire.
         */}
         <Champ
-          label="Titre"
+          label={t.sujetForm.champTitre}
           type="text"
           value={titre}
           maxLength={120}
           autoComplete="off"
           onChange={(event) => setTitre(event.target.value)}
           erreur={soumis ? erreurTitre : null}
-          aide={
-            mode === 'create'
-              ? 'Ce que vous voulez revoir. Par exemple : les dérivées, les accords majeurs, le vocabulaire du voyage.'
-              : undefined
-          }
+          aide={mode === 'create' ? t.sujetForm.aideTitre : undefined}
         />
 
         {/*
@@ -213,14 +209,14 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
         />
 
         <ChampDate
-          label="Date de départ"
-          intitule="Choisir la date de départ"
+          label={t.sujetForm.champDate}
+          intitule={t.sujetForm.intituleDate}
           value={depart}
           onChange={setDepart}
           erreur={soumis ? erreurDate : null}
         />
 
-        <GroupeChamp legende="Programme">
+        <GroupeChamp legende={t.sujetForm.champProgramme}>
           <div className="programmes">
             {programmesDisponibles.map((option) => (
               <label
@@ -240,7 +236,10 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
                 <span className="programme__entete">
                   <span className="programme__nom">{option.label}</span>
                   <span className="programme__compte">
-                    {option.offsets.length} révisions · {option.description}
+                    {t.sujetForm.resumeProgramme(
+                      option.offsets.length,
+                      option.description,
+                    )}
                   </span>
                 </span>
                 {/* On choisit un rythme, pas un mot (section 8.7). */}
@@ -254,7 +253,7 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
                   )}
                   aujourdhui={depart || todayKey()}
                   variante="mini"
-                  intitule={`Programme ${option.label}`}
+                  intitule={t.reglages.programmes.intitule(option.label)}
                 />
                 {/*
                   Les jours écrits sous la frise : sous 480px elle n'a pas de
@@ -270,45 +269,44 @@ export function SujetForm({ mode }: { mode: 'create' | 'edit' }) {
 
         {apercu.length > 0 && (
           <section className="apercu">
-            <h2 className="section__titre">Dates générées</h2>
+            <h2 className="section__titre">{t.sujetForm.apercuTitre}</h2>
 
             <Frise
               origine={depart}
               reviews={buildReviews('apercu', depart, programme, programmes)}
               aujourdhui={depart}
               libelles="date"
-              intitule="Aperçu du programme"
+              intitule={t.sujetForm.apercuIntitule}
             />
 
             <ul className="apercu__dates">
               {apercu.map((ligne) => (
                 <li key={ligne.offset} className="apercu__ligne">
-                  <span className="apercu__decalage">J+{ligne.offset}</span>
+                  <span className="apercu__decalage">
+                    {t.programmes.decalage(ligne.offset)}
+                  </span>
                   <span className="apercu__date">{formatShort(ligne.date)}</span>
                   <span className="apercu__charge">
                     {ligne.charge === 0
-                      ? 'rien de prévu'
-                      : `déjà ${ligne.charge} révision${ligne.charge > 1 ? 's' : ''}`}
+                      ? t.sujetForm.rienDePrevu
+                      : t.sujetForm.dejaPrevu(ligne.charge)}
                   </span>
                 </li>
               ))}
             </ul>
 
             {mode === 'edit' && (
-              <p className="discret discret--petit">
-                Les révisions déjà effectuées restent cochées si leur décalage existe
-                toujours dans le programme choisi.
-              </p>
+              <p className="discret discret--petit">{t.sujetForm.noteEdition}</p>
             )}
           </section>
         )}
 
         <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={() => navigate(-1)}>
-            Annuler
+          <Bouton variante="discret" onClick={revenir}>
+            {t.commun.annuler}
           </Bouton>
           <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? 'Modifier le sujet' : 'Créer le sujet'}
+            {mode === 'edit' ? t.sujetForm.modifier : t.sujetForm.creer}
           </Bouton>
         </div>
       </form>

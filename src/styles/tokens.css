@@ -60,15 +60,60 @@
   --duree-moyen: 200ms;
   --courbe: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Cibles et pile du bas */
+  /*
+   * Cibles et pile du bas (section 7.3).
+   *
+   * L'ordre, du sol vers le haut : la barre de navigation, le bouton flottant,
+   * le toast. Chaque valeur est dérivée de la précédente — c'est la seule
+   * façon d'empêcher qu'un jour l'une passe sous l'autre.
+   */
   --cible: 44px;
   --bas-securise: env(safe-area-inset-bottom, 0px);
   --h-fab: 56px;
-  --bas-fab: calc(var(--e-4) + var(--bas-securise));
+  /* Hauteur utile de la barre du bas : icône, libellé, et l'air autour. */
+  --h-nav: 58px;
+  /* Ce qu'elle occupe réellement, marge système comprise. */
+  --pile-nav: calc(var(--h-nav) + var(--bas-securise));
+  --bas-fab: calc(var(--pile-nav) + var(--e-3));
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
 
   color-scheme: light;
+}
+
+/*
+ * Le thème sombre.
+ *
+ * Une seule apparence supplémentaire, et un seul sélecteur : `data-theme` porte
+ * toujours une apparence *résolue* — « clair » ou « sombre » —, jamais le choix
+ * « système », que le JavaScript tranche avant de l'écrire (voir
+ * `state/theme.ts`). Une feuille qui devrait, elle, gérer les trois écrirait
+ * deux fois la même palette : une fois pour le choix explicite, une fois sous
+ * `@media (prefers-color-scheme: dark)`.
+ *
+ * Ce n'est pas le thème clair inversé. Le registre reste celui du papier et de
+ * l'instrument : le fond est un noir chaud, jamais un noir pur (section 11), et
+ * les surfaces s'éclaircissent en montant vers l'œil au lieu de s'assombrir.
+ *
+ * Contrastes mesurés sur `--papier` : --encre 14,9:1 · --encre-2 5,7:1 ·
+ * --accent 6,7:1 · --retard 5,4:1 · --fait 5,3:1 · --retard-texte 7,2:1 ·
+ * --fait-texte 7,8:1. Le texte posé sur `--accent` plein tient 6,2:1.
+ */
+[data-theme='sombre'] {
+  --papier: #1A1917;
+  --surface: #221F1C;
+  --surface-survol: #2B2723;
+  --trait: #3A3630;
+  --encre: #EFECE4;
+  --encre-2: #98927F;
+  --accent: #7FA89A;
+  --accent-doux: #23302C;
+  --retard: #B8843F;
+  --retard-texte: #CF9D64;
+  --fait: #6F9670;
+  --fait-texte: #8FB790;
+
+  color-scheme: dark;
 }
 
 /*
@@ -115,14 +160,15 @@
    * Hauteur de l'en-tête de l'application, qui est collant (`base.css`).
    * L'en-tête du tableau de suivi s'y décale, sinon il se glisse dessous.
    *
-   * C'est de l'arithmétique sur le gabarit de l'en-tête, pas une mesure : sous
-   * 480px il empile la marque et la navigation, au-delà il les met sur une
-   * ligne. Si ce gabarit change, cette valeur change avec lui — et rien ne le
-   * signalera d'autre que l'écran.
+   * C'est de l'arithmétique sur le gabarit de l'en-tête, pas une mesure : une
+   * rangée unique, de la hauteur d'une cible, entourée de son espacement. Elle
+   * ne dépend plus de la largeur depuis que la navigation est passée en bas —
+   * l'en-tête ne porte plus que la marque et deux signes, qui tiennent sur une
+   * ligne dès 320px. Si ce gabarit change, cette valeur change avec lui, et
+   * rien ne le signalera d'autre que l'écran.
    */
   --h-entete: calc(
-    var(--e-3) + var(--haut-securise) + var(--cible) + var(--e-3) + var(--cible) +
-      var(--e-3) + 1px
+    var(--e-3) + var(--haut-securise) + var(--cible) + var(--e-3) + 1px
   );
 
   /*
@@ -134,9 +180,6 @@
 
 @media (min-width: 480px) {
   :root {
-    --h-entete: calc(
-      var(--e-3) + var(--haut-securise) + var(--cible) + var(--e-3) + 1px
-    );
     --suivi-sujet: 180px;
   }
 }
@@ -184,6 +227,30 @@
 [data-teinte='teal'] { --teinte: var(--cat-teal); --teinte-texte: var(--cat-teal); }
 [data-teinte='mauve'] { --teinte: var(--cat-mauve); --teinte-texte: var(--cat-mauve); }
 [data-teinte='ocre'] { --teinte: var(--cat-ocre); --teinte-texte: var(--cat-ocre); }
+
+/*
+ * Les mêmes huit, sur le papier de nuit.
+ *
+ * Ce ne sont pas d'autres couleurs : ce sont les mêmes, éclaircies jusqu'à
+ * retrouver sur `--papier` sombre le contraste qu'elles tenaient sur le clair.
+ * Calculées en OKLab — teinte et chroma conservées, seule la clarté monte —,
+ * exactement comme `lib/couleurs.ts` traite une couleur libre. Contrastes
+ * mesurés : de 5,50:1 (ocre) à 5,54:1 (ardoise et bleu).
+ *
+ * Les redéfinir ici plutôt que dans le bloc des règles `[data-teinte]` évite de
+ * réécrire seize déclarations : les variables `--cat-*` changent, les huit
+ * règles qui les lisent ne bougent pas.
+ */
+[data-theme='sombre'] {
+  --cat-ardoise: #7895A2;
+  --cat-prune: #9A8AAC;
+  --cat-olive: #849766;
+  --cat-terre: #AB8A72;
+  --cat-bleu: #6E94BC;
+  --cat-teal: #6A9995;
+  --cat-mauve: #AD84A1;
+  --cat-ocre: #A18F56;
+}
 
 @media (min-width: 1024px) {
   :root { --marge-page: var(--e-6); }

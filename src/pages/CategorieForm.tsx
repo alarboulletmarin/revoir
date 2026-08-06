@@ -18,6 +18,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
+import { useTextes } from '../state/usePreferences'
+import { useRetour } from '../state/useRetour'
 import { categorieHomonyme } from '../lib/categories'
 import { Bouton } from '../components/Bouton'
 import {
@@ -29,8 +31,12 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { categories, creerCategorie, modifierCategorie, loading } = useDonnees()
+  const revenir = useRetour()
+  const t = useTextes()
 
-  useTitrePage(mode === 'edit' ? 'Modifier la catégorie' : 'Nouvelle catégorie')
+  const titre =
+    mode === 'edit' ? t.categories.titreEdition : t.categories.titreCreation
+  useTitrePage(titre)
 
   const existante =
     mode === 'edit' ? categories.find((categorie) => categorie.id === id) : undefined
@@ -51,16 +57,16 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
   const propre = brouillon.nom.trim()
   const erreurNom =
     propre === ''
-      ? 'Le nom est obligatoire.'
+      ? t.categories.erreurNom
       : categorieHomonyme(propre, categories, existante?.id)
-        ? 'Une catégorie porte déjà ce nom.'
+        ? t.categories.erreurHomonyme
         : null
 
   if (mode === 'edit' && !existante) {
     return loading ? (
-      <p className="discret">Chargement…</p>
+      <p className="discret">{t.commun.chargement}</p>
     ) : (
-      <p className="discret">Cette catégorie n'existe pas ou plus.</p>
+      <p className="discret">{t.categories.introuvable}</p>
     )
   }
 
@@ -84,9 +90,7 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">
-        {mode === 'edit' ? 'Modifier la catégorie' : 'Nouvelle catégorie'}
-      </h1>
+      <h1 className="page__titre">{titre}</h1>
 
       <form className="formulaire" onSubmit={soumettre} noValidate>
         <ChampsCategorie
@@ -97,11 +101,13 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
         />
 
         <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={() => navigate(-1)}>
-            Annuler
+          <Bouton variante="discret" onClick={revenir}>
+            {t.commun.annuler}
           </Bouton>
           <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? 'Modifier la catégorie' : 'Créer la catégorie'}
+            {mode === 'edit'
+              ? t.categories.modifierBouton
+              : t.categories.creerBouton}
           </Bouton>
         </div>
       </form>

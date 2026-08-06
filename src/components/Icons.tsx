@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 /**
- * Les sept icônes du projet, et pas une de plus (section 11) : plus,
- * calendrier, coche, chevron, archive, corbeille, réglages. SVG inline, aucune
- * librairie — pour sept symboles, une dépendance ne se justifie pas.
+ * Les neuf icônes du projet, et pas une de plus (section 11) : plus,
+ * calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi. SVG
+ * inline, aucune librairie — pour neuf symboles, une dépendance ne se
+ * justifie pas.
  *
- * Ce qui n'est pas dans cette liste s'écrit en toutes lettres : la navigation
- * et la fermeture d'une boîte de dialogue sont des libellés, pas des
- * pictogrammes.
+ * Les deux dernières sont arrivées avec la barre du bas, où les trois vues
+ * portent leur signe au-dessus de leur mot. Elles ne remplacent aucun libellé :
+ * le mot reste écrit sous chacune, et c'est lui qui dit ce que fait l'onglet.
+ * Ce qui n'est toujours pas dans cette liste s'écrit en toutes lettres — la
+ * fermeture d'une boîte de dialogue est un libellé, pas un pictogramme.
  */
 import type { SVGProps } from 'react'
 
@@ -98,6 +101,46 @@ export function IconeReglages(props: IconeProps) {
       <circle cx="15" cy="8.5" r="2.4" />
       <path d="M3.5 15.5h3M11.5 15.5h9" />
       <circle cx="9" cy="15.5" r="2.4" />
+    </Icone>
+  )
+}
+
+/**
+ * « Aujourd'hui » : le curseur sur la règle.
+ *
+ * La section 2 le nomme déjà — « un trait vertical, seul élément qui dépasse la
+ * frise ». C'est donc le signe que l'application s'est donné pour dire
+ * *maintenant*, et non un dessin inventé pour l'occasion. Deux graduations
+ * l'encadrent, sans plus : ce n'est pas le logotype, qui en porte six et n'a
+ * pas de curseur.
+ *
+ * Le rail est **sous** les graduations, et non au milieu d'elles : un rail
+ * médian faisait du curseur une croix, et une croix à côté d'un bouton
+ * flottant qui en est une n'est pas un signe, c'est une confusion.
+ */
+export function IconeJour(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M3.5 17h17" />
+      <path d="M7.5 13v4M16.5 13v4" />
+      <path d="M12 7.5v9.5" />
+    </Icone>
+  )
+}
+
+/**
+ * « Suivi » : le tableau, avec sa colonne de sujets figée.
+ *
+ * Une grille et non un calendrier — d'où l'absence des deux attaches du haut,
+ * qui sont ce qui distingue le signe du calendrier, et la présence d'un montant
+ * vertical, qui est ce que le tableau a de propre : une première colonne qui
+ * reste en place pendant que les étapes défilent (section 8.13).
+ */
+export function IconeSuivi(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+      <path d="M3.5 9.5h17M3.5 14.5h17M10 9.5v10" />
     </Icone>
   )
 }

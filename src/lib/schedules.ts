@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import type { Programme, Review, ScheduleId } from '../types'
+import type { Programme, Review, ScheduleId, ScheduleIdIntegre } from '../types'
+import { textes } from '../i18n'
 import { addDaysToKey, type DateKey } from './dates'
 import { newId, type NouvelId } from './ids'
 
@@ -17,7 +18,8 @@ export interface Schedule {
 
 /** « J+1 · J+3 · J+7 · J+14 · J+30 » — le rythme écrit en toutes lettres. */
 export function listerDecalages(offsets: number[]): string {
-  return offsets.map((offset) => `J+${offset}`).join(' · ')
+  const { decalage } = textes().programmes
+  return offsets.map(decalage).join(' · ')
 }
 
 /** Bornes d'un rythme. Au-delà, il ne se lit plus. */
@@ -44,16 +46,11 @@ export const ECHELLE_RYTHME = [
  * « 7 j », « 3 mois » plutôt que « 90 j ». C'est le libellé des graduations.
  */
 export function nommerEcart(jours: number): string {
-  if (jours >= 365 && jours % 365 === 0) {
-    const annees = jours / 365
-    return annees === 1 ? '1 an' : `${annees} ans`
-  }
-  if (jours >= 30 && jours % 30 === 0) return `${jours / 30} mois`
-  if (jours >= 7 && jours % 7 === 0) {
-    const semaines = jours / 7
-    return semaines === 1 ? '1 sem.' : `${semaines} sem.`
-  }
-  return `${jours} j`
+  const { ecartAnnees, ecartMois, ecartSemaines, ecartJours } = textes().programmes
+  if (jours >= 365 && jours % 365 === 0) return ecartAnnees(jours / 365)
+  if (jours >= 30 && jours % 30 === 0) return ecartMois(jours / 30)
+  if (jours >= 7 && jours % 7 === 0) return ecartSemaines(jours / 7)
+  return ecartJours(jours)
 }
 
 /**
@@ -61,23 +58,8 @@ export function nommerEcart(jours: number): string {
  * c'est l'unité qui ne demande aucune conversion mentale.
  */
 export function decrireEcart(jours: number): string {
-  return `${jours} jour${jours > 1 ? 's' : ''} après le départ`
+  return textes().programmes.ecartComplet(jours)
 }
-
-const MOIS_EN_LETTRES = [
-  '',
-  'un',
-  'deux',
-  'trois',
-  'quatre',
-  'cinq',
-  'six',
-  'sept',
-  'huit',
-  'neuf',
-  'dix',
-  'onze',
-]
 
 /**
  * « sur un mois », « sur deux mois », « sur une année ». Dérivée du dernier
@@ -85,29 +67,42 @@ const MOIS_EN_LETTRES = [
  * alors tout seul, dans les mêmes mots que les trois intégrés.
  */
 export function decrirePortee(offsets: number[]): string {
+  const { porteeVide, porteeJours, porteeMois, porteeAnnees } = textes().programmes
   const dernier = offsets.at(-1) ?? 0
-  if (dernier === 0) return 'sans échéance'
+  if (dernier === 0) return porteeVide
   // En deçà, arrondir au mois ment : vingt jours ne sont pas un mois. Au-delà,
   // c'est le compte exact des jours qui ne dit plus rien.
-  if (dernier < 25) return `sur ${dernier} jour${dernier > 1 ? 's' : ''}`
+  if (dernier < 25) return porteeJours(dernier)
   const mois = Math.round(dernier / 30)
-  if (mois <= 1) return 'sur un mois'
-  if (mois < 12) return `sur ${MOIS_EN_LETTRES[mois]} mois`
-  const annees = Math.round(dernier / 365)
-  return annees <= 1 ? 'sur une année' : `sur ${annees} années`
+  if (mois < 12) return porteeMois(mois)
+  return porteeAnnees(Math.round(dernier / 365))
 }
 
 /** Les trois programmes de la spécification. Ils ne sont jamais stockés. */
-const INTEGRES: { id: ScheduleId; label: string; offsets: number[] }[] = [
-  { id: 'simple', label: 'Simple', offsets: [1, 3, 7, 14, 30] },
-  { id: 'pousse', label: 'Poussé', offsets: [1, 2, 4, 7, 14, 30, 60] },
-  { id: 'ultime', label: 'Ultime', offsets: [1, 2, 4, 7, 14, 30, 60, 90, 180, 365] },
+const INTEGRES: { id: ScheduleIdIntegre; offsets: number[] }[] = [
+  { id: 'simple', offsets: [1, 3, 7, 14, 30] },
+  { id: 'pousse', offsets: [1, 2, 4, 7, 14, 30, 60] },
+  { id: 'ultime', offsets: [1, 2, 4, 7, 14, 30, 60, 90, 180, 365] },
 ]
 
+/**
+ * Le nom et la portée sont des **accesseurs**, pas des chaînes figées.
+ *
+ * `SCHEDULES` est construit une fois, à l'import du module — bien avant que la
+ * langue de l'interface ne soit connue. Un `label` calculé là serait celui du
+ * français, pour toute la session. Les lire à l'accès les fait suivre la langue
+ * sans qu'aucun appelant ait à changer : ils restent des propriétés.
+ */
 export const SCHEDULES: Schedule[] = INTEGRES.map((programme) => ({
-  ...programme,
-  description: decrirePortee(programme.offsets),
+  id: programme.id,
+  offsets: programme.offsets,
   personnel: false,
+  get label() {
+    return textes().programmes.integres[programme.id]
+  },
+  get description() {
+    return decrirePortee(programme.offsets)
+  },
 }))
 
 export const DEFAULT_SCHEDULE: ScheduleId = 'simple'
@@ -117,14 +112,20 @@ export function isScheduleId(value: unknown): value is ScheduleId {
   return SCHEDULES.some((schedule) => schedule.id === value)
 }
 
-/** Un programme personnalisé, présenté comme les trois intégrés. */
+/**
+ * Un programme personnalisé, présenté comme les trois intégrés. Son nom vient
+ * de l'utilisateur et ne se traduit pas ; sa portée, elle, est dérivée, donc
+ * lue à l'accès comme celle des intégrés.
+ */
 export function versSchedule(programme: Programme): Schedule {
   return {
     id: programme.id,
     label: programme.label,
-    description: decrirePortee(programme.offsets),
     offsets: programme.offsets,
     personnel: true,
+    get description() {
+      return decrirePortee(programme.offsets)
+    },
   }
 }
 

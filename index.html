@@ -38,6 +38,41 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <title>Revoir</title>
+
+    <!--
+      Le thème et la langue, avant la première peinture.
+
+      React les pose lui-même (voir `state/PreferencesContext.tsx`), mais il ne
+      s'exécute qu'une fois son bundle chargé : d'ici là, le document est peint
+      en clair. Sur un appareil en thème sombre, c'est un éclair blanc à chaque
+      ouverture — le seul défaut d'affichage que l'application ne peut pas
+      corriger après coup, puisqu'il a déjà eu lieu.
+
+      Ces quelques lignes sont donc en clair dans le document, sans module ni
+      requête. Elles lisent les mêmes clés que `state/theme.ts`, écrites par
+      `localStorage` en JSON, et se taisent si le stockage est indisponible :
+      en navigation privée l'application marche, elle démarre simplement dans le
+      thème par défaut.
+    -->
+    <script>
+      ;(function () {
+        try {
+          var brut = localStorage.getItem('revoir.theme')
+          var choix = brut === null ? 'systeme' : JSON.parse(brut)
+          var sombre =
+            choix === 'sombre' ||
+            (choix !== 'clair' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.dataset.theme = sombre ? 'sombre' : 'clair'
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', sombre ? '#1a1917' : '#faf9f6')
+          var langue = localStorage.getItem('revoir.langue')
+          if (langue !== null) document.documentElement.lang = JSON.parse(langue)
+        } catch (erreur) {
+          /* Stockage indisponible : le thème par défaut fera l'affaire. */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

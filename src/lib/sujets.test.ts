@@ -6,7 +6,7 @@ import { compteur } from './ids'
 import { buildReviews } from './schedules'
 import {
   CLE_SANS_CATEGORIE,
-  SANS_CATEGORIE,
+  sansCategorie,
   categoriesTriees,
   compterSujets,
   estFaite,
@@ -133,7 +133,7 @@ describe('grouperParCategorie', () => {
     )
     const groupes = grouperParCategorie(CATEGORIES, topics, reviews)
 
-    expect(groupes.map((groupe) => groupe.nom)).toEqual(['Histoire', SANS_CATEGORIE])
+    expect(groupes.map((groupe) => groupe.nom)).toEqual(['Histoire', sansCategorie()])
     expect(groupes.at(-1)?.cle).toBe(CLE_SANS_CATEGORIE)
     expect(groupes.at(-1)?.categorie).toBeNull()
   })
@@ -143,7 +143,7 @@ describe('grouperParCategorie', () => {
     const groupes = grouperParCategorie(CATEGORIES, topics, reviews)
 
     expect(groupes).toHaveLength(1)
-    expect(groupes[0].nom).toBe(SANS_CATEGORIE)
+    expect(groupes[0].nom).toBe(sansCategorie())
   })
 
   it('écarte les sujets archivés', () => {

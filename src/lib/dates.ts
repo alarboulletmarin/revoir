@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { addDays, differenceInCalendarDays, format, parse } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { localeActive, textes } from '../i18n'
 
 /**
  * Les dates sont manipulées comme des chaînes 'yyyy-MM-dd' interprétées en
@@ -66,19 +66,31 @@ export function isFuture(key: DateKey, today: DateKey = todayKey()): boolean {
   return key > today
 }
 
-/** « 14 mars 2026 » */
+/**
+ * Les gabarits viennent du dictionnaire, pas du code.
+ *
+ * Une date n'est pas la même chaîne traduite d'une langue à l'autre : le
+ * français écrit « 14 mars 2026 », l'anglais « March 14, 2026 ». C'est l'ordre
+ * des champs qui change, pas seulement les mots — un gabarit unique arroserait
+ * de virgules la moitié des langues et en priverait l'autre.
+ */
+function formater(date: Date, gabarit: string): string {
+  return format(date, gabarit, { locale: localeActive() })
+}
+
+/** « 14 mars 2026 » · « March 14, 2026 » */
 export function formatLong(key: DateKey): string {
-  return format(fromKey(key), 'd MMMM yyyy', { locale: fr })
+  return formater(fromKey(key), textes().dates.long)
 }
 
-/** « sam. 14 mars » */
+/** « sam. 14 mars » · « Sat, Mar 14 » */
 export function formatShort(key: DateKey): string {
-  return format(fromKey(key), 'EEE d MMM', { locale: fr })
+  return formater(fromKey(key), textes().dates.court)
 }
 
-/** « 14/03 » */
+/** « 14/03 » · « 03/14 » */
 export function formatCompact(key: DateKey): string {
-  return format(fromKey(key), 'dd/MM', { locale: fr })
+  return formater(fromKey(key), textes().dates.compact)
 }
 
 /**
@@ -89,12 +101,13 @@ export function formatCompact(key: DateKey): string {
  */
 export function formatEcheance(key: DateKey, reference: DateKey): string {
   const memeAnnee = key.slice(0, 4) === reference.slice(0, 4)
-  return format(fromKey(key), memeAnnee ? 'd MMMM' : 'd MMMM yyyy', { locale: fr })
+  const { echeance, echeanceAnnee } = textes().dates
+  return formater(fromKey(key), memeAnnee ? echeance : echeanceAnnee)
 }
 
-/** « mars 2026 » */
+/** « mars 2026 » · « March 2026 » */
 export function formatMonth(date: Date): string {
-  return format(date, 'MMMM yyyy', { locale: fr })
+  return formater(date, textes().dates.mois)
 }
 
 /**
@@ -102,17 +115,30 @@ export function formatMonth(date: Date): string {
  * « dans 12 jours ».
  */
 export function formatRelative(key: DateKey, today: DateKey = todayKey()): string {
+  const { relatif } = textes().dates
   const diff = daysBetween(today, key)
-  if (diff === 0) return "aujourd'hui"
-  if (diff === 1) return 'demain'
-  if (diff === -1) return 'hier'
-  if (diff < 0) return `il y a ${-diff} jours`
-  return `dans ${diff} jours`
+  if (diff === 0) return relatif.aujourdhui
+  if (diff === 1) return relatif.demain
+  if (diff === -1) return relatif.hier
+  if (diff < 0) return relatif.passe(-diff)
+  return relatif.futur(diff)
 }
 
 /** Formate un horodatage ISO en date longue, ou null si la valeur est invalide. */
 export function formatIsoDate(iso: string): string | null {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return null
-  return format(date, 'd MMMM yyyy', { locale: fr })
+  return formater(date, textes().dates.long)
+}
+
+/**
+ * Le premier jour de la semaine, dans la langue active — lundi en français,
+ * dimanche en anglais.
+ *
+ * Rendu sous la forme qu'attendent `startOfWeek` et `endOfWeek` : la grille du
+ * calendrier, ses touches Origine et Fin, et la rangée d'initiales en tirent
+ * tous le même début, et ne peuvent donc pas se désaccorder d'un jour.
+ */
+export function debutSemaine(): { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 } {
+  return { weekStartsOn: textes().dates.debutSemaine as 0 | 1 }
 }

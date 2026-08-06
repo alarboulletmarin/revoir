@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { useEffect } from 'react'
+import { textes } from '../i18n'
 
 /**
  * Section 10 : un <title> propre à chaque page. C'est aussi ce que lit un
@@ -9,7 +10,7 @@ import { useEffect } from 'react'
  */
 export function useTitrePage(titre: string) {
   useEffect(() => {
-    document.title = `${titre} · Revoir`
+    document.title = textes().coque.titreDocument(titre)
   }, [titre])
 }
 

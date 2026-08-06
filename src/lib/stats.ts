@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import type { Review, ReviewEntry, Topic } from '../types'
+import { comparerTextes } from '../i18n'
 import { addDaysToKey, type DateKey, todayKey } from './dates'
 import { activeTopics, estFaite, revisionsParSujet } from './sujets'
 
@@ -43,7 +44,7 @@ function sortEntries(entries: ReviewEntry[]): ReviewEntry[] {
     if (a.review.dueDate !== b.review.dueDate) {
       return a.review.dueDate < b.review.dueDate ? -1 : 1
     }
-    return a.topic.title.localeCompare(b.topic.title, 'fr')
+    return comparerTextes(a.topic.title, b.topic.title)
   })
 }
 

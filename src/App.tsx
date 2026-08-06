@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { PreferencesProvider } from './state/PreferencesContext'
 import { DonneesProvider } from './state/DonneesContext'
 import { ToastProvider } from './state/ToastContext'
 import { Layout } from './components/Layout'
@@ -32,38 +33,46 @@ function VersSujet({ suffixe = '' }: { suffixe?: string }) {
 
 export function App() {
   return (
-    <DonneesProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/revisions/:filtre" element={<ReviewList />} />
-              <Route path="/calendrier" element={<CalendarPage />} />
-              <Route path="/suivi" element={<Suivi />} />
-              <Route path="/nouveau" element={<SujetForm mode="create" />} />
-              <Route path="/sujet/:id" element={<SujetDetail />} />
-              <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
-              <Route path="/reglages" element={<Settings />} />
-              <Route path="/aide" element={<Aide />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
-              <Route
-                path="/categories/:id/modifier"
-                element={<CategorieForm mode="edit" />}
-              />
-              <Route path="/programmes/nouveau" element={<ProgrammeForm mode="create" />} />
-              <Route
-                path="/programmes/:id/modifier"
-                element={<ProgrammeForm mode="edit" />}
-              />
-              <Route path="/element/:id" element={<VersSujet />} />
-              <Route path="/element/:id/modifier" element={<VersSujet suffixe="/modifier" />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ToastProvider>
-    </DonneesProvider>
+    /*
+     * Les préférences enveloppent tout : la langue décide des messages que le
+     * fournisseur de données peut avoir à afficher dès sa première lecture, et
+     * le thème doit être posé sur le document avant que quoi que ce soit ne
+     * soit peint.
+     */
+    <PreferencesProvider>
+      <DonneesProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/revisions/:filtre" element={<ReviewList />} />
+                <Route path="/calendrier" element={<CalendarPage />} />
+                <Route path="/suivi" element={<Suivi />} />
+                <Route path="/nouveau" element={<SujetForm mode="create" />} />
+                <Route path="/sujet/:id" element={<SujetDetail />} />
+                <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
+                <Route path="/reglages" element={<Settings />} />
+                <Route path="/aide" element={<Aide />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
+                <Route
+                  path="/categories/:id/modifier"
+                  element={<CategorieForm mode="edit" />}
+                />
+                <Route path="/programmes/nouveau" element={<ProgrammeForm mode="create" />} />
+                <Route
+                  path="/programmes/:id/modifier"
+                  element={<ProgrammeForm mode="edit" />}
+                />
+                <Route path="/element/:id" element={<VersSujet />} />
+                <Route path="/element/:id/modifier" element={<VersSujet suffixe="/modifier" />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ToastProvider>
+      </DonneesProvider>
+    </PreferencesProvider>
   )
 }
