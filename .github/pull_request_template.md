@@ -1,6 +1,5 @@
 <!--
-  Merci. Ce gabarit est court : ce qui compte est le « pourquoi », le reste se
-  lit dans le diff.
+Merci. Ce gabarit est court : ce qui compte est le « pourquoi », le reste se lit dans le diff.
 -->
 
 ## Ce que ça change
@@ -23,5 +22,7 @@
 
 ## Ce que je n'ai pas vérifié
 
-<!-- Un navigateur que vous n'avez pas, un cas que vous n'avez pas su reproduire.
-     Le dire vaut mieux que le laisser deviner. -->
+<!--
+Un navigateur que vous n'avez pas, un cas que vous n'avez pas su reproduire.
+     Le dire vaut mieux que le laisser deviner.
+-->

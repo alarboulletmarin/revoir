@@ -8,7 +8,7 @@ Ce projet accueille tout le monde, quels que soient l'âge, la taille, le handic
 
 Faire preuve d'empathie et de bienveillance. Accepter les avis divergents, les critiques constructives, et en tirer parti. Reconnaître ses erreurs, s'en excuser auprès des personnes affectées, et en tirer les leçons. Chercher ce qui sert la communauté, pas seulement son propre intérêt.
 
-**Une critique porte sur le code, jamais sur la personne.** Ce projet argumente beaucoup et refuse souvent — les refus s'expliquent, ils ne se justifient pas par l'autorité et ne visent personne.
+**Une critique porte sur le code, jamais sur la personne.** Ce projet argumente beaucoup et refuse souvent : les refus s'expliquent, ils ne se justifient pas par l'autorité et ne visent personne.
 
 ## Ce qui ne l'est pas
 

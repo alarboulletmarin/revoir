@@ -1,6 +1,6 @@
 # Contribuer à Revoir
 
-Merci de regarder. Ce document dit ce qu'il faut savoir avant d'écrire une ligne — surtout ce que le projet refuse, qui ne se devine pas.
+Merci de regarder. Ce document dit ce qu'il faut savoir avant d'écrire une ligne, surtout ce que le projet refuse, qui ne se devine pas.
 
 ## Le projet en trois phrases
 
@@ -16,11 +16,11 @@ Sa **section 11** liste des interdits. Ils ne se négocient pas dans une pull re
 
 Le projet exclut aussi, explicitement et pour de bon :
 
-- **la gamification** — aucune série à tenir, aucun score, aucun badge, aucun « Bravo ! » ;
-- **les notifications** — l'application ne réclame rien ;
-- **l'algorithme adaptatif** — pas de SM-2, pas de note de difficulté : le programme est choisi, pas calculé ;
+- **la gamification** : aucune série à tenir, aucun score, aucun badge, aucun « Bravo ! » ;
+- **les notifications** : l'application ne réclame rien ;
+- **l'algorithme adaptatif** : pas de SM-2, pas de note de difficulté : le programme est choisi, pas calculé ;
 - **toute mesure d'audience**, tout appel réseau à l'exécution, toute police ou script servi par un CDN ;
-- **le stockage du contenu à apprendre** — c'est le cœur du projet, pas une limite technique.
+- **le stockage du contenu à apprendre** : c'est le cœur du projet, pas une limite technique.
 
 Si une idée vous tient à cœur et figure dans cette liste, ouvrez une issue pour en parler : la réponse sera probablement non, mais elle sera argumentée.
 
@@ -74,4 +74,4 @@ Pour une faille de sécurité, ne passez pas par une issue publique : voir [SECU
 
 En contribuant, vous acceptez que votre contribution soit distribuée sous la [licence AGPL-3.0](LICENSE) du projet.
 
-Concrètement : votre code reste libre, et personne ne pourra l'enfermer dans un produit fermé. En contrepartie, qui héberge une version modifiée de Revoir doit en publier les sources. Les fichiers source portent l'en-tête `// SPDX-License-Identifier: AGPL-3.0-only` — gardez-le sur les fichiers existants, ajoutez-le sur ceux que vous créez.
+Concrètement : votre code reste libre, et personne ne pourra l'enfermer dans un produit fermé. En contrepartie, qui héberge une version modifiée de Revoir doit en publier les sources. Les fichiers source portent l'en-tête `// SPDX-License-Identifier: AGPL-3.0-only` : gardez-le sur les fichiers existants, ajoutez-le sur ceux que vous créez.

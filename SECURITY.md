@@ -21,13 +21,13 @@ C'est un projet personnel : la réponse est de bonne foi, pas contractuelle. Com
 
 ## Ce qui n'est pas une faille
 
-- **Les données ne sont pas chiffrées au repos.** Qui a accès à l'appareil déverrouillé a accès aux révisions, comme à n'importe quel site ouvert dans ce navigateur. C'est assumé et documenté : l'application ne stocke ni contenu de cours, ni document, ni information personnelle — un titre, une catégorie, des dates.
-- **Un fichier d'import mal formé est refusé, pas exploité.** L'import valide champ par champ, refuse une référence inconnue et remplace l'intégralité des données après confirmation. Si vous trouvez un fichier qui échappe à cette validation, c'est un bug intéressant — signalez-le.
+- **Les données ne sont pas chiffrées au repos.** Qui a accès à l'appareil déverrouillé a accès aux révisions, comme à n'importe quel site ouvert dans ce navigateur. C'est assumé et documenté : l'application ne stocke ni contenu de cours, ni document, ni information personnelle, seulement un titre, une catégorie, des dates.
+- **Un fichier d'import mal formé est refusé, pas exploité.** L'import valide champ par champ, refuse une référence inconnue et remplace l'intégralité des données après confirmation. Si vous trouvez un fichier qui échappe à cette validation, c'est un bug intéressant, signalez-le.
 - **L'avis `npm audit` sur `react-router` concernant le mode RSC.** Revoir est une application statique sans rendu serveur ni action serveur : cet avis ne s'y applique pas. Les versions antérieures cumulent bien plus d'avis réellement applicables.
 - **Effacer les données du site depuis le navigateur supprime les révisions.** C'est le fonctionnement normal du stockage local, d'où l'export.
 
 ## Pour qui héberge Revoir
 
-L'application est un lot de fichiers statiques. Deux points valent d'être vérifiés côté hébergement : servir en HTTPS, et réécrire les routes inconnues vers `index.html` — sans quoi un rechargement sur `/suivi` renvoie un 404 à la première visite.
+L'application est un lot de fichiers statiques. Deux points valent d'être vérifiés côté hébergement : servir en HTTPS, et réécrire les routes inconnues vers `index.html`, sans quoi un rechargement sur `/suivi` renvoie un 404 à la première visite.
 
 Un troisième point relève de la licence, pas de la sécurité, mais se règle au même moment. Revoir est sous **AGPL-3.0** : si vous hébergez une version **modifiée**, l'article 13 vous oblige à en publier les sources. Les réglages affichent un lien « Code source » épinglé au commit du build ; faites-le pointer vers votre dépôt en adaptant `DEPOT` dans `src/lib/build.ts`. Héberger la version d'origine sans y toucher ne demande rien de plus.
