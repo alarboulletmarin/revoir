@@ -621,6 +621,14 @@
   padding-inline: var(--e-5);
 }
 
+/*
+ * Un formulaire dont l'action vit dans la barre fixe du bas : il réserve sa
+ * hauteur, la barre du bas ne s'affichant pas sur ces écrans.
+ */
+.formulaire--barre {
+  padding-bottom: var(--purge-action);
+}
+
 /* ======================================================== formulaire === */
 
 .formulaire {
@@ -1564,11 +1572,11 @@ body[data-panneau='ouvert'] {
 .categorie__nom {
   display: flex;
   min-width: 0;
-  align-items: baseline;
+  flex: 1 1 auto;
+  align-items: center;
   gap: var(--e-2);
-  font-size: var(--t-md);
-  font-weight: 500;
-  line-height: var(--l-md);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
   overflow-wrap: anywhere;
 }
 
@@ -1581,9 +1589,60 @@ body[data-panneau='ouvert'] {
 
 .categorie__actions {
   display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+/* ============================================ rangées de navigation ==== */
+
+.rangees {
+  display: flex;
   min-width: 0;
-  flex-wrap: wrap;
-  gap: var(--e-2);
+  flex-direction: column;
+  border-top: var(--bordure);
+}
+
+.rangee-nav {
+  min-width: 0;
+  border-bottom: var(--bordure);
+}
+
+/*
+ * Une rangée qui mène ailleurs. Le chevron le dit — sans lui, un nom et un
+ * compte se lisent comme une ligne de tableau, pas comme un lien.
+ */
+.rangee-nav__lien {
+  display: flex;
+  min-height: var(--h-rangee-nav);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+.rangee-nav__lien:hover {
+  background-color: var(--surface-survol);
+}
+
+.rangee-nav__libelle {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ce qu'on y trouvera : « aucun » évite une visite pour rien. */
+.rangee-nav__valeur {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.rangee-nav__chevron {
+  flex-shrink: 0;
+  color: var(--encre-2);
 }
 
 /* L'aperçu des Réglages : ce qu'il y a, d'un coup d'œil. La gestion est

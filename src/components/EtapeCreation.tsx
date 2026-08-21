@@ -15,6 +15,7 @@
  */
 import type { ReactNode } from 'react'
 import { useTextes } from '../state/usePreferences'
+import { BarreAction } from './BarreAction'
 
 export const ETAPES_CREATION = 3
 
@@ -73,30 +74,7 @@ export function EtapeCreation({
 
       <div className="etape__corps">{children}</div>
 
-      {/*
-        La barre d'action, fixe au-dessus de la marge système. La sortie est un
-        lien souligné et non un bouton gris : sortir doit être aussi lisible
-        qu'avancer, et une sortie qu'on ne trouve pas est une impasse.
-      */}
-      <div className="barre-action">
-        {sortie !== undefined && (
-          <button
-            type="button"
-            className="lien barre-action__sortie"
-            onClick={sortie.onClick}
-          >
-            {sortie.libelle}
-          </button>
-        )}
-        <button
-          type="button"
-          className="btn btn--primaire barre-action__principale"
-          onClick={action.onClick}
-          disabled={action.desactivee}
-        >
-          {action.libelle}
-        </button>
-      </div>
+      <BarreAction sortie={sortie} action={action} />
     </div>
   )
 }

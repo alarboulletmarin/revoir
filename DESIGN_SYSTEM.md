@@ -915,6 +915,36 @@ Trois graduations de `--graduation-etape` comptent les écrans, celle de l'écra
 
 ---
 
+### 8.26 Les écrans de gestion
+
+**Une liste, pas une pile de cartes.**
+
+Les réglages empilaient sept cartes — apparence, langue, sauvegarde, export calendrier, catégories, programmes, archives, à propos — qu'il fallait toutes parcourir pour en trouver une. On ne vient pas ici faire le tour du propriétaire : on vient chercher un réglage précis.
+
+Ce qui se règle en un geste reste sur l'écran, en bascule : l'apparence et la langue, les deux seuls réglages qu'on cherche sans savoir où ils sont. Une rangée qui mènerait à une page pour trois options serait un détour.
+
+Le reste devient des **rangées de navigation** de `--h-rangee-nav`, vers Catégories, Programmes, Sujets archivés et Sauvegarde. Chaque rangée dit ce qu'on y trouvera — « Sujets archivés · aucun » évite une visite pour rien —, et porte un chevron : sans lui, un nom suivi d'un compte se lit comme une ligne de tableau, pas comme un lien.
+
+« À propos » se réduit à un paragraphe et à la ligne de licence. Il occupait une carte entière pour dire deux choses, dont l'une — l'effacement des données du site par le navigateur — mérite d'être lue et se perdait au milieu de l'autre.
+
+**Les catégories deviennent des rangées** de `--h-categorie`, séparées par un filet. « Modifier » y est toujours ; **« Supprimer » n'apparaît que sur une catégorie sans sujet**. Supprimer une catégorie portée reste possible et sans danger — ses sujets rejoignent « Sans catégorie » (section 8.15) — mais ce n'est pas le même geste : il en touche d'autres, il se confirme, et il n'a rien à faire au même niveau qu'un renommage sur une rangée qu'on parcourt du pouce.
+
+**Le compositeur de rythme s'ouvre sur sa question** — « Quand la révision revient-elle ? » — et non sur son propre nom. Le champ « Nom du programme » passe **en dernier** : on nomme un rythme qu'on vient de composer, et ouvrir sur un champ de nom demande de baptiser quelque chose qui n'existe pas encore. Les graduations gardent leurs trois états (section 8.7) : retenue en `--accent` sur `--accent-doux`, disponible en bordure pleine, indisponible en bordure pointillée avec la phrase qui dit pourquoi.
+
+**Créer une catégorie au milieu d'une autre tâche ne doit pas interrompre cette tâche.** Ouverte depuis la deuxième question de la création d'un sujet, la page « Nouvelle catégorie » y ramène, et y ramène **avec ce qu'elle vient de créer** : sans l'identifiant, il faudrait redésigner dans la liste la catégorie qu'on vient de nommer. Le chemin de retour voyage dans l'état d'historique, et il est relu comme une donnée extérieure — seul un chemin interne est accepté, pour qu'une valeur bricolée ne puisse pas faire sortir l'application d'elle-même après une création.
+
+### 8.27 Sauvegarde et export
+
+Trois gestes, une seule question : « comment je sors mes données d'ici ? ». Ils vivaient dans deux cartes des réglages ; ils ont maintenant leur écran, parce qu'on n'y vient pas par hasard et qu'un import a besoin de place pour dire ce qu'il fait.
+
+L'export JSON est le geste principal — c'est le seul qui revienne. L'import est discret. L'export `.ics` est une copie qui part et ne rentre pas, et il le dit.
+
+**Un import refusé s'écrit dans un encadré, pas dans un bandeau.** Il porte le message exact du validateur — « Sujet 3 : catégorie inconnue. » — et surtout le fait que **rien n'a été écrit**. C'est cette seconde phrase qu'on vient chercher, et un bandeau d'une ligne ne lui laissait pas la place. Un bouton « Choisir un autre fichier » suit, parce que c'est le geste suivant.
+
+L'import **remplace**, il ne fusionne pas : c'est l'une des trois actions qu'aucun geste inverse ne rebâtirait, et la seule de cet écran à demander une confirmation (section 8.12).
+
+---
+
 ## 9. Écriture
 
 L'interface est en **français et en anglais**, en casse normale, à l'infinitif pour les actions.

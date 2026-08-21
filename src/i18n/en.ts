@@ -578,6 +578,7 @@ export const en: Dictionnaire = {
     },
     sauvegarde: {
       titre: 'Backup',
+      formats: 'JSON · ICS',
       intro:
         'Your data stays on this device. The export produces a JSON file you can keep and import again, here or on another device. Archived topics are included.',
       exporter: 'Export the data',
@@ -589,6 +590,9 @@ export const en: Dictionnaire = {
       confirmerMessage: (entrants: number, actuels: number) =>
         `Importing ${entrants} topic${s(entrants)} will replace your ${actuels} current topic${s(actuels)}.`,
       confirmerAction: 'Import',
+      rienEcrit:
+        'The file is checked field by field: nothing was written, your current data is intact.',
+      autreFichier: 'Choose another file',
     },
     calendrier: {
       titre: 'Calendar',
@@ -612,6 +616,8 @@ export const en: Dictionnaire = {
       renommer: 'Rename',
       modifier: 'Edit',
       creer: 'Create a schedule',
+      aucun: 'No pace composed yet. The three built-in schedules stay available when choosing one.',
+      compteRangee: (nombre: number) => (nombre === 0 ? '3' : `3 + ${nombre}`),
       supprime: 'Schedule deleted',
       usages: (usages: number) =>
         usages > 1
@@ -619,6 +625,7 @@ export const en: Dictionnaire = {
           : 'Followed by one topic: its reviews are already planned, the rhythm can no longer change.',
     },
     archives: {
+      aucunCourt: 'none',
       titre: 'Archived topics',
       aucun: 'No archived topics.',
       desarchiver: 'Unarchive',

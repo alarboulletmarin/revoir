@@ -45,7 +45,9 @@ export function parentDe(pathname: string): string {
   if (pathname.startsWith('/nouveau')) return '/'
   if (pathname.startsWith('/categories/')) return '/categories'
   if (pathname === '/categories') return '/reglages'
-  if (pathname.startsWith('/programmes')) return '/reglages'
+  if (pathname.startsWith('/programmes/')) return '/programmes'
+  if (pathname === '/programmes') return '/reglages'
+  if (pathname.startsWith('/reglages/')) return '/reglages'
   return '/'
 }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
@@ -23,8 +23,30 @@ export function NouveauCategorie() {
   const t = useTextes()
   useTitrePage(t.creation.categorie.question)
   const navigate = useNavigate()
+  const { state } = useLocation()
   const { categories, topics } = useDonnees()
   const { brouillon, majBrouillon } = useBrouillonSujet()
+
+  /*
+   * Retour de la page « Nouvelle catégorie », qui rend l'identifiant de ce
+   * qu'elle vient de créer : on la sélectionne d'office.
+   *
+   * Sans cela, créer une catégorie au milieu du parcours coûtait deux gestes de
+   * plus — retrouver dans la liste celle qu'on venait de nommer, et la
+   * désigner. Le détour par une page ne doit rien coûter au parcours qu'il
+   * interrompt.
+   */
+  const creee = typeof (state as { categorieCreee?: unknown } | null)?.categorieCreee === 'string'
+    ? (state as { categorieCreee: string }).categorieCreee
+    : null
+
+  useEffect(() => {
+    if (creee === null) return
+    majBrouillon({ categoryId: creee })
+    // L'état d'historique est consommé : un rechargement ne doit pas
+    // resélectionner une catégorie qu'on aurait changée entre-temps.
+    navigate('.', { replace: true, state: null })
+  }, [creee, majBrouillon, navigate])
 
   /** Le nombre de sujets par catégorie : ce qui situe une catégorie, c'est son contenu. */
   const comptes = useMemo(() => {
@@ -108,8 +130,17 @@ export function NouveauCategorie() {
         </li>
       </ul>
 
+      {/*
+        Le retour est passé à la page de création : elle ramène ici, avec la
+        catégorie qu'elle vient de créer, plutôt que de déposer sur la liste
+        des catégories quelqu'un qui était en train de créer un sujet.
+      */}
       <p className="etape__lien">
-        <Link to="/categories/nouvelle" className="lien">
+        <Link
+          to="/categories/nouvelle"
+          state={{ retour: '/nouveau/categorie' }}
+          className="lien"
+        >
           {t.creation.categorie.nouvelle}
         </Link>
       </p>

@@ -150,6 +150,13 @@
    * l'écart entre deux rangées.
    */
   --h-rangee: 52px;
+  /*
+   * Une rangée de navigation est plus haute qu'une rangée de choix : elle mène
+   * ailleurs, et un tap manqué coûte un aller-retour plutôt qu'un second tap.
+   */
+  --h-rangee-nav: 56px;
+  /* Une catégorie porte deux liens : elle a besoin d'un peu plus de hauteur. */
+  --h-categorie: 60px;
 
   /*
    * Hauteur de l'action qui conclut une page. Elle dépasse la cible parce

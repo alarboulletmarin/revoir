@@ -614,6 +614,8 @@ export const fr = {
     },
     sauvegarde: {
       titre: 'Sauvegarde',
+      /** Ce que la rangée des réglages annonce. */
+      formats: 'JSON · ICS',
       intro:
         'Vos données restent sur cet appareil. L’export produit un fichier JSON que vous pouvez conserver puis réimporter, ici ou sur un autre appareil. Les sujets archivés y figurent.',
       exporter: 'Exporter les données',
@@ -625,6 +627,9 @@ export const fr = {
       confirmerMessage: (entrants: number, actuels: number) =>
         `L’import de ${entrants} sujet${s(entrants)} remplacera vos ${actuels} sujet${s(actuels)} actuel${s(actuels)}.`,
       confirmerAction: 'Importer',
+      rienEcrit:
+        'Le fichier est validé champ par champ : rien n’a été écrit, vos données actuelles sont intactes.',
+      autreFichier: 'Choisir un autre fichier',
     },
     calendrier: {
       titre: 'Calendrier',
@@ -649,12 +654,17 @@ export const fr = {
       modifier: 'Modifier',
       creer: 'Créer un programme',
       supprime: 'Programme supprimé',
+      aucun:
+        'Aucun rythme composé pour l’instant. Les trois programmes livrés restent disponibles au moment de choisir.',
+      /** « 3 » ou « 3 + 2 » : les trois livrés, et les vôtres. */
+      compteRangee: (nombre: number) => (nombre === 0 ? '3' : `3 + ${nombre}`),
       usages: (usages: number) =>
         usages > 1
           ? `Suivi par ${usages} sujets : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
           : 'Suivi par un sujet : ses révisions sont déjà planifiées, le rythme ne peut plus changer.',
     },
     archives: {
+      aucunCourt: 'aucun',
       titre: 'Sujets archivés',
       aucun: 'Aucun sujet archivé.',
       desarchiver: 'Désarchiver',

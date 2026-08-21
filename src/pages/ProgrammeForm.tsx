@@ -19,6 +19,7 @@ import {
 import { todayKey } from '../lib/dates'
 import { Champ, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
+import { BarreAction } from '../components/BarreAction'
 import { Frise } from '../components/Frise'
 
 /** Le rythme proposé d'emblée : celui de « Simple ». */
@@ -137,20 +138,20 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">{titre}</h1>
+      {/*
+        La question en titre, pas le nom de l'écran. « Composer un rythme » dit
+        ce qu'on fait ; « Quand la révision revient-elle ? » dit à quoi on
+        répond, et c'est ce qu'on a besoin de lire pour toucher la première
+        graduation.
+      */}
+      <div className="page__entete">
+        <h1 className="titre-page">
+          {rythmeFige ? titre : t.programmeForm.question}
+        </h1>
+        {!rythmeFige && <p className="page__intro">{t.programmeForm.aideQuestion}</p>}
+      </div>
 
-      <form className="formulaire" onSubmit={soumettre} noValidate>
-        <Champ
-          label={t.programmeForm.champNom}
-          type="text"
-          value={nom}
-          maxLength={40}
-          autoComplete="off"
-          onChange={(event) => setNom(event.target.value)}
-          erreur={soumis ? erreurNom : null}
-          aide={t.programmeForm.aideNom}
-        />
-
+      <form className="formulaire formulaire--barre" onSubmit={soumettre} noValidate>
         {rythmeFige ? (
           <GroupeChamp legende={t.programmeForm.rythme}>
             <div className="rythme__apercu">
@@ -189,8 +190,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             </GroupeChamp>
 
             <fieldset className="champ">
-              <legend className="champ__label">{t.programmeForm.question}</legend>
-              <p className="champ__aide">{t.programmeForm.aideQuestion}</p>
+              <legend className="invisible">{t.programmeForm.question}</legend>
               <div className="jours">
                 {graduations.map((jour) => {
                   const retenu = jours.includes(jour)
@@ -248,14 +248,30 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
           </>
         )}
 
-        <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={revenir}>
-            {t.commun.annuler}
-          </Bouton>
-          <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? t.commun.enregistrer : t.programmeForm.creer}
-          </Bouton>
-        </div>
+        {/*
+          Le nom en dernier, et pas en premier : on nomme un rythme qu'on vient
+          de composer. Ouvrir sur un champ « Nom du programme » demande de
+          baptiser quelque chose qui n'existe pas encore.
+        */}
+        <Champ
+          label={t.programmeForm.champNom}
+          type="text"
+          value={nom}
+          maxLength={40}
+          autoComplete="off"
+          onChange={(event) => setNom(event.target.value)}
+          erreur={soumis ? erreurNom : null}
+          aide={t.programmeForm.aideNom}
+        />
+
+        <BarreAction
+          sortie={{ libelle: t.commun.annuler, onClick: revenir }}
+          action={{
+            libelle: mode === 'edit' ? t.commun.enregistrer : t.programmeForm.creer,
+            type: 'submit',
+            desactivee: enregistrement,
+          }}
+        />
       </form>
     </>
   )

@@ -18,6 +18,9 @@ import { CategorieForm } from './pages/CategorieForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
+import { Sauvegarde } from './pages/Sauvegarde'
+import { Archives } from './pages/Archives'
+import { ProgrammesPage } from './pages/ProgrammesPage'
 import { Aide } from './pages/Aide'
 import { Bienvenue } from './pages/Bienvenue'
 import { Suivi } from './pages/Suivi'
@@ -73,7 +76,15 @@ export function App() {
                 <Route path="/nouveau/rythme" element={<NouveauRythme />} />
                 <Route path="/sujet/:id" element={<SujetDetail />} />
                 <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
+                {/*
+                  Les réglages sont une liste, et ce qu'elle liste a une page
+                  (section 8.26) : on vient y chercher un réglage précis, pas
+                  faire le tour du propriétaire.
+                */}
                 <Route path="/reglages" element={<Settings />} />
+                <Route path="/reglages/sauvegarde" element={<Sauvegarde />} />
+                <Route path="/reglages/archives" element={<Archives />} />
+                <Route path="/programmes" element={<ProgrammesPage />} />
                 <Route path="/aide" element={<Aide />} />
                 {/*
                   La présentation en trois écrans (section 8.25). Elle a une

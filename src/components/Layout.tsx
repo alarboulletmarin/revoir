@@ -20,7 +20,7 @@ import { estRacine, useRetour } from '../state/useRetour'
 function fabVisible(pathname: string): boolean {
   return (
     !/\/(nouveau|nouvelle|modifier)$/.test(pathname) &&
-    etapeCreation(pathname) === null &&
+    !porteBarreAction(pathname) &&
     !estPresentation(pathname)
   )
 }
@@ -40,6 +40,23 @@ function estPresentation(pathname: string): boolean {
 
 /** Les trois questions de la création, dans l'ordre où elles se posent. */
 const ETAPES = ['/nouveau/titre', '/nouveau/categorie', '/nouveau/rythme']
+
+/**
+ * Les écrans qui portent une barre d'action fixe (section 8.22).
+ *
+ * La barre du bas s'y efface : deux barres empilées, ce sont cent vingt pixels
+ * de chrome sous le pouce et deux réponses à « comment je sors d'ici ? ». Ces
+ * écrans sont des tâches à terminer, pas des vues à quitter — ils ont un
+ * retour en haut et une sortie écrite en bas à gauche.
+ */
+function porteBarreAction(pathname: string): boolean {
+  return (
+    etapeCreation(pathname) !== null ||
+    /^\/categories\/(nouvelle|[^/]+\/modifier)$/.test(pathname) ||
+    /^\/programmes\/(nouveau|[^/]+\/modifier)$/.test(pathname) ||
+    /^\/sujet\/[^/]+\/modifier$/.test(pathname)
+  )
+}
 
 /**
  * Le rang de l'étape de création en cours, ou null hors du parcours.
@@ -85,6 +102,7 @@ export function Layout() {
   const racine = estRacine(pathname)
   const etape = etapeCreation(pathname)
   const presentation = estPresentation(pathname)
+  const barreAction = porteBarreAction(pathname)
 
   return (
     <div className="appli">
@@ -202,7 +220,7 @@ export function Layout() {
         de comportement : elles ne s'empilent simplement pas sous une seconde
         barre, ce qui coûterait cent vingt pixels de chrome sous le pouce.
       */}
-      {etape === null && !presentation && <NavBar />}
+      {!barreAction && !presentation && <NavBar />}
 
       <UpdatePrompt />
     </div>
