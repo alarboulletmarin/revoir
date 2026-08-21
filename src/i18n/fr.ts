@@ -16,6 +16,34 @@
 /** Marque du pluriel français : rien au singulier, « s » au-delà. */
 const s = (nombre: number) => (nombre > 1 ? 's' : '')
 
+/**
+ * Le nombre en toutes lettres, jusqu'à neuf.
+ *
+ * Le titre de l'écran « Aujourd'hui » est une phrase — « Deux révisions
+ * aujourd'hui. » —, et une phrase n'ouvre pas sur un chiffre. Au-delà de neuf,
+ * la lettre devient plus longue à lire que le nombre qu'elle écrit, et le
+ * chiffre reprend la main.
+ *
+ * Le féminin est le seul accord dont ce dictionnaire ait besoin : ce qui se
+ * compte ici, ce sont des révisions.
+ */
+const NOMBRES = [
+  'zéro',
+  'une',
+  'deux',
+  'trois',
+  'quatre',
+  'cinq',
+  'six',
+  'sept',
+  'huit',
+  'neuf',
+]
+const lettres = (nombre: number) => NOMBRES[nombre] ?? String(nombre)
+
+/** Capitale initiale, pour un nombre qui ouvre une phrase. */
+const capitale = (mot: string) => mot.charAt(0).toUpperCase() + mot.slice(1)
+
 export const fr = {
   /** Le nom de la langue, écrit dans cette langue. */
   nom: 'Français',
@@ -27,6 +55,8 @@ export const fr = {
     long: 'd MMMM yyyy',
     /** « sam. 14 mars » */
     court: 'EEE d MMM',
+    /** « vendredi 21 août » */
+    jourLong: 'EEEE d MMMM',
     /** « 14/03 » */
     compact: 'dd/MM',
     /** « mars 2026 » */
@@ -138,10 +168,15 @@ export const fr = {
 
   dashboard: {
     titre: "Aujourd'hui",
+    /** Le titre de l'écran : une phrase, donc un point et un nombre en lettres. */
     aFaire: (restantes: number) =>
-      `${restantes} révision${s(restantes)} aujourd’hui`,
-    tempsTermine: 'Tout est terminé pour aujourd’hui',
-    rienDePrevu: 'Aucune révision prévue aujourd’hui',
+      `${capitale(lettres(restantes))} révision${s(restantes)} aujourd’hui.`,
+    tempsTermine: 'Tout est terminé pour aujourd’hui.',
+    rienDePrevu: 'Aucune révision prévue aujourd’hui.',
+    /** Le sur-titre des prochaines échéances, sous la règle. */
+    ensuite: 'ensuite',
+    /** Le sur-titre de ce qui a été coché dans la journée. */
+    revuAujourdhui: 'revu aujourd’hui',
     plusRien: 'Plus rien à revoir : le programme reprendra à la prochaine échéance.',
     aVenirIci: 'Les prochaines révisions apparaîtront ici.',
     prochaine: (date: string, sujets: number) =>
@@ -153,6 +188,16 @@ export const fr = {
     toutVoirCompte: (nombre: number) => `Tout voir (${nombre})`,
     toutVoir: 'Tout voir',
     prochainesEcheances: 'Prochaines échéances',
+  },
+
+  regle: {
+    /** Le sur-titre de la règle. « Quinze jours » se dit d'une quinzaine. */
+    titre: 'les quinze jours',
+    intitule: (jours: number) => `Charge des ${jours} prochains jours`,
+    retard: (nombre: number) =>
+      `${nombre} révision${s(nombre)} en retard`,
+    rattraper: 'la rattraper',
+    rattraperPlusieurs: 'les rattraper',
   },
 
   charge: {
@@ -296,6 +341,9 @@ export const fr = {
     valider: (titre: string, decalage: string) =>
       `Marquer comme revu : ${titre}, révision ${decalage}`,
     progression: (rang: number, total: number) => `Révision ${rang} sur ${total}`,
+    /** « 3ᵉ passage sur 5 » — la même chose, en plus court, sous un titre. */
+    passage: (rang: number, total: number) =>
+      `${rang}${rang === 1 ? 'ᵉʳ' : 'ᵉ'} passage sur ${total}`,
     prochaine: 'Prochaine : ',
   },
 

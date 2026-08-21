@@ -42,6 +42,8 @@ Où elle apparaît : fiche d'un sujet (grande, avec libellés), ligne de liste (
 
 Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse d'en être une.
 
+**Elle ne se confond pas avec la règle** (section 8.8), qui porte un axe calendaire et des hauteurs de charge. Deux objets, deux géométries, deux modules : la frise dit *quand reviennent les échéances d'un sujet*, la règle dit *ce que pèsent les quinze jours qui viennent*.
+
 ### Le signe de l'en-tête
 
 Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les neuf icônes de la section 11.
@@ -152,7 +154,7 @@ Trois règles, sans exception :
 
 1. **Jamais en surface pleine.** Trait, texte et pastille uniquement. Une catégorie qui remplirait une carte concurrencerait l'unique cellule `--accent` de l'écran, et la hiérarchie retomberait.
 2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la catégorie est donc toujours écrit à côté de sa pastille.
-3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
+3. **Sur une surface `--accent` pleine, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le texte qui l'entoure.
 
 Les huit sont redéfinies pour le thème sombre : ce ne sont pas d'autres couleurs, ce sont les mêmes, éclaircies en OKLab — teinte et chroma conservées, seule la clarté monte — jusqu'à retrouver sur le papier de nuit le contraste qu'elles tenaient sur le clair. De 5,50:1 (ocre) à 5,54:1 (ardoise et bleu). Les composants n'en savent rien : ils lisent toujours `--teinte` et `--teinte-texte`, et ce sont les variables `--cat-*` qui changent sous eux.
 
@@ -273,14 +275,13 @@ Base 4px.
 --e-5: 24px;   --e-6: 32px;   --e-7: 48px;
 ```
 
-- Gouttière du bento : `--e-3`
 - Padding intérieur des cellules : `--e-4` (mobile), `--e-5` (≥ 768px)
 - Marge de page : `--e-4`, avec `max-width: 960px` centré
 
 Deux rayons :
 
 ```css
---r-carte:  12px;   /* cellules bento, champs, boutons */
+--r-carte:  12px;   /* champs, boutons, dialogues */
 --r-pilule: 999px;  /* badges, chips de catégorie */
 ```
 
@@ -295,14 +296,17 @@ Traits : `1px solid var(--trait)`. C'est le seul mécanisme de séparation.
 ```css
 --duree-court: 120ms;
 --duree-moyen: 200ms;
+--duree-regle: 320ms;
 --courbe: cubic-bezier(0.2, 0, 0, 1);
 ```
 
 **Trois animations autorisées, pas une de plus :**
 
 1. La coche de validation (`--duree-court`, opacité + `scale` 0.9 → 1)
-2. Le panneau du jour dans le calendrier (`--duree-moyen`, translation depuis le bas)
+2. La graduation du jour, sur la règle (`--duree-regle`, `scaleY` 0 → 1, une seule fois à l'ouverture de l'écran)
 3. Le toast (`--duree-moyen`, opacité + 8px de translation)
+
+La deuxième a changé d'objet : c'était la translation du panneau du jour dans le calendrier, qui est devenu une page (section 8.11) et n'a plus rien à faire glisser. La règle hérite de sa place, et c'est la seule animation de l'application qui **explique** quelque chose au lieu d'accompagner un geste — elle se joue une fois, et rien ne la rejoue. Elle est aussi la plus lente du projet, pour la même raison.
 
 Tout le reste : transitions de couleur sur `:hover` / `:active` en `--duree-court`, point final.
 
@@ -333,7 +337,7 @@ Une seule chose à gauche de l'en-tête, jamais deux : la marque et le retour m�
 
 ```css
 @media (min-width: 480px)  { }  /* grands mobiles */
-@media (min-width: 768px)  { }  /* tablette : le bento passe à 4 colonnes */
+@media (min-width: 768px)  { }  /* tablette */
 @media (min-width: 1024px) { }  /* bureau : max-width 960px, marges --e-6 */
 ```
 
@@ -341,49 +345,17 @@ Largeurs de test obligatoires : **320, 375, 414, 768, 1024, 1280**. Le 320 n'est
 
 Hauteurs : `dvh`, jamais `vh`. La barre d'URL mobile fausse `100vh` et fait dépasser le contenu sous le pli. Écran plein : `min-height: 100dvh`.
 
-### 7.2 Grille bento
+### 7.2 Une colonne, partout
 
-Réservée au **tableau de bord**. Le calendrier, le suivi, la fiche d'un sujet et le formulaire utilisent une colonne simple. Étendre le bento partout le banaliserait.
+**Il n'y a plus de grille.** Tous les écrans sont une colonne simple.
 
-```css
-.bento {
-  display: grid;
-  gap: var(--e-3);
-  grid-auto-rows: minmax(96px, auto);
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:
-    "aujourdhui aujourdhui"
-    "retard     retard"
-    "synthese   synthese";
-}
+Le tableau de bord avait un bento : trois cellules de même poids — la journée, le retard, la charge — posées côte à côte, et il fallait choisir laquelle répondait à la question de la section 1. Trois blocs pour une seule question, dont deux qui la reformulaient. La règle des quatorze jours (section 8.8) les remplace tous les trois : le retard s'y lit sous l'axe, la charge est l'axe lui-même, et la journée est écrite en toutes lettres au-dessus, en titre.
 
-@media (min-width: 768px) {
-  .bento {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-areas:
-      "aujourdhui aujourdhui retard     retard"
-      "aujourdhui aujourdhui synthese   synthese"
-      "aujourdhui aujourdhui calendrier calendrier";
-  }
-}
-```
+Ce qui disparaît avec le bento : `.bento`, `.cellule` et ses variantes, la cellule héros à fond `--accent` plein, la cellule « retard », la cellule « synthèse », le mini-mois de tablette. Les six stats de la spécification initiale n'ont pas migré ailleurs : elles vivent dans la fiche d'un sujet et dans le suivi, où on va les chercher.
 
-`grid-auto-rows: minmax(96px, auto)` est obligatoire : le français est plus long que l'anglais et casserait une grille à hauteur fixe.
+**L'écran n'a donc plus d'unique cellule `--accent` pleine**, et la hiérarchie ne tient plus à une surface de couleur. Elle tient au titre, à son cran, à sa graisse et à sa place — première chose écrite, seule de son cran sur l'écran (section 4). C'est ce déplacement qui a fait tomber l'interdit du 700.
 
-Une zone par cellule, jamais deux rangées pour une seule carte : la cellule du jour doit pouvoir ne faire que la hauteur de son unique révision. Elle porte donc `min-height: 0` et `align-self: start`. Au-delà de 768px elle couvre trois rangées, et sans cela une journée à deux révisions se retrouverait au sommet de huit cents pixels de vert.
-
-### Inventaire des cellules
-
-| Zone | Contenu | Comportement |
-|---|---|---|
-| `aujourdhui` | **Cellule héros, fond `--accent` plein.** Titre « 3 révisions aujourd'hui » + liste cochable directement dans la cellule | Si 0 : bascule en état vide (section 8.9) |
-| `retard` | Chiffre en `--retard-texte`, point `--retard` | **Disparaît du DOM si 0** : la grille se recompose |
-| `synthese` | Total restant, puis les 14 barres de charge sous leur intitulé | Toujours affichée |
-| `calendrier` | Mini-mois, points de densité | **≥ 768px uniquement** |
-
-Les six stats de la spec initiale sont volontairement réduites à trois chiffres visibles. Le reste vit dans la fiche d'un sujet et dans le suivi.
-
-Sous 480px, la cellule héros n'affiche que **3 items + « Tout voir »** : un titre et une liste complète ne tiennent pas dans une cellule à 320px. Le grand chiffre de 64px a disparu. La question du jour est une phrase, « 3 révisions aujourd'hui », et c'est le fond `--accent` plein qui porte la hiérarchie, pas la taille du texte.
+Une conséquence à ne pas perdre : la marge latérale appartient au **contenu**, plus au conteneur. La règle et les lignes réglées traversent le papier d'un bord à l'autre, et ce sont leurs contenus qui se retirent de `--marge-page`. Un filet qui s'arrête à seize pixels du bord ressemble à une carte sans en être une.
 
 ### 7.3 La pile du bas — source n°1 de chevauchement
 
@@ -410,29 +382,33 @@ Quatre éléments se disputent le bas de l'écran : la barre de navigation, le F
 
 | Piège | Règle |
 |---|---|
-| Un titre long élargit sa cellule et casse la grille | `min-width: 0` sur **tout** enfant de grid ou de flex contenant du texte. C'est le bug n°1 des bento. |
+| Un titre long élargit son conteneur et pousse la page | `min-width: 0` sur **tout** enfant de grid ou de flex contenant du texte. C'est le bug n°1 des mises en page en flex. |
 | Le titre écrase la coche ou le chip de catégorie | Titre : `flex: 1; min-width: 0`. Coche et chip : `flex-shrink: 0`. |
 | Un mot long déborde de la carte | `overflow-wrap: anywhere` sur tout texte saisi par l'utilisateur, plus `-webkit-line-clamp: 2` sur les titres de liste |
 | Les libellés de la frise se chevauchent (J+1 / J+2) | Libellés masqués sous 480px, et affichés uniquement si le segment mesure plus de 32px |
 | Le calendrier déborde à 320px | 7 × 44px = 308px : sous 380px la grille annule la marge de page et utilise `repeat(7, 1fr)` + `aspect-ratio: 1` |
 | iOS zoome au focus d'un champ | `font-size: 16px` minimum sur `input`, `select`, `textarea` : c'est le rôle de `--t-champ` |
 | Marges qui s'additionnent ou fusionnent | **Aucun composant ne porte de marge externe.** L'espacement vient exclusivement du `gap` du conteneur et de son `padding`. |
-| Paysage mobile écrasé | `@media (min-height: 560px)` pour agrandir la cellule héros, jamais l'inverse |
+| Paysage mobile écrasé | `@media (min-height: 560px)` pour aérer, jamais l'inverse |
 | Double barre de défilement | Un seul conteneur à défilement **vertical** par écran. Le défilement **horizontal** appartient au tableau de suivi (section 8.13), et à lui seul, jamais à la page. |
 
 ---
 
 ## 8. Composants
 
-### 8.1 Cellule bento
+### 8.1 Liste réglée
+
+Le composant de liste du projet, depuis que la carte a disparu (section 7.2).
 
 ```
-.cellule            fond --surface, 1px --trait, --r-carte, padding --e-4
-.cellule--accent    fond --accent, texte --surface, pas de bordure
-.cellule--action    cliquable : :hover → fond #F3F1EA, :active → scale(0.995)
+.liste-reglee       colonne ; chaque enfant porte un filet 1px --trait en bas
 ```
 
-Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le chiffre d'abord, parce que c'est ce qu'on vient chercher.
+Des lignes séparées par un filet, pas des cartes. Une carte par révision mettait autant de bordures que d'items sur un écran qui n'en demande qu'une : la liste est **un seul objet**, réglé comme une page de cahier, et c'est le filet qui sépare — le seul mécanisme de séparation du projet (section 5).
+
+Le filet est porté par l'enfant et non par le conteneur : une ligne qui sort de la liste au moment d'être validée emporte son trait avec elle, sans laisser un filet orphelin le temps de l'animation.
+
+Les lignes traversent le papier d'un bord à l'autre ; c'est leur contenu qui se retire de `--marge-page`.
 
 ### 8.2 Ligne de révision (le composant le plus important de l'app)
 
@@ -445,12 +421,15 @@ Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le c
 ```
 
 - Cible de validation : **44 × 44px minimum**, séparée de la zone qui ouvre la fiche.
-- Case : cercle 20px, bordure 1,5px. Coché : fond `--fait`, coche `--surface`.
-- Ligne de métadonnées : catégorie en `--encre-2` + frise miniature.
+- Case : cercle 24px, bordure 1,5px. Coché : fond `--fait`, coche `--surface`.
+- Sur la **liste du jour** (variante `--passage`), le cercle passe à `--cercle-passage` (26px) et sa bordure à `--accent` : c'est le geste central de l'application, sa cible ne se voit pas, et seul le cercle dit où viser. La cible garde ses 44px et se replie dans la hauteur de la ligne au lieu de l'étirer.
+- Ligne de métadonnées : catégorie en `--encre-2` + frise miniature. Sur la liste du jour, la chip encadrée cède la place à une pastille suivie de son nom — une bordure de moins sur une ligne qui en porte déjà une — et « 3ᵉ passage sur 5 » dit où en est le programme. Le décalage `J+n` tient sa propre colonne au bout de la ligne, à chasse fixe : dans la méta, il se serait aligné sur le texte qui le précède et aurait changé de place d'une ligne à l'autre.
 - État en retard : mention « il y a 3 jours » en `--retard-texte`, et rien d'autre. **Aucune bande de couleur en bord de ligne** : elle alourdit la liste sans rien dire que la mention ne dise déjà, et la section 1 demande que le retard n'accuse pas.
 - Validation : mise à jour optimiste immédiate, ligne barrée 200ms, puis retrait de la liste. Toast avec « Annuler ».
 
-Classes : `.ligne-revision`, `.ligne-revision--faite`, `.ligne-revision--compact`, `.ligne-revision__case`, `.ligne-revision__cercle`, `.ligne-revision__coche`.
+Classes : `.ligne-revision`, `.ligne-revision--faite`, `.ligne-revision--compact`, `.ligne-revision--passage`, `.ligne-revision__case`, `.ligne-revision__cercle`, `.ligne-revision__coche`, `.ligne-revision__decalage`.
+
+**Une échéance à venir n'est pas une ligne de révision** (`.ligne-echeance`) : la date d'abord, à chasse fixe, puis le sujet, puis sa catégorie — et aucune case. « Ensuite » se lit, il ne s'actionne pas : cocher y solderait une échéance de la semaine prochaine d'un geste de trop. La rangée ouvre la fiche, et « Tout voir » mène à la liste complète, qui coche.
 
 ### 8.3 Frise
 
@@ -516,13 +495,43 @@ Deux règles tiennent le modèle :
 
 Un rythme venu d'un import peut porter un écart absent de l'échelle : sa graduation vient se ranger à sa place plutôt que de le rendre immodifiable.
 
-### 8.8 Barres de charge
+### 8.8 La règle
 
-14 barres, largeur `1fr` chacune, gap 3px, `border-radius: 2px`, hauteur proportionnelle au nombre de révisions (min 3px pour un jour vide). Opacité `--accent` de 0,25 à 1 selon la densité. La barre du jour porte un trait `--encre` de 2px à sa base : sa hauteur peut être celle d'un jour vide.
+**C'est la structure de l'écran « Aujourd'hui », pas une illustration posée dessus.** Elle remplace à elle seule les trois blocs qui se disputaient la même réponse : la cellule du jour, la carte « en retard » et les barres de charge.
 
-La hauteur ne porte jamais l'information seule : les barres forment une `<ul>` dont chaque `<li>` contient un texte `.invisible`, « aujourd'hui, 3 révisions », « ven. 7 août, aucune révision ». Sous l'axe, trois repères seulement — « Auj. », la date médiane, la dernière —, calés par `space-between` sur la première et la dernière barre : quatorze dates tiendraient sur seize pixels chacune à 320px.
+Une bande pleine largeur, entre deux filets `--trait`, sur `--surface`. Elle traverse l'écran au lieu de s'y loger : c'est une règle graduée, et une règle ne s'arrête pas au bord d'une carte.
 
-À zéro sur les quatorze jours, les barres cèdent la place à une phrase.
+**Quatorze cellules `flex: 1 1 0`**, une par jour à partir d'aujourd'hui. Deux semaines pleines, donc le même jour de la semaine aux deux bouts, et une cellule qui reste au-dessus de 20px à 320px.
+
+Un axe de 1px `--encre` traverse la bande à `--regle-base` du bas. Les graduations montent depuis lui, les dates se posent dessous ; la hauteur totale est dérivée de ces deux bandes, jamais mesurée à part.
+
+**Quatre paliers de hauteur, pas une échelle continue :**
+
+| Charge | Hauteur | Couleur |
+|---|---|---|
+| 0 | `--regle-vide` (6px) | `--trait` |
+| 1 | `--regle-faible` (12px) | `--encre-2` |
+| 2 | `--regle-moyen` (18px) | `--encre-2` |
+| 3 et plus | `--regle-fort` (22px) | `--encre` |
+| aujourd'hui | `--regle-jour` (24px), épaisseur `--regle-trait-jour` | `--accent` |
+
+Une hauteur proportionnelle dirait « deux fois plus » là où l'œil ne lit qu'« un peu plus », et se réétalonnerait à chaque changement du maximum : la même journée à trois révisions monterait ou descendrait selon ce qui l'entoure. Quatre paliers fixes gardent la même journée à la même hauteur d'un jour à l'autre. Au-delà de trois, ce qui compte n'est plus le compte exact mais le fait que la journée est chargée — et le nombre reste écrit pour qui veut le lire.
+
+**Une journée vide garde sa graduation.** Sans elle, la règle deviendrait une suite de bâtons isolés dont on ne saurait plus compter les jours qui les séparent.
+
+**Le nombre s'écrit au-dessus de sa graduation, centré dans sa cellule.** Jamais à côté : à côté, deux journées voisines et chargées donneraient quatre nombres sur une ligne sans qu'on sache lequel va avec lequel.
+
+**Trois repères de date sous l'axe** — aujourd'hui, le milieu, le dernier jour —, chacun **centré dans sa cellule**, une rangée de cellules vides servant de gabarit. Répartis en `space-between`, ils se caleraient sur les bords de la règle et ne désigneraient plus aucune graduation. Trois et pas quatorze : à 320px, quatorze dates disposeraient de vingt pixels chacune.
+
+**Aujourd'hui porte trois signaux, pas un** : la seule graduation en `--accent`, la seule plus épaisse, la seule qui dépasse les autres. Un jour qui doit se trouver sans être cherché.
+
+**Le retard suit la règle**, sur une ligne en `--retard-texte` précédée d'une pastille : « 1 révision en retard — la rattraper ». Il se constate et propose le geste qui le solde ; il n'accuse pas (section 1). La pastille redouble le texte, elle ne le remplace pas.
+
+**La couleur ne porte rien seule** : la charge se lit à la hauteur, s'écrit en chiffres au-dessus, et chaque jour est un `<li>` dont le texte `.invisible` donne sa date et son effectif en toutes lettres — « aujourd'hui, 3 révisions », « ven. 7 août, aucune révision ».
+
+**Animation** : la graduation du jour se dresse une fois à l'ouverture (`--duree-regle`, `scaleY`), et rien ne la rejoue. C'est l'animation n°2 de la section 6.
+
+**La règle n'est pas la frise.** La frise porte un axe en racine carrée où l'abscisse est une échéance et l'écart entre deux graduations vaut l'écart réel entre deux dates (section 2). La règle porte un axe calendaire à pas constant où l'ordonnée est un effectif. Les deux viennent du même objet et ne se lisent pas pareil : fondre les deux géométries dans un composant coûterait à la frise ce qui en fait la signature. Elles vivent dans deux modules, `lib/frise.ts` et `lib/regle.ts`, et dans deux composants.
 
 ### 8.9 États vides
 
@@ -533,7 +542,9 @@ Aucune révision prévue aujourd'hui
 Prochaine révision : jeu. 6 août, 3 sujets.
 ```
 
-Il reste dans la cellule héros, fond `--accent` plein. La deuxième ligne est une information utile, pas un encouragement. Aucune illustration, aucun emoji.
+Il s'écrit en titre d'écran, à la place de la phrase qu'il remplace — il n'y a plus de cellule héros à faire basculer (section 7.2). La deuxième ligne est une information utile, pas un encouragement, et elle n'apparaît que là : une journée qui a encore des révisions n'a pas besoin qu'on lui annonce la suivante. Aucune illustration, aucun emoji.
+
+**Une journée bouclée ne se solde pas sur un écran vide.** Ce qui vient d'être coché reste sous la main, sous « revu aujourd'hui », chaque ligne barrée gardant son « Annuler ». Le « Annuler » du toast expire au bout de cinq secondes, celui-ci dure autant que la journée.
 
 Une journée bouclée n'est pas une journée vide, et les deux ne se disent pas pareil : **« Tout est terminé pour aujourd'hui »** quand quelque chose était prévu, **« Aucune révision prévue aujourd'hui »** quand rien ne l'était. Sans rien à annoncer non plus, la seconde ligne devient « Les prochaines révisions apparaîtront ici. »
 
@@ -782,7 +793,7 @@ Le « Annuler » d'un formulaire emprunte le même chemin : un formulaire abando
 
 **Deux boutons, deux endroits, et la différence est le sujet.**
 
-L'export de **tous** les sujets vit dans les Réglages, sous son propre titre, à côté de la sauvegarde JSON : c'est la même question, « comment je sors mes données d'ici ? », et la réponse n'est pas la même, ce qui mérite deux blocs plutôt qu'un. La vue Calendrier répond à « quand ? » ; ce n'est pas un écran d'outils, et le bento n'est pas davantage l'endroit d'un bouton de fichier.
+L'export de **tous** les sujets vit dans les Réglages, sous son propre titre, à côté de la sauvegarde JSON : c'est la même question, « comment je sors mes données d'ici ? », et la réponse n'est pas la même, ce qui mérite deux blocs plutôt qu'un. La vue Calendrier répond à « quand ? » ; ce n'est pas un écran d'outils, et le tableau de bord n'est pas davantage l'endroit d'un bouton de fichier.
 
 L'export d'**un** sujet vit sur sa fiche, dans le bloc Actions, entre « Dupliquer » et « Archiver » : c'est là qu'on l'a en tête, et c'est là que sont déjà ses autres verbes. Il porte le signe du calendrier — pas un dessin de plus — et son mot, « Exporter (.ics) ».
 
@@ -883,7 +894,7 @@ Une seule langue est active à la fois dans un onglet ; elle vit donc dans un mo
 
 ## 11. Interdits
 
-Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées dans le texte · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées dans le texte · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une surface `--accent` pleine par écran · le bento, qui n'existe plus (section 7.2).
 
 Le « ? » de l'aide (section 8.16) n'entame pas le compte : c'est une lettre cerclée, pas un signe dessiné. La règle vise les dessins qu'il faut apprendre à lire, et l'alphabet n'en fait pas partie.
 

@@ -308,6 +308,52 @@
   line-height: var(--l-md);
 }
 
+/*
+ * Le titre d'une des trois vues (section 4). Il porte la voix de l'écran à
+ * lui seul depuis que la cellule pleine a disparu : c'est le premier objet
+ * qu'on lit, et le seul de son cran sur la page.
+ */
+.titre-ecran {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-ecran);
+  font-weight: 700;
+  line-height: var(--l-ecran);
+  letter-spacing: var(--chasse-titre);
+  text-wrap: balance;
+}
+
+/*
+ * Le titre d'une page qui a un retour. Même dessin, un cran plus bas : une
+ * page se lit après avoir choisi de l'ouvrir, elle n'a pas à s'annoncer aussi
+ * fort qu'une vue où l'on arrive.
+ */
+.titre-page {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-page);
+  font-weight: 700;
+  line-height: var(--l-page);
+  letter-spacing: var(--chasse-titre);
+  text-wrap: balance;
+}
+
+/*
+ * Le sur-titre : une étiquette de section, jamais une phrase (section 4).
+ * Il date l'écran ou nomme le bloc qui suit, et ne porte jamais d'information
+ * absente de ce qu'il surmonte — sans quoi les capitales la rendraient plus
+ * difficile à lire qu'ailleurs.
+ */
+.surtitre {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  font-weight: 400;
+  line-height: var(--l-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--chasse-surtitre);
+}
+
 /* ---------------------------------------------------------- utilitaires -- */
 
 .discret {

@@ -14,6 +14,41 @@ import type { Dictionnaire } from '.'
 
 const s = (nombre: number) => (nombre === 1 ? '' : 's')
 
+/**
+ * The number spelled out, up to nine — the screen title is a sentence, and a
+ * sentence does not open on a digit. Past nine the word takes longer to read
+ * than the number it spells, and the digit takes over.
+ */
+const NUMBERS = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+]
+const lettres = (nombre: number) => NUMBERS[nombre] ?? String(nombre)
+
+const capitale = (mot: string) => mot.charAt(0).toUpperCase() + mot.slice(1)
+
+/**
+ * English ordinals: 1st, 2nd, 3rd, then th — with the teens as the exception
+ * they always are (11th, 12th, 13th).
+ */
+const ordinal = (nombre: number) => {
+  const dizaine = nombre % 100
+  if (dizaine >= 11 && dizaine <= 13) return `${nombre}th`
+  const unite = nombre % 10
+  if (unite === 1) return `${nombre}st`
+  if (unite === 2) return `${nombre}nd`
+  if (unite === 3) return `${nombre}rd`
+  return `${nombre}th`
+}
+
 export const en: Dictionnaire = {
   nom: 'English',
   etiquette: 'en',
@@ -23,6 +58,8 @@ export const en: Dictionnaire = {
     long: 'MMMM d, yyyy',
     /** « Sat, Mar 14 » */
     court: 'EEE, MMM d',
+    /** « Friday, August 21 » */
+    jourLong: 'EEEE, MMMM d',
     /** « 03/14 » */
     compact: 'MM/dd',
     /** « March 2026 » */
@@ -126,9 +163,12 @@ export const en: Dictionnaire = {
 
   dashboard: {
     titre: 'Today',
-    aFaire: (restantes: number) => `${restantes} review${s(restantes)} today`,
-    tempsTermine: 'Everything is done for today',
-    rienDePrevu: 'No reviews scheduled today',
+    aFaire: (restantes: number) =>
+      `${capitale(lettres(restantes))} review${s(restantes)} today.`,
+    tempsTermine: 'Everything is done for today.',
+    rienDePrevu: 'No reviews scheduled today.',
+    ensuite: 'up next',
+    revuAujourdhui: 'reviewed today',
     plusRien: 'Nothing left to review: the schedule resumes at the next due date.',
     aVenirIci: 'Upcoming reviews will show up here.',
     prochaine: (date: string, sujets: number) =>
@@ -140,6 +180,14 @@ export const en: Dictionnaire = {
     toutVoirCompte: (nombre: number) => `See all (${nombre})`,
     toutVoir: 'See all',
     prochainesEcheances: 'Upcoming due dates',
+  },
+
+  regle: {
+    titre: 'the next two weeks',
+    intitule: (jours: number) => `Load over the next ${jours} days`,
+    retard: (nombre: number) => `${nombre} review${s(nombre)} overdue`,
+    rattraper: 'catch it up',
+    rattraperPlusieurs: 'catch them up',
   },
 
   charge: {
@@ -278,6 +326,7 @@ export const en: Dictionnaire = {
     valider: (titre: string, decalage: string) =>
       `Mark as reviewed: ${titre}, review ${decalage}`,
     progression: (rang: number, total: number) => `Review ${rang} of ${total}`,
+    passage: (rang: number, total: number) => `${ordinal(rang)} pass of ${total}`,
     prochaine: 'Next: ',
   },
 

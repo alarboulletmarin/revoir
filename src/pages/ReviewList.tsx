@@ -15,8 +15,8 @@ import type { Review, ReviewEntry, Topic } from '../types'
 import { LigneRevision } from '../components/LigneRevision'
 
 /**
- * Destination des liens « Tout voir ». Colonne simple : le bento est réservé
- * au tableau de bord (section 7.2).
+ * Destination des liens « Tout voir ». Une colonne, comme partout depuis que
+ * le bento a disparu (section 7.2).
  */
 const FILTRES = {
   aujourdhui: {

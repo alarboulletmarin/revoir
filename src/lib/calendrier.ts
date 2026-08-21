@@ -2,7 +2,7 @@
 
 /**
  * Construction d'une grille mensuelle, partagée par le calendrier plein écran
- * et le mini-mois du bento.
+ * du calendrier plein écran.
  */
 import {
   addDays,

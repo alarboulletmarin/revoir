@@ -83,6 +83,18 @@ export function formatLong(key: DateKey): string {
   return formater(fromKey(key), textes().dates.long)
 }
 
+/**
+ * « vendredi 21 août » · « Friday, August 21 » — le jour en toutes lettres,
+ * sans son année.
+ *
+ * C'est le sur-titre de l'écran « Aujourd'hui » et le titre de la page du
+ * jour : à cet endroit, l'année n'apprend rien, et le nom du jour est
+ * justement ce qu'on vient vérifier.
+ */
+export function formatJourLong(key: DateKey): string {
+  return formater(fromKey(key), textes().dates.jourLong)
+}
+
 /** « sam. 14 mars » · « Sat, Mar 14 » */
 export function formatShort(key: DateKey): string {
   return formater(fromKey(key), textes().dates.court)

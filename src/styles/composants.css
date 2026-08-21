@@ -1,5 +1,5 @@
 /*
- * Composants réutilisables : frise, item de révision, cellule, boutons,
+ * Composants réutilisables : frise, règle, item de révision, boutons,
  * champs, toast, dialogue de confirmation.
  *
  * Règles tenues partout dans ce fichier :
@@ -147,6 +147,270 @@
 
 .frise__libelle--fin {
   transform: translateX(-100%);
+}
+
+/* ========================================================== la règle === */
+
+/*
+ * La règle des quatorze jours — section 8.8.
+ *
+ * Une bande pleine largeur, posée entre deux filets : elle traverse l'écran
+ * au lieu de s'y loger, parce que c'est une règle graduée et qu'une règle ne
+ * s'arrête pas au bord d'une carte.
+ */
+.regle {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border-top: var(--bordure);
+  border-bottom: var(--bordure);
+  padding-block: var(--e-3) var(--e-3);
+  background-color: var(--surface);
+}
+
+.regle__entete {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
+}
+
+.regle__total {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+/*
+ * Le repère de toute la règle : les graduations montent depuis cet axe, les
+ * dates se posent dessous. Sa hauteur totale est dérivée de ses deux bandes
+ * (tokens.css), jamais mesurée à part.
+ */
+.regle__corps {
+  position: relative;
+  min-width: 0;
+  height: var(--regle-hauteur);
+  margin-inline: var(--marge-page);
+}
+
+.regle__axe {
+  position: absolute;
+  right: 0;
+  bottom: var(--regle-base);
+  left: 0;
+  height: var(--regle-trait);
+  background-color: var(--encre);
+}
+
+.regle__jours {
+  position: absolute;
+  right: 0;
+  bottom: var(--regle-base);
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  height: var(--regle-colonne);
+}
+
+.regle__jour {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--regle-gap);
+}
+
+.regle__compte {
+  color: var(--encre-2);
+  font-family: var(--police-chiffres);
+  font-size: var(--t-xs);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.regle__graduation {
+  width: var(--regle-trait);
+  background-color: var(--encre-2);
+}
+
+/*
+ * Les quatre paliers. Une journée vide garde sa graduation : sans elle, on ne
+ * saurait plus compter les jours qui séparent deux journées chargées.
+ */
+.regle__graduation--vide {
+  height: var(--regle-vide);
+  background-color: var(--trait);
+}
+
+.regle__graduation--faible {
+  height: var(--regle-faible);
+}
+
+.regle__graduation--moyen {
+  height: var(--regle-moyen);
+}
+
+/*
+ * Trois révisions ou plus : la graduation passe à l'encre pleine. C'est la
+ * seule journée à venir qui se distingue par sa couleur autant que par sa
+ * hauteur, et le nombre reste écrit au-dessus pour qui veut le compte exact.
+ */
+.regle__graduation--fort {
+  height: var(--regle-fort);
+  background-color: var(--encre);
+}
+
+/*
+ * Aujourd'hui : la seule graduation en --accent de la règle, la seule plus
+ * épaisse, et la seule qui dépasse les autres. Trois signaux pour un jour qui
+ * doit se trouver sans être cherché.
+ */
+.regle__jour--auj .regle__graduation {
+  width: var(--regle-trait-jour);
+  height: var(--regle-jour);
+  background-color: var(--accent);
+  transform-origin: bottom;
+  /* Animation autorisée n°2 (section 6) : une fois, à l'ouverture. */
+  animation: regle-jour var(--duree-regle) var(--courbe) both;
+}
+
+.regle__jour--auj .regle__compte {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@keyframes regle-jour {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.regle__reperes {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  color: var(--encre-2);
+  font-family: var(--police-chiffres);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Une cellule par jour, vide sauf aux trois repères : c'est ce qui les centre
+ * sous leur graduation. Répartis en `space-between`, ils se caleraient sur les
+ * bords de la règle et ne désigneraient plus rien.
+ */
+.regle__cellule {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+.regle__repere {
+  white-space: nowrap;
+}
+
+.regle__repere--auj {
+  color: var(--encre);
+  font-weight: 600;
+}
+
+/*
+ * Le retard, sous la règle. Il se constate et propose le geste qui le solde ;
+ * il n'accuse pas (section 1). La pastille redouble la couleur du texte, elle
+ * ne la remplace pas : la mention est écrite en toutes lettres.
+ */
+.regle__retard {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
+  color: var(--retard-texte);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.regle__pastille {
+  width: var(--pastille);
+  height: var(--pastille);
+  flex-shrink: 0;
+  border-radius: var(--r-pilule);
+  background-color: var(--retard);
+}
+
+/* ================================================== listes réglées ===== */
+
+/*
+ * Des lignes séparées par un filet, pas des cartes. Une carte par révision
+ * mettait autant de bordures que d'items sur un écran qui n'en demande
+ * qu'une : la liste est un seul objet, réglé comme une page de cahier.
+ */
+.liste-reglee {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.liste-reglee > * {
+  border-bottom: var(--bordure);
+}
+
+/* ============================================ échéance à venir ========= */
+
+.ligne-echeance {
+  min-width: 0;
+}
+
+.ligne-echeance__lien {
+  display: flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+  padding-inline: var(--marge-page);
+}
+
+.ligne-echeance__lien:hover {
+  background-color: var(--surface-survol);
+}
+
+.ligne-echeance__date {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+.ligne-echeance__titre {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ligne-echeance__categorie {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--e-1);
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
 }
 
 /* =================================================== item de révision === */
@@ -309,6 +573,78 @@
   line-height: var(--l-base);
 }
 
+/*
+ * Variante « passage » : la forme de la liste du jour.
+ *
+ * La ligne se centre sur sa case au lieu de s'aligner en haut — elle n'a que
+ * deux lignes de texte et rien qui dépasse —, et sa cible de 44px se replie
+ * dans la hauteur de la ligne au lieu de l'étirer. Sans cette marge négative,
+ * une liste de six révisions gagnait douze pixels par ligne sans rien dire de
+ * plus.
+ */
+.ligne-revision--passage {
+  align-items: center;
+  gap: var(--e-3);
+  border-radius: 0;
+  padding-inline: var(--marge-page);
+  padding-right: var(--marge-page);
+}
+
+.ligne-revision--passage .ligne-revision__case {
+  margin-block: calc(-1 * var(--e-1));
+}
+
+.ligne-revision--passage .ligne-revision__cercle {
+  width: var(--cercle-passage);
+  height: var(--cercle-passage);
+  border-color: var(--cercle-trait, var(--accent));
+}
+
+.ligne-revision--passage .ligne-revision__corps {
+  gap: var(--e-1);
+  padding-block: var(--e-3);
+}
+
+.ligne-revision--passage .ligne-revision__meta {
+  flex-wrap: nowrap;
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+.ligne-revision__categorie {
+  display: flex;
+  min-width: 0;
+  flex-shrink: 1;
+  align-items: center;
+  gap: var(--e-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * « 3ᵉ passage sur 5 ». Il cède la place avant le nom de la catégorie quand
+ * la ligne se resserre : la catégorie situe le sujet, le passage ne fait que
+ * le compter.
+ */
+.ligne-revision__passage {
+  min-width: 0;
+  flex-shrink: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le « J+7 » du bout de ligne : une colonne, pas une métadonnée. */
+.ligne-revision__decalage {
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
 .ligne-revision__corps .frise {
   flex: 1 1 100%;
 }
@@ -328,92 +664,6 @@
     flex: 1 1 var(--e-7);
     min-width: 0;
   }
-}
-
-/* ========================================================= cellule ====== */
-
-.cellule {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--e-2);
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-  padding: var(--e-4);
-  color: var(--encre);
-}
-
-@media (min-width: 768px) {
-  .cellule {
-    padding: var(--e-5);
-  }
-}
-
-/* Une seule par écran : c'est elle qui porte la hiérarchie (section 3). */
-.cellule--accent {
-  border-color: transparent;
-  background-color: var(--accent);
-  color: var(--surface);
-}
-
-.cellule--action {
-  transition: background-color var(--duree-court) var(--courbe),
-    transform var(--duree-court) var(--courbe);
-}
-
-.cellule--action:hover {
-  background-color: var(--surface-survol);
-}
-
-.cellule--action:active {
-  transform: scale(0.995);
-}
-
-.cellule__chiffre {
-  min-width: 0;
-  font-family: var(--police-titre);
-  font-size: var(--t-xl);
-  font-weight: 600;
-  line-height: var(--l-xl);
-  font-variant-numeric: tabular-nums;
-}
-
-.cellule__label {
-  min-width: 0;
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: var(--l-sm);
-}
-
-/*
- * Sur fond --accent plein, --surface n'est lisible qu'à partir de 15px et en
- * poids 500 (section 3) : le label passe donc de --t-sm à --t-base.
- */
-.cellule--accent .cellule__label {
-  color: var(--surface);
-  font-size: var(--t-base);
-  line-height: var(--l-base);
-}
-
-/* Sur fond --accent plein, tout le jeu repasse en --surface. */
-.cellule--accent .frise {
-  --frise-rail: var(--surface);
-  --frise-graduation: var(--surface);
-  --frise-actif: var(--surface);
-  --frise-curseur: var(--surface);
-}
-
-.cellule--accent .chip {
-  border-color: var(--surface);
-  color: var(--surface);
-}
-
-/* Sans quoi « Tout voir » s'écrit en --accent sur --accent : invisible. */
-.cellule--accent .btn--texte {
-  color: var(--surface);
 }
 
 /* ========================================================= boutons ====== */
@@ -935,8 +1185,8 @@
 
 .pastille {
   display: inline-block;
-  width: var(--e-2);
-  height: var(--e-2);
+  width: var(--pastille);
+  height: var(--pastille);
   flex-shrink: 0;
   border-radius: var(--r-pilule);
   background-color: var(--teinte, var(--encre-2));

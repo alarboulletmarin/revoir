@@ -1,307 +1,69 @@
 /*
- * Écrans : grille bento du tableau de bord, formulaire, fiche d'élément,
- * calendrier, réglages.
+ * Écrans : aujourd'hui, formulaire, fiche d'un sujet, calendrier, réglages.
  *
- * Le bento est réservé au tableau de bord (section 7.2). Les autres écrans
- * sont en colonne simple.
+ * Tous en colonne simple depuis que le bento a disparu (section 7.2). Ce qui
+ * vit ici, ce sont les mises en page d'écran ; les objets qu'elles posent
+ * vivent dans composants.css.
  */
 
-/* ============================================================ bento ===== */
+/* ==================================================== aujourd'hui ====== */
 
 /*
- * Une zone par cellule, jamais deux rangées pour une seule carte : la cellule
- * du jour doit pouvoir ne faire que la hauteur de son unique révision. Sur
- * mobile, chaque rangée se dimensionne sur son contenu.
- */
-.bento {
-  display: grid;
-  min-width: 0;
-  gap: var(--e-3);
-  /* Obligatoire : le français est plus long que l'anglais et casserait une
-     grille à hauteur fixe (section 7.2). */
-  grid-auto-rows: minmax(96px, auto);
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:
-    'aujourdhui aujourdhui'
-    'retard     retard'
-    'synthese   synthese';
-}
-
-/* La cellule « retard » disparaît du DOM à zéro : la grille se recompose. */
-.bento--sans-retard {
-  grid-template-areas:
-    'aujourdhui aujourdhui'
-    'synthese   synthese';
-}
-
-/*
- * La cellule du jour n'a pas de plancher : une seule révision, une seule
- * ligne. Les autres gardent les 96px de la section 7.2, qui les empêchent de
- * se réduire à un chiffre posé sur un trait.
+ * L'écran « Aujourd'hui » — sections 8.8 et 8.9.
  *
- * `align-self: start` la dispense aussi de s'étirer : au-delà de 768px elle
- * couvre trois rangées, et sans cela quatre révisions se retrouveraient au
- * sommet de huit cents pixels de vert.
+ * Il n'y a plus de grille : une colonne, et trois objets qui se suivent —
+ * le titre, la règle, ce qu'il y a à faire. Le bento posait trois blocs de
+ * même poids côte à côte et laissait choisir lequel répondait à la question ;
+ * la réponse est maintenant la première chose écrite, en toutes lettres.
+ *
+ * L'écran ne porte pas de marge latérale : la règle et les lignes réglées
+ * traversent le papier d'un bord à l'autre, et ce sont leurs contenus qui se
+ * retirent de `--marge-page`. Un filet qui s'arrête à seize pixels du bord
+ * ressemble à une carte sans en être une.
  */
-.bento .cellule--accent {
-  min-height: 0;
-  align-self: start;
-}
-
-@media (min-width: 768px) {
-  .bento {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-areas:
-      'aujourdhui aujourdhui retard     retard'
-      'aujourdhui aujourdhui synthese   synthese'
-      'aujourdhui aujourdhui calendrier calendrier';
-  }
-
-  .bento--sans-retard {
-    grid-template-areas:
-      'aujourdhui aujourdhui synthese   synthese'
-      'aujourdhui aujourdhui calendrier calendrier';
-  }
-}
-
-/* ---------------------------------------------------- cellule héros ---- */
-
-/*
- * « 3 révisions aujourd'hui » plutôt qu'un 3 de soixante-quatre pixels suivi
- * de son étiquette. Le chiffre reste le premier mot de la phrase, mais c'est
- * le fond --accent plein qui porte la hiérarchie de l'écran (section 3) — le
- * texte n'a pas à la porter une seconde fois.
- */
-.hero__titre {
-  min-width: 0;
-  font-family: var(--police-titre);
-  font-size: var(--t-xl);
-  font-weight: 600;
-  line-height: var(--l-xl);
-  font-variant-numeric: tabular-nums;
-  text-wrap: balance;
-}
-
-.hero__liste {
+.aujourdhui {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-1);
-  padding-top: var(--e-2);
+  gap: var(--e-5);
+  margin-inline: calc(-1 * var(--marge-page));
 }
 
-.hero__pied {
+.aujourdhui__entete {
   display: flex;
   min-width: 0;
-  justify-content: flex-end;
-  padding-top: var(--e-1);
+  flex-direction: column;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
 }
 
-/* Sur --accent plein, --surface exige 15px minimum (section 3). */
-.hero__vide {
+/*
+ * La seconde ligne d'une journée bouclée : une information, pas un
+ * encouragement (section 8.9). Elle ne s'affiche que là — une journée qui a
+ * encore des révisions n'a pas besoin qu'on lui annonce la suivante.
+ */
+.aujourdhui__suite {
   min-width: 0;
-  color: var(--surface);
+  color: var(--encre-2);
   font-size: var(--t-base);
   line-height: var(--l-base);
 }
 
-.cellule--accent .ligne-revision__titre,
-.cellule--accent .ligne-revision__date {
-  color: var(--surface);
-}
-
-.cellule--accent .ligne-revision__meta {
-  color: var(--surface);
-}
-
-/* Tout le jeu de couleurs de la case bascule d'un bloc (voir composants.css). */
-.cellule--accent .ligne-revision {
-  --cercle-trait: var(--surface);
-  --cercle-survol: var(--surface);
-  --cercle-fait: var(--surface);
-  --coche-couleur: var(--accent);
-}
-
-/* Paysage mobile : on agrandit, jamais l'inverse (section 7.4). */
-@media (min-height: 560px) {
-  .hero__liste {
-    gap: var(--e-2);
-  }
-}
-
-/* -------------------------------------------------- cellule retard ----- */
-
-.retard__valeur {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--e-2);
-  color: var(--retard-texte);
-}
-
-/* --retard n'est jamais utilisé en texte : ici c'est une pastille. */
-.retard__point {
-  width: var(--e-2);
-  height: var(--e-2);
-  flex-shrink: 0;
-  border-radius: var(--r-pilule);
-  background-color: var(--retard);
-}
-
-/* ------------------------------------------------ cellule synthèse ----- */
-
-/*
- * Le titre de la seconde moitié de la cellule. Il double le rôle de
- * `.cellule__label`, mais plus bas : la carte porte deux informations, et la
- * seconde a droit à son nom.
- */
-.synthese__intitule {
-  min-width: 0;
-  padding-top: var(--e-2);
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: var(--l-sm);
-}
-
-/*
- * Le seul `conic-gradient` du projet, prescrit par la section 7.2. Les arrêts
- * sont francs : c'est un arc, pas un dégradé.
- */
-.anneau {
-  position: relative;
-  width: var(--e-7);
-  height: var(--e-7);
-  flex-shrink: 0;
-  border-radius: var(--r-pilule);
-  background: conic-gradient(
-    var(--accent) calc(var(--part) * 1turn),
-    var(--trait) 0
-  );
-}
-
-.anneau::after {
-  content: '';
-  position: absolute;
-  inset: var(--e-2);
-  border-radius: var(--r-pilule);
-  background-color: var(--surface);
-}
-
-/* ------------------------------------------------- barres de charge ---- */
-
-.charge {
+.aujourdhui__section {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-1);
-}
-
-.charge__barres {
-  display: flex;
-  min-width: 0;
-  align-items: flex-end;
-  gap: var(--charge-gap);
-  height: var(--e-7);
-}
-
-.charge__jour {
-  display: flex;
-  min-width: 0;
-  height: 100%;
-  flex: 1 1 0;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.charge__barre {
-  width: 100%;
-  min-height: var(--charge-plancher);
-  border-radius: var(--charge-rayon);
-  background-color: var(--accent);
-}
-
-/*
- * Aujourd'hui est toujours la première barre. Elle porte son nom sous l'axe ;
- * ce trait d'--encre à sa base le confirme sans dépendre de sa hauteur, qui
- * peut être celle d'un jour vide.
- */
-.charge__barre--jour {
-  border-bottom: 2px solid var(--encre);
-}
-
-/*
- * Trois repères seulement, aux deux bords et au milieu : `space-between` les
- * cale sur la première et la dernière barre sans avoir à mesurer quoi que ce
- * soit.
- */
-.charge__reperes {
-  display: flex;
-  min-width: 0;
-  justify-content: space-between;
   gap: var(--e-2);
 }
 
-.charge__repere {
-  min-width: 0;
-  color: var(--encre-2);
-  font-size: var(--t-xs);
-  line-height: var(--l-xs);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.aujourdhui__section .surtitre {
+  padding-inline: var(--marge-page);
 }
 
-.charge__repere--jour {
-  color: var(--encre);
-  font-weight: 500;
+.aujourdhui__pied {
+  padding-inline: var(--marge-page);
 }
 
-/* ------------------------------------------------- mini-calendrier ----- */
-
-/* Sa cellule n'est montée qu'au-delà de 768px (section 7.2). */
-.mini-mois {
-  display: grid;
-  min-width: 0;
-  gap: var(--e-1);
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.mini-mois__jour {
-  display: flex;
-  min-width: 0;
-  aspect-ratio: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  border-radius: var(--r-pilule);
-  color: var(--encre-2);
-  font-size: var(--t-xs);
-  font-variant-numeric: tabular-nums;
-}
-
-.mini-mois__jour--hors {
-  opacity: 0.4;
-}
-
-.mini-mois__jour--aujourdhui {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-}
-
-.mini-mois__points {
-  display: flex;
-  gap: 1px;
-  height: var(--charge-plancher);
-}
-
-.mini-mois__point {
-  width: var(--charge-plancher);
-  height: var(--charge-plancher);
-  border-radius: var(--r-pilule);
-  background-color: var(--accent);
-}
 
 /* ================================================ listes de révisions == */
 
@@ -1748,9 +1510,9 @@ body[data-panneau='ouvert'] {
 /* ========================================================== accueil ==== */
 
 /*
- * L'écran de premier usage, qui est aussi la page de présentation. Colonne
- * simple : le bento reste réservé au tableau de bord (section 7.2), et il n'y
- * a de toute façon rien à mettre en grille — c'est un texte qu'on lit une fois.
+ * L'écran de premier usage, qui est aussi la page de présentation. Une
+ * colonne : il n'y a rien à mettre en grille, c'est un texte qu'on lit une
+ * fois.
  */
 .accueil {
   display: flex;
@@ -1768,15 +1530,15 @@ body[data-panneau='ouvert'] {
 
 /*
  * Le titre de l'écran est la question de l'application. `text-wrap: balance`
- * lui évite de finir sur un mot seul, et `--t-xl` le tient à la taille des
- * chiffres du bento : c'est la même voix.
+ * lui évite de finir sur un mot seul.
  */
 .accueil__titre {
   min-width: 0;
   font-family: var(--police-titre);
-  font-size: var(--t-xl);
-  font-weight: 600;
-  line-height: var(--l-xl);
+  font-size: var(--t-page);
+  font-weight: 700;
+  letter-spacing: var(--chasse-titre);
+  line-height: var(--l-page);
   text-wrap: balance;
 }
 

@@ -4,6 +4,14 @@
 
 ## Non publié
 
+### Changé — l'écran « Aujourd'hui »
+
+- **Une règle graduée remplace les trois cartes du tableau de bord.** La journée, le retard et la charge des quinze jours se disputaient la même question en trois blocs de même poids, et il fallait choisir lequel y répondait. Il y a maintenant un seul objet à balayer : quatorze jours, une graduation par jour, sa hauteur donne la charge, et le jour courant s'y trouve sans être cherché. Le retard se lit sous l'axe et propose de le rattraper ; ce qui reste à faire est écrit en toutes lettres au-dessus, en titre.
+- **La hauteur d'une journée ne dépend plus de ce qui l'entoure.** Les anciennes barres se remesuraient sur la journée la plus chargée : la même journée à trois révisions montait ou descendait selon la semaine. Quatre paliers fixes la laissent à la même hauteur d'un jour à l'autre, et le nombre reste écrit au-dessus pour qui veut le compte exact.
+- **La liste du jour dit où en est chaque sujet** — « Études · 3ᵉ passage sur 5 » — et porte son décalage au bout de la ligne, en colonne. Le cercle à cocher grandit : c'est le geste central de l'application, et sa cible ne se voit pas.
+- **Une journée bouclée ne se solde plus sur un écran vide.** Ce qui vient d'être coché reste sous la main jusqu'au soir, chaque ligne gardant son « Annuler » — celui du message, lui, expire au bout de cinq secondes.
+- Les listes ne sont plus des empilements de cartes mais des lignes séparées par un filet, comme une page de cahier. « Ensuite » montre les trois prochaines échéances, date en tête ; elles se lisent, elles ne se cochent pas — pour cocher en avance, « Tout voir » mène à la liste complète, comme avant.
+
 ### Changé — l'écriture de l'interface
 
 - **L'application prend une voix.** Les titres, les étiquettes et les chiffres ne s'écrivent plus dans la police que le système voulait bien donner — SF Pro ici, Roboto là, Segoe ailleurs, trois dessins pour un même écran. Arial est nommée en tête, avec Liberation Sans pour repli sur Linux, dont les chasses sont les siennes. Rien n'est téléchargé pour autant : c'est un nom, pas un fichier, et l'application continue de ne faire aucun appel réseau.

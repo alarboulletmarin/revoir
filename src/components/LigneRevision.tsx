@@ -15,7 +15,7 @@ import { progressionEntree } from '../lib/stats'
 import { estFaite, revisionsDe } from '../lib/sujets'
 import { IconeCoche } from './Icons'
 import { Frise } from './Frise'
-import { ChipCategorie } from './ChipCategorie'
+import { ChipCategorie, PastilleCategorie } from './ChipCategorie'
 import { useDonnees } from '../state/useDonnees'
 import { useTextes } from '../state/usePreferences'
 
@@ -35,14 +35,17 @@ interface LigneRevisionProps {
   masquerDate?: boolean
   /**
    * Ce qui accompagne le titre :
-   *   `frise`       — la frise miniature, valeur par défaut des listes aérées ;
+   *   `passage`     — « Études · 3ᵉ passage sur 5 », et le décalage `J+n` au
+   *                   bout de la ligne. C'est la forme de la liste du jour :
+   *                   où en est ce sujet, et à quelle marche on se trouve ;
+   *   `frise`       — la frise miniature, pour les listes aérées ;
    *   `progression` — « Révision 2 sur 5 · Prochaine : 8 août », en toutes
    *                   lettres, avec une ligne resserrée : la feuille du
    *                   calendrier n'a ni la hauteur ni le calme d'une page
    *                   pleine pour qu'une frise s'y lise ;
-   *   `aucun`       — ni l'une ni l'autre, pour la cellule héros déjà dense.
+   *   `aucun`       — ni l'une ni l'autre.
    */
-  detail?: 'frise' | 'progression' | 'aucun'
+  detail?: 'passage' | 'frise' | 'progression' | 'aucun'
 }
 
 export function LigneRevision({
@@ -118,12 +121,15 @@ export function LigneRevision({
     'ligne-revision',
     coche ? 'ligne-revision--faite' : null,
     detail === 'progression' ? 'ligne-revision--compact' : null,
+    detail === 'passage' ? 'ligne-revision--passage' : null,
   ]
     .filter(Boolean)
     .join(' ')
 
   const progression =
-    detail === 'progression' ? progressionEntree(review, revisions) : null
+    detail === 'progression' || detail === 'passage'
+      ? progressionEntree(review, revisions)
+      : null
 
   return (
     <li className={classes}>
@@ -148,8 +154,27 @@ export function LigneRevision({
         <span className="ligne-revision__titre">{topic.title}</span>
 
         <span className="ligne-revision__meta">
-          <ChipCategorie categorie={categorie} />
-          {!masquerDate && (
+          {/*
+            Sur la liste du jour, la catégorie se réduit à sa pastille suivie
+            de son nom : la chip encadrée y répétait une bordure sur une ligne
+            qui en porte déjà une, et la ligne se lit en un seul mouvement.
+          */}
+          {detail === 'passage' ? (
+            categorie !== null && (
+              <span className="ligne-revision__categorie">
+                <PastilleCategorie categorie={categorie} />
+                {categorie.name}
+              </span>
+            )
+          ) : (
+            <ChipCategorie categorie={categorie} />
+          )}
+          {detail === 'passage' && progression !== null && (
+            <span className="ligne-revision__passage">
+              {t.ligne.passage(progression.rang, progression.total)}
+            </span>
+          )}
+          {!masquerDate && detail !== 'passage' && (
             <time className="ligne-revision__date" dateTime={review.dueDate}>
               {formatShort(review.dueDate)}
             </time>
@@ -164,7 +189,7 @@ export function LigneRevision({
             échéance ne s'affiche que s'il en reste une : pas de place
             réservée pour une information absente.
           */}
-          {progression && (
+          {detail === 'progression' && progression && (
             <span className="ligne-revision__progression">
               {t.ligne.progression(progression.rang, progression.total)}
               {progression.suivante !== null && (
@@ -189,6 +214,18 @@ export function LigneRevision({
           />
         )}
       </Link>
+
+      {/*
+        Le décalage tient sa propre colonne, au bout de la ligne. Dans la méta,
+        il se serait aligné sur le texte qui le précède et aurait changé de
+        place d'une ligne à l'autre ; en colonne, les `J+n` s'empilent et la
+        chasse fixe les met au même fer.
+      */}
+      {detail === 'passage' && (
+        <span className="ligne-revision__decalage chiffres" aria-hidden="true">
+          {t.programmes.decalage(review.intervalInDays)}
+        </span>
+      )}
     </li>
   )
 }

@@ -220,7 +220,7 @@ export function Settings() {
       {/*
         L'export calendrier de **tous** les sujets vit ici, et pas sur la vue
         Calendrier : celle-ci répond à « quand ? », elle n'est pas un écran
-        d'outils, et le bento du tableau de bord n'est pas davantage l'endroit
+        d'outils, et le tableau de bord n'est pas davantage l'endroit
         d'un bouton de fichier. L'export d'un sujet seul, lui, est sur sa fiche,
         parmi ses autres actions — c'est là qu'on l'a en tête.
       */}

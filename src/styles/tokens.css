@@ -101,9 +101,17 @@
   --r-pilule: 999px;
   --bordure: 1px solid var(--trait);
 
-  /* Mouvement */
+  /*
+   * Mouvement (section 6). Trois durées, trois animations.
+   *
+   * `--duree-regle` est plus lente que tout le reste, et c'est voulu : elle
+   * porte la seule animation de l'application qui explique quelque chose au
+   * lieu d'accompagner un geste. La graduation du jour se dresse une fois, à
+   * l'ouverture de l'écran, et rien ne la rejoue.
+   */
   --duree-court: 120ms;
   --duree-moyen: 200ms;
+  --duree-regle: 320ms;
   --courbe: cubic-bezier(0.2, 0, 0, 1);
 
   /*
@@ -199,18 +207,55 @@
   --haut-securise: env(safe-area-inset-top, 0px);
 
   /*
-   * Barres de charge (section 8.8). Ces trois valeurs sont hors de la base 4
-   * parce que la section les fixe telles quelles ; elles sont nommées ici pour
-   * qu'aucune ne soit écrite en dur dans une feuille.
+   * La règle des quatorze jours (section 8.8). Ces valeurs sont hors de la
+   * base 4 parce que la section les fixe telles quelles : ce sont les hauteurs
+   * d'une graduation, pas des espacements.
+   *
+   * Les quatre paliers montent par pas décroissants — 6, 12, 18, 22 — puis le
+   * jour courant les dépasse de deux pixels. L'écart se resserre en haut parce
+   * qu'une journée chargée n'a pas à écraser le reste de la règle : ce qui doit
+   * se voir, c'est qu'elle dépasse, pas de combien.
    */
-  --charge-gap: 3px;
-  --charge-rayon: 2px;
-  --charge-plancher: 3px;
+  --regle-vide: 6px;
+  --regle-faible: 12px;
+  --regle-moyen: 18px;
+  --regle-fort: 22px;
+  --regle-jour: 24px;
 
   /*
-   * Points de densité du calendrier plein écran (section 8.11). Le mini-mois
-   * du bento garde les 3px des barres de charge : il ne se touche pas. Ici,
-   * la case se vise au pouce, et un point de 3px se perd sous le doigt.
+   * Diamètre d'une pastille de catégorie. Hors base 4, comme les hauteurs de
+   * la règle : une pastille n'est pas un espacement, c'est un point posé à
+   * côté d'un mot, et sa taille se règle sur la hauteur d'x du texte qu'elle
+   * accompagne — pas sur la grille.
+   */
+  --pastille: 6px;
+
+  /*
+   * Le cercle de la case à cocher sur la liste du jour. Il grandit de 24 à
+   * 26 px : c'est le geste central de l'application, et sa cible de 44 px ne
+   * se voit pas — seul le cercle dit où viser.
+   */
+  --cercle-passage: 26px;
+
+  /* Épaisseur d'une graduation, et celle du jour courant. */
+  --regle-trait: 1px;
+  --regle-trait-jour: 1.5px;
+
+  /* L'écart entre un nombre et la graduation qu'il surmonte. */
+  --regle-gap: 3px;
+
+  /*
+   * La règle se construit du bas vers le haut, comme la pile du bas : la bande
+   * des repères de date, puis l'axe posé dessus, puis la colonne où montent les
+   * graduations. La hauteur totale en découle et n'est jamais mesurée à part.
+   */
+  --regle-base: 20px;
+  --regle-colonne: 46px;
+  --regle-hauteur: calc(var(--regle-colonne) + var(--regle-base));
+
+  /*
+   * Points de densité du calendrier plein écran (section 8.11). La case se
+   * vise au pouce, et un point de 3px s'y perdrait sous le doigt.
    */
   --point-jour: var(--e-1);
   --point-jour-gap: 2px;
