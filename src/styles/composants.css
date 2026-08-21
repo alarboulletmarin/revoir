@@ -82,6 +82,33 @@
 }
 
 /*
+ * Le tracé de la présentation — animation n°3 (section 6). Il balaie la piste
+ * entière une fois, à l'ouverture, et rien ne le rejoue.
+ *
+ * `scaleX` et non `width` : une largeur animée refait la mise en page à chaque
+ * image, une transformée non. Le trait n'a qu'un pixel de haut, donc l'étirer
+ * horizontalement ne le déforme pas.
+ */
+.frise__tracage {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  transform-origin: left;
+  background-color: var(--frise-actif);
+  animation: frise-tracage var(--duree-trace) var(--courbe) both;
+}
+
+@keyframes frise-tracage {
+  from {
+    transform: translateY(-50%) scaleX(0);
+  }
+  to {
+    transform: translateY(-50%) scaleX(1);
+  }
+}
+
+/*
  * Graduations franches (section 2). L'échéance faite se distingue par sa
  * hauteur et par sa couleur, et non plus en atténuant l'opacité de celle à
  * venir : cette atténuation la ramenait sous le seuil de lisibilité, quand
@@ -117,18 +144,21 @@
   background-color: var(--frise-curseur);
 }
 
+/*
+ * Les libellés J+n, à toutes les largeurs.
+ *
+ * Ils étaient masqués sous 480px, où J+1 et J+3 se chevauchent. Mais c'est
+ * précisément sous 480px que la frise est la signature de l'application, et
+ * une signature muette ne signe rien : elle y devenait cinq traits sans
+ * légende. Le chevauchement se règle là où il se mesure — dans le composant,
+ * qui retire un libellé dont le segment n'atteint pas 32 px réels (section 2).
+ * Une media query ne pouvait pas le faire : la largeur d'un segment dépend de
+ * son poids, pas de celle de l'écran.
+ */
 .frise__libelles {
   position: relative;
-  display: none;
   height: var(--e-4);
   min-width: 0;
-}
-
-/* Sous 480px, les libellés J+1 / J+2 se chevauchent (section 7.4). */
-@media (min-width: 480px) {
-  .frise__libelles {
-    display: block;
-  }
 }
 
 .frise__libelle {

@@ -125,6 +125,12 @@
   --duree-court: 120ms;
   --duree-moyen: 200ms;
   --duree-regle: 320ms;
+  /*
+   * Le tracé de la frise sur l'écran de présentation. Plus long que tout le
+   * reste, et c'est son sujet : ce qu'on regarde, ce n'est pas un trait qui
+   * arrive, c'est un écart qui s'allonge. Trop vite, il n'y a rien à voir.
+   */
+  --duree-trace: 1400ms;
   --courbe: cubic-bezier(0.2, 0, 0, 1);
 
   /*
@@ -154,6 +160,12 @@
 
   /* Épaisseur d'un segment d'avancement (section 8.22). */
   --segment-etape: 2px;
+  /*
+   * Largeur d'une graduation d'écran, sur la présentation. Elles ne s'étirent
+   * pas sur la largeur comme les segments de la création : trois traits courts
+   * en haut à gauche comptent des écrans, ils ne mesurent pas un avancement.
+   */
+  --graduation-etape: 22px;
   --h-fab: 56px;
   /* Hauteur utile de la barre du bas : icône, libellé, et l'air autour. */
   --h-nav: 58px;

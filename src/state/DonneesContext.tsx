@@ -51,6 +51,7 @@ import {
   type ResultatGroupe,
 } from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
+import { construireJeuExemple } from '../lib/exemple'
 
 export interface SujetDraft {
   title: string
@@ -174,6 +175,15 @@ export interface DonneesContextValue {
   reporterPlusieurs: (reviewIds: string[]) => GesteGroupe
   /** Remet les révisions d'un sujet dans l'état fourni. Sert à « Annuler ». */
   restaurerRevisions: (topicId: string, precedentes: Review[]) => void
+
+  /**
+   * Charge le jeu d'exemple et rend les identifiants des sujets créés
+   * (section 8.24). Ce sont des sujets ordinaires : rien ne les distingue en
+   * base, seul l'appareil se souvient de les avoir demandés.
+   */
+  chargerJeuExemple: () => Promise<string[]>
+  /** Retire les sujets d'exemple encore présents, et eux seuls. */
+  effacerJeuExemple: (ids: string[]) => Promise<void>
 
   importer: (contenu: ContenuSauvegarde) => Promise<void>
 }
@@ -528,6 +538,29 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
     [geste],
   )
 
+  const chargerJeuExemple = useCallback(async () => {
+    const { topics: sujets, reviews: revisions } = construireJeuExemple(categories)
+
+    setTopics((actuels) => [...actuels, ...sujets])
+    setReviews((actuelles) => [...actuelles, ...revisions])
+
+    await Promise.all([
+      ...sujets.map((topic) => putTopic(topic)),
+      ...revisions.map((review) => putReview(review)),
+    ])
+    return sujets.map((topic) => topic.id)
+  }, [categories])
+
+  const effacerJeuExemple = useCallback(async (ids: string[]) => {
+    const vises = new Set(ids)
+    setTopics((actuels) => actuels.filter((topic) => !vises.has(topic.id)))
+    setReviews((actuelles) => actuelles.filter((review) => !vises.has(review.topicId)))
+
+    // Un sujet d'exemple a pu être supprimé à la main : `deleteTopicWithReviews`
+    // sur un identifiant absent est sans effet, et c'est ce qu'on veut.
+    await Promise.all(ids.map((id) => deleteTopicWithReviews(id)))
+  }, [])
+
   const devalider = useCallback(
     (reviewId: string) => {
       const cible = reviews.find((review) => review.id === reviewId)
@@ -667,6 +700,8 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       validerPlusieurs: validerToutes,
       reporterPlusieurs: reporterToutes,
       restaurerRevisions,
+      chargerJeuExemple,
+      effacerJeuExemple,
       importer,
     }),
     [
@@ -697,6 +732,8 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       validerToutes,
       reporterToutes,
       restaurerRevisions,
+      chargerJeuExemple,
+      effacerJeuExemple,
       importer,
     ],
   )

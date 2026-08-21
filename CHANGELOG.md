@@ -4,6 +4,13 @@
 
 ## Non publié
 
+### Ajouté — de quoi commencer
+
+- **Une présentation en trois écrans**, à lire en dix secondes : la question à laquelle l'application répond, pourquoi les écarts grandissent — la frise s'y trace sous vos yeux —, et ce qui se passe quand vous cochez en retard. Elle se saute d'un mot écrit en clair, pas en gris pâle dans un coin, et se relit depuis l'aide.
+- **Un jeu d'exemple.** Quatre sujets avec un retard, des révisions faites et des programmes en cours : de quoi voir la règle peuplée, le recalage et le tableau de suivi sans avoir rien saisi. Ce ne sont pas des données de démonstration — ce sont des sujets ordinaires, qui se cochent et se modifient comme les autres, et qui s'effacent tous d'un geste depuis les réglages.
+- **L'aide s'ouvre sur la règle** et la seule phrase qui apprend à la lire : le trait vertical, c'est aujourd'hui.
+- **Les repères J+n de la frise s'affichent sur les petits écrans.** Ils disparaissaient sous 480 px, là où la frise est justement la signature de l'application : elle y devenait cinq traits sans légende. Un repère ne s'efface plus que s'il n'a pas la place, un par un.
+
 ### Changé — ce qu'un écran montre avant d'avoir ses données
 
 - **La forme de l'écran est posée avant les données.** Un gabarit remplace le mot « Chargement… » : la page ne saute plus quand les révisions arrivent. Aucun tourniquet — la lecture est locale, elle dure quelques dizaines de millisecondes, et une roue n'aurait le temps que d'apparaître.

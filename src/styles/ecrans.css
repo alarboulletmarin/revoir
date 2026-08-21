@@ -450,6 +450,177 @@
   padding-inline: var(--marge-page);
 }
 
+
+/*
+ * La règle en tête de l'aide, et le lien qui rejoue la présentation.
+ * Même traversée du papier que sur « Aujourd'hui » : c'est le même objet.
+ */
+.aide__regle {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  margin-inline: calc(-1 * var(--marge-page));
+  border-top: var(--bordure);
+  border-bottom: var(--bordure);
+  background-color: var(--surface);
+  padding: var(--e-4) var(--marge-page);
+}
+
+.aide__lien {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+/* ===================================================== présentation ==== */
+
+/*
+ * Les trois écrans de la présentation — section 8.25.
+ *
+ * Contenu centré verticalement : il n'y a qu'une idée par écran, et la poser
+ * en haut d'un téléphone laisserait six cents pixels de vide dessous. La page
+ * occupe toute la hauteur disponible, barres comprises — elles s'effacent ici.
+ */
+.bienvenue {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.bienvenue__entete {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+}
+
+.bienvenue__avancement {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+/*
+ * Trois graduations, comme celles de la règle : un trait par écran, celui de
+ * l'écran courant en --accent. La même façon de compter que sur les pages de
+ * création, avec le même objet.
+ */
+.bienvenue__graduations {
+  display: flex;
+  align-items: center;
+  gap: var(--e-1);
+}
+
+.bienvenue__graduation {
+  width: var(--graduation-etape);
+  height: var(--segment-etape);
+  background-color: var(--trait);
+}
+
+.bienvenue__graduation--active {
+  background-color: var(--accent);
+}
+
+.bienvenue__compte {
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+  letter-spacing: 0.1em;
+}
+
+/*
+ * La sortie, en 15px souligné et en pleine encre — pas en gris pâle dans un
+ * coin. Une présentation dont on ne trouve pas la sortie n'est plus une
+ * présentation, c'est un péage.
+ */
+.bienvenue__passer {
+  display: inline-flex;
+  min-height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  color: var(--encre);
+  font-size: var(--t-base);
+}
+
+.bienvenue__corps {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--e-6);
+}
+
+.bienvenue__texte {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+/*
+ * Le seul texte courant du projet au-dessus de --t-base. Un écran qui ne porte
+ * qu'une idée peut se lire d'un peu plus loin, et il n'a rien contre quoi se
+ * mesurer.
+ */
+.bienvenue__detail {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-champ);
+  line-height: var(--l-base);
+  text-wrap: pretty;
+}
+
+/*
+ * La démonstration traverse le papier entre deux filets, comme la règle de
+ * l'écran « Aujourd'hui » : c'est le même objet, il se pose de la même façon.
+ */
+.bienvenue__demonstration {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+  margin-inline: calc(-1 * var(--marge-page));
+  border-top: var(--bordure);
+  border-bottom: var(--bordure);
+  background-color: var(--surface);
+  padding: var(--e-5) var(--marge-page);
+}
+
+.bienvenue__legende {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  text-wrap: pretty;
+}
+
+.bienvenue__fin,
+.bienvenue__pied {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-3);
+}
+
+.bienvenue__pied .btn--primaire {
+  min-height: var(--h-action);
+  align-self: stretch;
+  padding-inline: var(--e-5);
+}
+
+.bienvenue__fin .btn {
+  min-height: var(--h-action);
+  align-self: stretch;
+  padding-inline: var(--e-5);
+}
+
 /* ======================================================== formulaire === */
 
 .formulaire {

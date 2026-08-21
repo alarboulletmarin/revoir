@@ -19,6 +19,7 @@ import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
 import { Aide } from './pages/Aide'
+import { Bienvenue } from './pages/Bienvenue'
 import { Suivi } from './pages/Suivi'
 import { NotFound } from './pages/NotFound'
 
@@ -74,6 +75,12 @@ export function App() {
                 <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
                 <Route path="/reglages" element={<Settings />} />
                 <Route path="/aide" element={<Aide />} />
+                {/*
+                  La présentation en trois écrans (section 8.25). Elle a une
+                  adresse parce qu'on y revient : depuis l'aide, et depuis la
+                  page de premier usage.
+                */}
+                <Route path="/bienvenue" element={<Bienvenue />} />
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
                 <Route

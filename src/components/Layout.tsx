@@ -18,7 +18,24 @@ import { estRacine, useRetour } from '../state/useRetour'
  * seule des deux formes laisserait le bouton flotter sur un formulaire.
  */
 function fabVisible(pathname: string): boolean {
-  return !/\/(nouveau|nouvelle|modifier)$/.test(pathname) && etapeCreation(pathname) === null
+  return (
+    !/\/(nouveau|nouvelle|modifier)$/.test(pathname) &&
+    etapeCreation(pathname) === null &&
+    !estPresentation(pathname)
+  )
+}
+
+/**
+ * La présentation occupe l'écran entier : ni en-tête, ni barre du bas, ni
+ * bouton flottant.
+ *
+ * Elle n'est pas une page de l'application, elle est ce qu'on lit avant d'y
+ * entrer. Un retour vers Aujourd'hui, un « + » et trois onglets par-dessus
+ * inviteraient à en sortir par cinq chemins différents, alors qu'elle en offre
+ * déjà deux — « Passer » en haut, « Continuer » en bas.
+ */
+function estPresentation(pathname: string): boolean {
+  return pathname === '/bienvenue'
 }
 
 /** Les trois questions de la création, dans l'ordre où elles se posent. */
@@ -67,6 +84,7 @@ export function Layout() {
 
   const racine = estRacine(pathname)
   const etape = etapeCreation(pathname)
+  const presentation = estPresentation(pathname)
 
   return (
     <div className="appli">
@@ -74,6 +92,7 @@ export function Layout() {
         {t.coque.sautContenu}
       </a>
 
+      {!presentation && (
       <header className="appli__entete">
         {/*
           Une seule chose à gauche : la marque sur une vue, le retour partout
@@ -154,8 +173,14 @@ export function Layout() {
           </div>
         )}
       </header>
+      )}
 
-      <main className="page" id="contenu">
+      {/*
+        La présentation n'a ni barre du bas ni bouton flottant : la purge que
+        la page réserve pour eux y laisserait cent cinquante pixels de vide
+        sous le pied de page.
+      */}
+      <main className={presentation ? 'page page--plein' : 'page'} id="contenu">
         {/*
           Une erreur de lecture n'est pas une remarque en marge : sans données,
           l'écran qui suivrait serait vide, et un tableau de bord à zéro se lit
@@ -177,7 +202,7 @@ export function Layout() {
         de comportement : elles ne s'empilent simplement pas sous une seconde
         barre, ce qui coûterait cent vingt pixels de chrome sous le pouce.
       */}
-      {etape === null && <NavBar />}
+      {etape === null && !presentation && <NavBar />}
 
       <UpdatePrompt />
     </div>

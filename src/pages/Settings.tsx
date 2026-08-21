@@ -27,6 +27,7 @@ import { todayKey } from '../lib/dates'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bascule } from '../components/Bascule'
 import { Bouton, LienBouton } from '../components/Bouton'
+import { useJeuExemple } from '../state/useJeuExemple'
 import { Frise } from '../components/Frise'
 import { ChipCategorie } from '../components/ChipCategorie'
 
@@ -45,6 +46,8 @@ const NOM_LANGUE: Record<Langue, string> = { fr: fr.nom, en: en.nom }
 export function Settings() {
   const t = useTextes()
   useTitrePage(t.reglages.titre)
+  const exemple = useJeuExemple()
+  const effacerExemple = exemple.effacer
   const {
     categories,
     topics,
@@ -253,6 +256,23 @@ export function Settings() {
         longs. Les chips disent d'un coup d'œil ce qu'il y a, ce qu'une liste
         d'éditeurs empilés dirait moins bien.
       */}
+      {/*
+        Le jeu d'exemple ne se signale que s'il est chargé : une ligne « aucun
+        jeu d'exemple » sur un écran qui n'en a jamais eu serait une réponse à
+        une question que personne n'a posée (section 8.24).
+      */}
+      {exemple.charge && (
+        <section className="reglages__bloc">
+          <h2 className="section__titre">{t.exemple.chargeTitre}</h2>
+          <p className="discret">{t.exemple.chargeDetail}</p>
+          <div className="reglages__actions">
+            <Bouton variante="discret" onClick={() => void effacerExemple()}>
+              {t.exemple.effacer}
+            </Bouton>
+          </div>
+        </section>
+      )}
+
       <section className="reglages__bloc">
         <h2 className="section__titre">{t.reglages.categories.titre}</h2>
         {rangees.length === 0 ? (

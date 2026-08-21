@@ -881,6 +881,40 @@ Le message dit trois choses, dans cet ordre : ce qui s'est passé, que rien n'es
 
 ---
 
+### 8.24 Le jeu d'exemple
+
+**Un écran vide ne montre rien de ce que l'application sait faire** : pas de règle peuplée, pas de retard, pas de recalage, pas de tableau de suivi lisible. Créer quatre sujets à la main pour voir à quoi ça ressemble est un prix que personne ne paie avant d'avoir décidé.
+
+Quatre sujets, et pas un de plus, choisis pour couvrir ce qu'un écran vide ne peut pas montrer : une révision en retard, une révision du jour, un programme bien entamé, un sujet qui vient de commencer. Quatre domaines différents aussi — l'application n'est pas un outil scolaire.
+
+**Ce ne sont pas des données de démonstration.** Il n'y a ni mode démo, ni bandeau permanent, ni sujets en lecture seule : ce sont des sujets ordinaires, dans la base ordinaire, qui se cochent, se modifient et se suppriment comme les autres. Seul l'appareil se souvient de les avoir demandés, et retient leurs identifiants pour pouvoir les retirer d'un geste depuis les réglages.
+
+**Les identifiants, pas les titres.** Un sujet d'exemple se renomme : « Tout effacer » doit retrouver celui qu'on a rebaptisé, et ne pas emporter un sujet à soi qui porterait par hasard le même nom.
+
+**Il ne crée aucune catégorie**, il se rattache aux six livrées — en les cherchant **par leur teinte** et non par leur nom. Le nom suit la langue du jour où la catégorie a été créée et a pu être modifié depuis ; chercher « Études » dans une base semée en anglais ne trouverait rien, et les quatre sujets arriveraient sans catégorie. Le nom reste en repli. Aucune catégorie ne survit à l'effacement, puisqu'aucune n'a été ajoutée.
+
+**Les révisions déjà faites sont datées du jour de leur échéance**, pas d'aujourd'hui : un jeu où tout aurait été coché le même jour dessinerait une frise que le produit ne produit jamais.
+
+Il se propose à deux endroits, et seulement là : au bout de la présentation, et sur la page de premier usage. Jamais à qui en a déjà un — le charger deux fois donnerait huit sujets et un « Tout effacer » qui n'en retirerait que quatre.
+
+### 8.25 La présentation, en trois écrans
+
+Trois écrans, à `/bienvenue` : la question à laquelle l'application répond, pourquoi les écarts grandissent, ce qui se passe quand on coche en retard. Un par idée, et rien d'autre sur l'écran.
+
+**La sortie est aussi lisible que l'entrée.** « Passer » est écrit en `--t-base` souligné, en `--encre`, à droite de l'en-tête — pas en gris pâle dans un coin. Une présentation dont on ne trouve pas la sortie n'est plus une présentation, c'est un péage.
+
+Trois graduations de `--graduation-etape` comptent les écrans, celle de l'écran courant en `--accent`, et « n / 3 » à côté en chiffres. On compte trois écrans, on ne mesure pas un pourcentage.
+
+**Le deuxième écran trace la frise** — `--duree-trace`, une fois, jamais rejouée : c'est la troisième des animations autorisées (section 6). C'est le seul écran qui ait quelque chose à démontrer ; la remontrer sur les deux autres ferait d'une démonstration une décoration. Le pied dit ce qu'on est en train de faire : « Trois écrans, dix secondes. Vous pourrez les relire depuis l'aide. »
+
+**La coque s'efface entièrement** : ni en-tête, ni barre du bas, ni bouton flottant. Ce n'est pas une page de l'application, c'est ce qu'on lit avant d'y entrer — un retour, un « + » et trois onglets par-dessus offriraient cinq sorties à un écran qui en a déjà deux.
+
+**Elle ne s'impose pas.** Elle ne s'ouvre pas d'elle-même au premier lancement : la page de premier usage reste la page de présentation, à la racine, parce que c'est elle qu'un lien partagé ouvre (section 8.17). La présentation s'atteint depuis cette page et depuis l'aide, et l'appareil retient qu'on l'a vue.
+
+**Les libellés de la frise sont visibles à toutes les largeurs** depuis qu'elle sert ici. Ils étaient masqués sous 480px, où J+1 et J+3 se chevauchent — mais c'est précisément là que la frise est la signature, et une signature muette ne signe rien. Le chevauchement se règle où il se mesure : dans le composant, qui retire un libellé dont le segment n'atteint pas 32 px réels. Une media query ne pouvait pas le faire, la largeur d'un segment dépendant de son poids et non de celle de l'écran.
+
+---
+
 ## 9. Écriture
 
 L'interface est en **français et en anglais**, en casse normale, à l'infinitif pour les actions.

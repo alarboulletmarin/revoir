@@ -199,6 +199,55 @@ export const en: Dictionnaire = {
       `${quand}, ${nombre === 0 ? 'no reviews' : `${nombre} review${s(nombre)}`}`,
   },
 
+  exemple: {
+    sujets: {
+      derivees: 'Derivatives',
+      accords: 'Major chords',
+      vocabulaire: 'Travel vocabulary',
+      priorite: 'Right of way rules',
+    },
+    charger: 'Explore a sample set',
+    effacer: 'Clear the sample set',
+    chargeTitre: 'A sample set is loaded',
+    chargeDetail:
+      'Four sample topics, with one overdue review and a few already done. They are ordinary topics: tick them, edit them, or clear them all at once.',
+    efface: 'Sample set cleared',
+  },
+
+  bienvenue: {
+    titrePage: 'Welcome',
+    passer: 'Skip',
+    continuer: 'Continue',
+    compte: (rang: number, total: number) => `${rang} / ${total}`,
+    intitule: (rang: number, total: number) => `Introduction, screen ${rang} of ${total}`,
+    pied: 'Three screens, ten seconds. You can read them again from the help page.',
+    ecrans: [
+      {
+        surtitre: 'the question',
+        titre: 'What do I have to review today?',
+        detail:
+          'Revoir answers that one question. It keeps what you want to review and when — never what you are learning.',
+      },
+      {
+        surtitre: 'the principle',
+        titre: 'The gaps grow.',
+        detail:
+          'One day, three days, a week, two, a month. You review just before forgetting — that is all spaced repetition does, and that is what this ruler measures.',
+        legende:
+          'The gap between two graduations equals the real gap between two dates. You are not reading numbers: you are watching time stretch.',
+      },
+      {
+        surtitre: 'the gesture',
+        titre: 'You tick, the app keeps up.',
+        detail:
+          'One tap, no confirmation, undoable for five seconds. A review ticked late shifts the following ones while keeping their gaps, rather than dropping them all on the same day.',
+      },
+    ],
+    finTitre: 'Where to start?',
+    creer: 'Create my first topic',
+    revoirPresentation: 'Read the three-screen introduction again',
+  },
+
   accueil: {
     titre: 'What do I have to review today?',
     intro:
@@ -588,6 +637,9 @@ export const en: Dictionnaire = {
   },
 
   aide: {
+    regleTitre: 'the ruler, in three seconds',
+    regleDetail:
+      'The vertical line is today. What sits to its left is done, what sits to its right is coming. The gap between two graduations equals the real gap between two dates.',
     titre: 'How it works',
     intro: 'Revoir answers one question: what do I have to review today?',
     vocabulaire: {

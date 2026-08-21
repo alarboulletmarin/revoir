@@ -13,6 +13,7 @@
  * lien sortant : ce sont les composants de l'application qui illustrent
  * l'application.
  */
+import { Link } from 'react-router-dom'
 import { useTitrePage } from '../state/useTitrePage'
 import { useAujourdhui } from '../state/useAujourdhui'
 import { useTextes } from '../state/usePreferences'
@@ -29,9 +30,27 @@ export function Aide() {
   return (
     <>
       <div className="page__entete">
-        <h1 className="page__titre">{t.aide.titre}</h1>
+        <h1 className="titre-page">{t.aide.titre}</h1>
         <p className="page__intro">{t.aide.intro}</p>
       </div>
+
+      {/*
+        La règle en tête de l'aide, avec la seule phrase qui apprend à la lire.
+        C'est la signature de l'application : qui vient chercher de l'aide vient
+        souvent chercher ça, et le faire descendre sous six sections reviendrait
+        à répondre en dernier à la première question.
+      */}
+      <section className="aide__regle">
+        <h2 className="surtitre">{t.aide.regleTitre}</h2>
+        <Frise
+          origine={aujourdhui}
+          reviews={reviewsDepuisOffsets('apercu', aujourdhui, SCHEDULES[0].offsets)}
+          aujourdhui={aujourdhui}
+          libelles="decalage"
+          intitule={t.reglages.programmes.intitule(SCHEDULES[0].label)}
+        />
+        <p className="discret discret--petit">{t.aide.regleDetail}</p>
+      </section>
 
       <section className="aide__bloc">
         <h2 className="section__titre">{t.aide.vocabulaire.titre}</h2>
@@ -121,6 +140,17 @@ export function Aide() {
           <LienBouton vers="/reglages">{t.aide.donnees.reglages}</LienBouton>
         </div>
       </section>
+
+      {/*
+        La présentation se relit. C'est ce que son pied de page promet, et
+        c'est ici qu'on vient la chercher — une explication qu'on n'a pas lue
+        au bon moment n'est pas perdue pour autant.
+      */}
+      <p className="aide__lien">
+        <Link to="/bienvenue" className="lien">
+          {t.bienvenue.revoirPresentation}
+        </Link>
+      </p>
     </>
   )
 }

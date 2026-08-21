@@ -209,6 +209,57 @@ export const fr = {
       `${quand}, ${nombre === 0 ? 'aucune révision' : `${nombre} révision${s(nombre)}`}`,
   },
 
+  exemple: {
+    /** Quatre sujets, quatre domaines : l'application n'est pas scolaire. */
+    sujets: {
+      derivees: 'Les dérivées',
+      accords: 'Les accords majeurs',
+      vocabulaire: 'Le vocabulaire du voyage',
+      priorite: 'Les règles de priorité',
+    },
+    charger: 'Explorer un jeu d’exemple',
+    effacer: 'Effacer le jeu d’exemple',
+    chargeTitre: 'Un jeu d’exemple est chargé',
+    chargeDetail:
+      'Quatre sujets d’exemple, avec un retard et des révisions déjà faites. Ce sont des sujets ordinaires : cochez-les, modifiez-les, ou effacez-les tous d’un geste.',
+    efface: 'Jeu d’exemple effacé',
+  },
+
+  bienvenue: {
+    titrePage: 'Bienvenue',
+    passer: 'Passer',
+    continuer: 'Continuer',
+    compte: (rang: number, total: number) => `${rang} / ${total}`,
+    intitule: (rang: number, total: number) =>
+      `Présentation, écran ${rang} sur ${total}`,
+    pied: 'Trois écrans, dix secondes. Vous pourrez les relire depuis l’aide.',
+    ecrans: [
+      {
+        surtitre: 'la question',
+        titre: 'Qu’est-ce que je dois revoir aujourd’hui ?',
+        detail:
+          'Revoir répond à cette seule question. Il garde ce que vous voulez revoir et quand — jamais ce que vous apprenez.',
+      },
+      {
+        surtitre: 'le principe',
+        titre: 'Les écarts grandissent.',
+        detail:
+          'Un jour, trois jours, une semaine, deux, un mois. On revoit juste avant d’oublier — c’est tout ce que fait la répétition espacée, et c’est ce que cette règle mesure.',
+        legende:
+          'L’écart entre deux graduations vaut l’écart réel entre deux dates. Vous ne lisez pas des nombres : vous voyez le temps s’étirer.',
+      },
+      {
+        surtitre: 'le geste',
+        titre: 'Vous cochez, l’application suit.',
+        detail:
+          'En un tap, sans confirmation, annulable pendant cinq secondes. Une révision validée en retard recale les suivantes en gardant leurs écarts, plutôt que de les faire tomber le même jour.',
+      },
+    ],
+    finTitre: 'Par où commencer ?',
+    creer: 'Créer mon premier sujet',
+    revoirPresentation: 'Revoir la présentation en trois écrans',
+  },
+
   accueil: {
     titre: "Qu'est-ce que je dois revoir aujourd'hui ?",
     intro:
@@ -622,6 +673,9 @@ export const fr = {
   },
 
   aide: {
+    regleTitre: 'la règle, en trois secondes',
+    regleDetail:
+      'Le trait vertical, c’est aujourd’hui. Ce qui est à gauche est fait, ce qui est à droite vient. L’écart entre deux graduations vaut l’écart réel entre deux dates.',
     titre: 'Comment ça marche',
     intro:
       'Revoir répond à une seule question : qu’est-ce que je dois revoir aujourd’hui ?',

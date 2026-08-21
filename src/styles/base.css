@@ -263,6 +263,14 @@
 }
 
 /*
+ * Une page sans pile du bas : rien à purger, et le contenu peut occuper toute
+ * la hauteur. Réservée aux écrans qui effacent la coque (section 8.25).
+ */
+.page--plein {
+  padding-bottom: calc(var(--e-5) + var(--bas-securise));
+}
+
+/*
  * Pile verticale générique. C'est le conteneur qui porte l'espacement, jamais
  * les composants (section 7.4).
  */
@@ -352,6 +360,11 @@
   line-height: var(--l-xs);
   text-transform: uppercase;
   letter-spacing: var(--chasse-surtitre);
+}
+
+/* Un sur-titre qui annonce plutôt qu'il ne range : celui de la présentation. */
+.surtitre--accent {
+  color: var(--accent);
 }
 
 /* ---------------------------------------------------------- utilitaires -- */
