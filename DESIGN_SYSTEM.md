@@ -400,6 +400,31 @@ Quatre éléments se disputent le bas de l'écran : la barre de navigation, le F
 
 ---
 
+### 7.5 Le bureau
+
+**Mobile first ne veut pas dire mobile étiré.** Jusqu'ici, un écran de trente pouces recevait la mise en page d'un téléphone, en plus large : une barre de navigation collée au bas, un bouton flottant dans un coin, et une colonne unique. Trois patrons tactiles servis à une souris.
+
+**Au-delà de 1024 px, la barre du bas devient un rail à gauche.** Le seuil est celui de la souris, pas celui de la place : une tablette en portrait se tient encore à deux mains, et son pouce arrive en bas — elle garde donc la barre. Le rail met les trois vues là où la lecture commence, garde leurs libellés, et rend au contenu la hauteur que la barre prenait.
+
+Rien ne change dans le balisage : la navigation est déjà une liste de trois liens, c'est sa mise en page qui change. Le signe passe à gauche du mot, la part cesse de s'étirer, et **l'état actif gagne une surface** (`--accent-doux`) : en bas, la part active était la seule des trois à porter une couleur ; dans une colonne, elle est une ligne parmi d'autres, et la couleur seule ne la désigne plus assez.
+
+**Le logotype passe en tête du rail** — c'est là que commence la lecture, et l'en-tête n'y garde que le retour et les deux signes. Le choix se fait dans le Layout, en un seul endroit, plutôt qu'en rendant la marque deux fois pour en masquer une par media query.
+
+**Le rail prend sa place sur la coque**, pas sur chaque écran : la colonne de contenu se centre alors dans ce qui reste, au lieu d'être poussée à droite d'un espace qu'elle continuerait de compter. Le rail lui-même est `fixed` : il ne connaît pas ce décalage et se pose dans la réserve qu'il vient d'ouvrir.
+
+**« Aujourd'hui » passe à deux colonnes.** À gauche ce qui répond — le compte, la règle des quinze jours ; à droite ce qu'on fait — la liste du jour, ce qui a été revu, ce qui vient ensuite. En une seule colonne sur un écran large, la liste tombait sous la ligne de flottaison alors qu'il restait la moitié de l'écran à sa droite, et cocher demandait de faire défiler ce qu'on venait de lire.
+
+La colonne de gauche est `sticky` : la règle reste lisible pendant qu'on parcourt une longue liste, ce qui est exactement ce qu'on lui demande — situer ce qu'on coche dans les quinze jours qui viennent.
+
+Deux pièges, tous deux réels :
+
+1. La colonne de droite traverse toute la grille (`grid-row: 1 / -1`) pour commencer en haut, à la même ligne que le compte. Sans `grid-template-rows: auto auto 1fr`, elle étirait la première rangée à sa propre hauteur, et la règle descendait de deux cents pixels sous le compte qu'elle doit suivre.
+2. Les écrans en colonne traversent le papier par une marge négative ; en grille, cette marge n'a plus de sens et `margin-inline` revient à zéro.
+
+**La colonne s'élargit à 1040 px** au bureau, pour que chacune des deux garde sa largeur de lecture. Le bouton flottant, lui, suit la colonne à toutes les largeurs.
+
+---
+
 ## 8. Composants
 
 ### 8.1 Liste réglée

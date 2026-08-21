@@ -108,6 +108,13 @@ export function Dashboard() {
         retard={vue.retard.length}
       />
 
+      {/*
+        Ce qu'on fait, par opposition à ce qui répond : la liste du jour, ce
+        qui a été revu, ce qui vient ensuite. Regroupé parce qu'au bureau
+        c'est une colonne à part (section 7.5) — sur un téléphone, le
+        conteneur ne fait que reprendre l'espacement de son parent.
+      */}
+      <div className="aujourdhui__travail">
       {vue.dujour.length > 0 && (
         <ul className="liste-reglee">
           {vue.dujour.map((entree) => (
@@ -167,6 +174,8 @@ export function Dashboard() {
           </p>
         </section>
       )}
+      </div>
+
     </div>
   )
 }

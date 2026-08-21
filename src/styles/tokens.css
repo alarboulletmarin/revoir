@@ -184,6 +184,12 @@
   --h-fab: 56px;
   /* Hauteur utile de la barre du bas : icône, libellé, et l'air autour. */
   --h-nav: 58px;
+  /*
+   * Largeur du rail de navigation, au bureau. Assez pour le plus long des
+   * trois mots — « Aujourd'hui » — suivi de son signe, sans que le rail ne
+   * devienne une colonne de contenu.
+   */
+  --l-rail: 216px;
   /* Ce qu'elle occupe réellement, marge système comprise. */
   --pile-nav: calc(var(--h-nav) + var(--bas-securise));
   --bas-fab: calc(var(--pile-nav) + var(--e-3));
@@ -483,6 +489,27 @@
   --cat-ocre: #A18F56;
 }
 
+/*
+ * Le bureau — section 7.5.
+ *
+ * Le rail remplace la barre du bas au-delà de 1024 px : une barre collée au
+ * bas d'un écran de trente pouces est un geste de pouce demandé à une souris,
+ * et elle occupe toute la largeur pour trois liens. Le rail les met là où
+ * l'œil commence, garde leurs libellés, et rend au contenu la hauteur qu'elle
+ * prenait.
+ *
+ * 1024 px et non 768 : une tablette en portrait se tient encore à deux mains,
+ * et son pouce arrive en bas. Le seuil est celui de la souris, pas celui de
+ * la place disponible.
+ */
 @media (min-width: 1024px) {
-  :root { --marge-page: var(--e-6); }
+  :root {
+    --marge-page: var(--e-6);
+    /*
+     * La colonne s'élargit pour porter deux colonnes sur « Aujourd'hui ». Elle
+     * ne dépasse pas : chacune y garde la largeur de lecture de 720 px moins
+     * ce que la gouttière prend.
+     */
+    --largeur-page: 1040px;
+  }
 }

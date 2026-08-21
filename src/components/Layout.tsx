@@ -10,6 +10,7 @@ import { ErreurLecture } from './Etats'
 import { useDonnees } from '../state/useDonnees'
 import { useTextes } from '../state/usePreferences'
 import { estRacine, useRetour } from '../state/useRetour'
+import { useMediaQuery } from '../state/useMediaQuery'
 
 /**
  * Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes.
@@ -102,6 +103,13 @@ export function Layout() {
   const racine = estRacine(pathname)
   const etape = etapeCreation(pathname)
   const presentation = estPresentation(pathname)
+  /*
+   * Au bureau, la marque vit en tête du rail : c'est là que commence la
+   * lecture, et l'en-tête n'y garde que le retour et les deux signes. Le choix
+   * se fait ici, en un seul endroit, plutôt qu'en rendant le logotype deux
+   * fois pour en masquer un par media query.
+   */
+  const bureau = useMediaQuery('(min-width: 1024px)')
   const barreAction = porteBarreAction(pathname)
 
   return (
@@ -121,10 +129,12 @@ export function Layout() {
         */}
         <div className="appli__barre">
           {racine ? (
-            <Link to="/" className="appli__marque">
-              <Marque className="appli__signe" />
-              Revoir
-            </Link>
+            bureau ? null : (
+              <Link to="/" className="appli__marque">
+                <Marque className="appli__signe" />
+                Revoir
+              </Link>
+            )
           ) : (
             <button type="button" className="appli__retour" onClick={revenir}>
               <IconeChevron
@@ -220,7 +230,7 @@ export function Layout() {
         de comportement : elles ne s'empilent simplement pas sous une seconde
         barre, ce qui coûterait cent vingt pixels de chrome sous le pouce.
       */}
-      {!barreAction && !presentation && <NavBar />}
+      {!barreAction && !presentation && <NavBar marque={bureau} />}
 
       <UpdatePrompt />
     </div>

@@ -99,6 +99,18 @@
   line-height: var(--l-base);
 }
 
+/*
+ * Ce qu'on fait, par opposition à ce qui répond. Sur un téléphone, il ne fait
+ * que reprendre l'espacement de son parent : c'est au bureau qu'il devient une
+ * colonne (section 7.5).
+ */
+.aujourdhui__travail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
 .aujourdhui__section {
   display: flex;
   min-width: 0;
@@ -410,6 +422,83 @@
   line-height: var(--l-xs);
 }
 
+
+
+/*
+ * « Aujourd'hui » en deux colonnes, au bureau — section 7.5.
+ *
+ * À gauche ce qui répond — le compte, la règle des quinze jours ; à droite ce
+ * qu'on fait — la liste du jour, ce qui a été revu, ce qui vient ensuite. En
+ * une seule colonne sur un écran large, la liste tombait sous la ligne de
+ * flottaison alors qu'il restait la moitié de l'écran à sa droite, et cocher
+ * demandait de faire défiler ce qu'on venait de lire.
+ *
+ * La gouttière est un filet, pas un vide : les deux colonnes portent des
+ * objets réglés, et un simple écart les aurait laissées flotter côte à côte
+ * sans dire qu'elles se lisent ensemble.
+ */
+@media (min-width: 1024px) {
+  .aujourdhui {
+    display: grid;
+    align-items: start;
+    align-content: start;
+    gap: 0 var(--e-6);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    /*
+     * Deux rangées à la hauteur de leur contenu, puis une qui absorbe le
+     * reste. Sans elle, la colonne de droite — qui traverse toute la grille —
+     * étirait la première rangée à sa propre hauteur, et la règle descendait
+     * de deux cents pixels sous le compte qu'elle doit suivre.
+     */
+    grid-template-rows: auto auto 1fr;
+    margin-inline: 0;
+  }
+
+  /*
+   * La colonne de gauche s'arrête de défiler avec la page : la règle reste
+   * lisible pendant qu'on parcourt une longue liste, ce qui est exactement ce
+   * qu'on lui demande — situer ce qu'on coche dans les quinze jours.
+   */
+  .aujourdhui__entete,
+  .aujourdhui .regle {
+    position: sticky;
+    grid-column: 1;
+  }
+
+  .aujourdhui__entete {
+    top: var(--e-5);
+    padding-inline: 0;
+  }
+
+  .aujourdhui .regle {
+    top: calc(var(--h-reponse) + var(--e-6));
+    border-radius: var(--r-carte);
+    border-inline: var(--bordure);
+  }
+
+  .aujourdhui .regle__entete,
+  .aujourdhui .regle__retard {
+    padding-inline: var(--e-4);
+  }
+
+  .aujourdhui .regle__corps {
+    margin-inline: var(--e-4);
+  }
+
+  /*
+   * La colonne de droite occupe toute la hauteur de la grille et commence en
+   * haut, à la même ligne que le compte : c'est ce qu'on vient faire, il n'a
+   * pas à attendre que la colonne de gauche ait fini de se dérouler.
+   */
+  .aujourdhui__travail {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+
+  .aujourdhui__travail > .liste-reglee:first-child {
+    border-top: var(--bordure);
+  }
+}
 
 /* ======================================================== le jour ====== */
 

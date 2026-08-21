@@ -556,3 +556,100 @@ body[data-panneau='ouvert'] .fab {
   font-weight: 600;
   line-height: 1;
 }
+
+/* ============================================== le bureau ============== */
+
+/*
+ * Au-delà de 1024 px, la barre du bas devient un rail à gauche — section 7.5.
+ *
+ * Rien ne bouge dans le balisage : la navigation est déjà une liste de trois
+ * liens, et c'est sa mise en page qui change. Une barre collée au bas d'un
+ * grand écran demande à la souris le geste du pouce, et prend toute la largeur
+ * pour trois liens ; le rail les met là où la lecture commence, et rend au
+ * contenu la hauteur qu'elle occupait.
+ */
+@media (min-width: 1024px) {
+  .nav {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    width: var(--l-rail);
+    border-top: 0;
+    border-right: var(--bordure);
+    padding-top: var(--e-5);
+    padding-bottom: var(--e-5);
+  }
+
+  .nav__liste {
+    max-width: none;
+    flex-direction: column;
+    gap: var(--e-1);
+    padding-inline: var(--e-3);
+  }
+
+  /*
+   * Le signe passe à gauche du mot, et la part cesse de s'étirer : trois
+   * blocs centrés sur toute la hauteur du rail donneraient trois îlots, là
+   * où une liste se lit de haut en bas, alignée sur un même bord.
+   */
+  .nav__element {
+    flex: 0 0 auto;
+  }
+
+  .nav__lien {
+    min-height: var(--cible);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--e-3);
+    border-radius: var(--r-carte);
+    padding-inline: var(--e-3);
+    font-size: var(--t-base);
+    text-align: left;
+  }
+
+  .nav__lien:hover {
+    background-color: var(--surface-survol);
+  }
+
+  /*
+   * L'état actif se lit sur la couleur, le poids **et** la surface. Sur un
+   * rail, la part active n'a plus la position pour la désigner — en bas,
+   * c'était la seule des trois à porter une couleur ; ici, elle est une ligne
+   * parmi d'autres dans une colonne.
+   */
+  .nav__lien--actif {
+    background-color: var(--accent-doux);
+  }
+
+  /*
+   * Le rail prend sa place sur la coque, et non sur chaque écran : la colonne
+   * de contenu se centre alors dans ce qui reste, au lieu d'être poussée à
+   * droite d'un espace qu'elle continuerait de compter.
+   *
+   * Le rail lui-même est `fixed` : il ne connaît pas ce décalage et se pose
+   * dans la réserve qu'il vient d'ouvrir.
+   */
+  .appli {
+    padding-left: var(--l-rail);
+  }
+
+  /* La marque en tête du rail, alignée sur les liens qui la suivent. */
+  .nav__marque {
+    min-height: var(--cible);
+    margin-bottom: var(--e-4);
+    padding-inline: var(--e-3);
+  }
+
+  /*
+   * La purge du bas n'a plus la barre à contourner — seul le bouton flottant
+   * reste, et il ne couvre que son coin.
+   */
+  .page {
+    padding-bottom: var(--e-7);
+  }
+
+  .fab {
+    bottom: var(--e-5);
+  }
+}

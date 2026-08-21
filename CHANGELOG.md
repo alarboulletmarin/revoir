@@ -4,6 +4,11 @@
 
 ## Non publié
 
+### Ajouté — une mise en page pour les grands écrans
+
+- **Sur un ordinateur, la navigation passe à gauche.** Une barre collée au bas d'un grand écran demandait à la souris le geste du pouce, et prenait toute la largeur pour trois liens. Ils sont désormais dans un rail, là où la lecture commence, avec le logotype en tête. Une tablette en portrait garde la barre du bas : elle se tient encore à deux mains.
+- **« Aujourd'hui » se lit en deux colonnes.** À gauche ce qui répond — le compte du jour et la règle des quinze jours, qui reste visible pendant qu'on fait défiler ; à droite ce qu'on fait — la liste à cocher et ce qui vient ensuite. En une seule colonne, la liste tombait sous la ligne de flottaison alors qu'il restait la moitié de l'écran à côté.
+
 ### Changé — les grands écrans, et le suivi
 
 - **L'application cesse de s'étirer sur un écran large.** La colonne de lecture passe de 960 à 720 pixels : le décalage d'une révision ne se retrouve plus à neuf cents pixels de son titre, la règle des quinze jours garde sa densité, et une ligne de texte revient autour de soixante-dix caractères. Le bouton « + » suit la colonne au lieu de flotter au bord de la fenêtre, loin de tout.
