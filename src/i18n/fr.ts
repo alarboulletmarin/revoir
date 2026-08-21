@@ -61,6 +61,9 @@ export const fr = {
     compact: 'dd/MM',
     /** « mars 2026 » */
     mois: 'MMMM yyyy',
+    /** « mars » — l'en-tête du calendrier compose le mois et l'année. */
+    moisSeul: 'MMMM',
+    annee: 'yyyy',
     /** « 8 août » — l'échéance dans l'année en cours. */
     echeance: 'd MMMM',
     /** La même, quand elle change d'année. */
@@ -310,6 +313,8 @@ export const fr = {
   },
 
   calendrier: {
+    legendeTraits:
+      'Un trait par révision, à la hauteur de son état : plein pour ce qui reste, court pour ce qui est fait, long pour le retard.',
     titre: 'Calendrier',
     moisPrecedent: 'Mois précédent',
     moisSuivant: 'Mois suivant',
@@ -421,6 +426,11 @@ export const fr = {
     archive: 'Archivé',
     creeLe: (date: string) => `Créé le ${date}`,
     programme: 'Programme',
+    /** « programme Simple » — dans la ligne d'identité de la fiche. */
+    programmeNomme: (nom: string) => `programme ${nom}`,
+    departCourt: (date: string) => `départ ${date}`,
+    /** Le pourcentage nu, à côté du compte : « 40 % ». */
+    part: (pourcent: number) => `${pourcent} %`,
     progression: (pourcent: number) => `Progression : ${pourcent} %`,
     compte: (faites: number, restantes: number) =>
       `${faites} révision${s(faites)} effectuée${s(faites)} · ${restantes} restante${s(restantes)}`,

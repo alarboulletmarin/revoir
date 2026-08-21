@@ -12,11 +12,10 @@ import { useTextes } from '../state/usePreferences'
 import { getSchedule } from '../lib/schedules'
 import { echeancesIcs, nomFichierIcs, serialiserIcs } from '../lib/ics'
 import { TYPE_ICS, telecharger } from '../lib/telechargement'
-import { formatIsoDate, formatLong, formatRelative } from '../lib/dates'
+import { formatCompact, formatLong, formatRelative } from '../lib/dates'
 import { estFaite, revisionsDe, topicProgress } from '../lib/sujets'
 import type { ModeleSujet } from './SujetForm'
 import { Frise } from '../components/Frise'
-import { AnneauProgression } from '../components/AnneauProgression'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Bouton, LienBouton } from '../components/Bouton'
 import {
@@ -25,7 +24,7 @@ import {
   IconeCoche,
   IconeCorbeille,
 } from '../components/Icons'
-import { ChipCategorie } from '../components/ChipCategorie'
+import { PastilleCategorie } from '../components/ChipCategorie'
 import { SelecteurPratique } from '../components/SelecteurPratique'
 import { Gabarit } from '../components/Etats'
 
@@ -76,7 +75,6 @@ export function SujetDetail() {
   const faites = revisions.filter(estFaite).length
   const restantes = revisions.length - faites
   const progression = topicProgress(revisions)
-  const creeLe = formatIsoDate(topic.createdAt)
   const archive = topic.status === 'archived'
 
   const basculer = (reviewId: string, faite: boolean) => {
@@ -127,18 +125,43 @@ export function SujetDetail() {
   return (
     <>
       <div className="fiche__entete">
-        <h1 className="page__titre">{topic.title}</h1>
-        <div className="fiche__badges">
-          <ChipCategorie categorie={categorie} />
-          <span className="chip chip--accent">{programme.label}</span>
-          {archive && <span className="chip chip--retard">{t.sujet.archive}</span>}
-        </div>
-        {creeLe && <p className="page__intro">{t.sujet.creeLe(creeLe)}</p>}
+        <h1 className="titre-page">{topic.title}</h1>
+        {/*
+          Une seule ligne d'identité au lieu de trois chips : la catégorie, le
+          programme, la date de départ. Trois encadrés côte à côte donnaient
+          trois objets à lire là où il n'y a qu'une phrase — et le sujet
+          n'appartient pas à son programme comme il appartient à sa catégorie.
+        */}
+        <p className="fiche__identite">
+          {/* Sans catégorie, pas de pastille ni de séparateur orphelin. */}
+          {categorie !== null && (
+            <>
+              <PastilleCategorie categorie={categorie} />
+              <span>{categorie.name}</span>
+              <span className="fiche__separateur" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
+          <span>{t.sujet.programmeNomme(programme.label)}</span>
+          <span className="fiche__separateur" aria-hidden="true">
+            ·
+          </span>
+          <span>{t.sujet.departCourt(formatCompact(topic.startDate))}</span>
+          {archive && (
+            <>
+              <span className="fiche__separateur" aria-hidden="true">
+                ·
+              </span>
+              <span className="fiche__archive">{t.sujet.archive}</span>
+            </>
+          )}
+        </p>
       </div>
 
       {/* La frise en grand, avec ses libellés : c'est ici qu'elle se lit. */}
       <section className="fiche__bloc">
-        <h2 className="section__titre">{t.sujet.programme}</h2>
+        <h2 className="surtitre">{t.sujet.programme}</h2>
         <Frise
           origine={topic.startDate}
           reviews={revisions}
@@ -146,15 +169,16 @@ export function SujetDetail() {
           libelles="decalage"
           intitule={topic.title}
         />
-        <div className="restantes">
-          <AnneauProgression
-            part={progression / 100}
-            label={t.sujet.progression(progression)}
-          />
-          <p className="discret discret--petit chiffres" aria-live="polite">
-            {t.sujet.compte(faites, restantes)}
-          </p>
-        </div>
+        {/*
+          La progression s'écrit, elle ne se dessine plus. L'anneau conique
+          demandait qu'on lise un angle pour retrouver un pourcentage qui était
+          écrit à côté, et un sujet à cinq révisions n'a que six états —
+          l'arrondi d'un anneau en dit moins que le compte exact.
+        */}
+        <p className="fiche__progression" aria-live="polite">
+          <span className="chiffres">{t.sujet.compte(faites, restantes)}</span>
+          <span className="fiche__part chiffres">{t.sujet.part(progression)}</span>
+        </p>
       </section>
 
       {/*
@@ -163,7 +187,7 @@ export function SujetDetail() {
         listes du jour — sans date, elle y serait toujours en retard.
       */}
       <section className="fiche__bloc">
-        <h2 className="section__titre">{t.pratique.legende}</h2>
+        <h2 className="surtitre">{t.pratique.legende}</h2>
         <SelecteurPratique
           valeur={topic.practiceStatus}
           legende={t.pratique.legendeSujet}
@@ -177,11 +201,11 @@ export function SujetDetail() {
       </section>
 
       <section className="fiche__bloc">
-        <h2 className="section__titre">{t.sujet.echeances}</h2>
+        <h2 className="surtitre">{t.sujet.echeances}</h2>
         <p className="discret discret--petit">
           {t.sujet.depart(formatLong(topic.startDate))}
         </p>
-        <ul className="liste-revisions">
+        <ul className="liste-reglee">
           {revisions.map((review) => {
             const faite = estFaite(review)
             const enRetard = !faite && review.dueDate < aujourdhui
@@ -207,11 +231,19 @@ export function SujetDetail() {
                   </span>
                 </button>
 
+                {/*
+                  Le décalage tient sa propre colonne, à chasse fixe : c'est ce
+                  qui aligne les J+n les uns sous les autres et rend le rythme
+                  du programme lisible d'un regard, sans lire les dates.
+                */}
+                <span className="echeance__decalage chiffres">
+                  {t.programmes.decalage(review.intervalInDays)}
+                </span>
+
                 <div className="echeance__corps">
-                  <span className="echeance__titre">
-                    {t.programmes.decalage(review.intervalInDays)} ·{' '}
+                  <time className="echeance__titre" dateTime={review.dueDate}>
                     {formatLong(review.dueDate)}
-                  </span>
+                  </time>
                   <span
                     className={
                       faite
@@ -252,9 +284,15 @@ export function SujetDetail() {
       </section>
 
       <section className="fiche__bloc">
-        <h2 className="section__titre">{t.sujet.actions}</h2>
+        <h2 className="surtitre">{t.sujet.actions}</h2>
+        {/*
+          Des liens soulignés, pas cinq boutons encadrés. Aucune de ces actions
+          n'est celle qu'on vient faire — on vient lire une fiche et cocher une
+          échéance —, et cinq cadres en bas d'écran leur donnaient le poids
+          d'un choix à faire.
+        */}
         <div className="fiche__actions">
-          <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="discret">
+          <LienBouton vers={`/sujet/${topic.id}/modifier`} variante="texte">
             {t.commun.modifier}
           </LienBouton>
           {/*
@@ -263,7 +301,7 @@ export function SujetDetail() {
             formulaire de création qui s'ouvre — rien n'est écrit tant qu'il
             n'est pas soumis.
           */}
-          <Bouton variante="discret" onClick={dupliquer}>
+          <Bouton variante="texte" onClick={dupliquer}>
             {t.sujet.dupliquer}
           </Bouton>
           {/*
@@ -272,18 +310,18 @@ export function SujetDetail() {
             agenda que le fichier va remplir, et le mot est écrit à côté.
           */}
           <Bouton
-            variante="discret"
+            variante="texte"
             title={t.sujet.exporterIcsIntitule(topic.title)}
             onClick={exporterIcs}
           >
             <IconeCalendrier width="18" height="18" />
             {t.sujet.exporterIcs}
           </Bouton>
-          <Bouton variante="discret" onClick={archiver}>
+          <Bouton variante="texte" onClick={archiver}>
             <IconeArchive width="18" height="18" />
             {archive ? t.sujet.desarchiver : t.sujet.archiver}
           </Bouton>
-          <Bouton variante="danger" onClick={() => setConfirmerSuppression(true)}>
+          <Bouton variante="texte" className="fiche__supprimer" onClick={() => setConfirmerSuppression(true)}>
             <IconeCorbeille width="18" height="18" />
             {t.commun.supprimer}
           </Bouton>

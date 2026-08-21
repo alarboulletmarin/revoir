@@ -321,6 +321,23 @@
   --point-jour-gap: 2px;
 
   /*
+   * Les traits d'une case du calendrier : un par révision (section 8.11).
+   * Deux pixels de large, comme une graduation de la règle ; neuf de haut, et
+   * treize pour un retard — l'écart doit se voir en balayant le mois, sans
+   * lire les nombres.
+   */
+  --trait-jour-large: 2px;
+  --trait-jour: 9px;
+  --trait-jour-retard: 13px;
+
+  /*
+   * Hauteur d'une case du calendrier. Bien au-dessus de la cible : il y a un
+   * numéro, ses traits, et six rangées à faire tenir sans que la grille ne
+   * remplisse l'écran seule.
+   */
+  --h-case-jour: 64px;
+
+  /*
    * Hauteur de l'en-tête de l'application, qui est collant (`base.css`).
    * L'en-tête du tableau de suivi s'y décale, sinon il se glisse dessous.
    *

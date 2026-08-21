@@ -783,6 +783,56 @@
   gap: var(--e-2);
 }
 
+/*
+ * La ligne d'identité : catégorie, programme, date de départ. Une phrase, pas
+ * trois encadrés — le sujet n'appartient pas à son programme comme il
+ * appartient à sa catégorie, et trois chips donnaient le même poids aux trois.
+ */
+.fiche__identite {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-1) var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.fiche__separateur {
+  color: var(--trait);
+}
+
+.fiche__archive {
+  color: var(--retard-texte);
+}
+
+/*
+ * La progression, écrite. Le compte à gauche, la part à droite : on lit
+ * l'un ou l'autre selon ce qu'on cherche, jamais les deux ensemble.
+ */
+.fiche__progression {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.fiche__part {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* La suppression garde sa couleur d'avertissement, sans son cadre. */
+.fiche__supprimer {
+  color: var(--retard-texte);
+}
+
 .fiche__badges {
   display: flex;
   min-width: 0;
@@ -790,15 +840,16 @@
   gap: var(--e-2);
 }
 
+/*
+ * Une section de fiche, sans carte. Le contenu est déjà réglé — une frise, des
+ * rangées, des liens — et l'encadrer, c'était mettre un cadre autour d'un
+ * objet qui en est fait.
+ */
 .fiche__bloc {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--e-3);
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-  padding: var(--e-4);
 }
 
 @media (min-width: 768px) {
@@ -814,11 +865,24 @@
   gap: var(--e-2);
 }
 
+/*
+ * Une échéance en rangée : la case, le décalage en colonne, la date, l'état.
+ * Le décalage tient une largeur fixe et une chasse fixe — c'est ce qui aligne
+ * les J+n les uns sous les autres et rend le rythme lisible d'un regard.
+ */
 .echeance {
   display: flex;
   min-width: 0;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--e-2);
+}
+
+.echeance__decalage {
+  width: var(--cible);
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
 }
 
 .echeance__corps {
@@ -827,6 +891,7 @@
   flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: var(--e-2);
   padding-block: var(--e-2);
 }
@@ -881,11 +946,12 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--e-3);
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-  /* Même raison : à 320px, le padding de carte ne tient pas en plus. */
-  padding: var(--e-4) 0;
+  /*
+   * Plus de carte autour du mois. Une grille porte déjà ses propres lignes :
+   * l'encadrer, c'était poser un second cadre autour d'un objet qui en est
+   * fait. Le mois traverse le papier comme la règle et les listes.
+   */
+  margin-inline: calc(-1 * var(--marge-page));
 }
 
 @media (min-width: 380px) {
@@ -905,10 +971,33 @@
 }
 
 .calendrier__mois {
+  display: flex;
   min-width: 0;
-  font-size: var(--t-md);
-  line-height: var(--l-md);
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--e-2);
+  font-family: var(--police-titre);
+  font-size: var(--t-section);
+  font-weight: 700;
+  line-height: var(--l-section);
+  letter-spacing: var(--chasse-titre);
   text-align: center;
+}
+
+.calendrier__legende {
+  min-width: 0;
+  padding-inline: var(--marge-page);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  text-wrap: pretty;
+}
+
+.calendrier__annee {
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
 .calendrier__fleche {
@@ -928,11 +1017,18 @@
 }
 
 .calendrier__jours,
+/*
+ * Les rangées se séparent d'un filet plutôt que d'un écart : six semaines
+ * espacées flottaient, six semaines réglées se lisent ligne à ligne, comme un
+ * agenda de papier. Le filet est porté par les cases, la grille n'en ayant pas
+ * la notion.
+ */
 .calendrier__grille {
   display: grid;
   min-width: 0;
-  gap: var(--e-1) var(--calendrier-colonnes);
+  gap: 0 var(--calendrier-colonnes);
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: var(--bordure);
 }
 
 
@@ -948,15 +1044,15 @@
  */
 .calendrier__case {
   display: flex;
-  min-height: var(--cible);
+  min-height: var(--h-case-jour);
+  border-bottom: var(--bordure);
   min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--e-1);
-  border: 1px solid transparent;
-  border-radius: var(--r-pilule);
-  font-size: var(--t-sm);
+  font-family: var(--police-chiffres);
+  font-size: var(--t-base);
   font-variant-numeric: tabular-nums;
   transition: background-color var(--duree-court) var(--courbe);
 }
@@ -988,24 +1084,23 @@
  * Deux états, deux moyens : aujourd'hui se marque d'un anneau, le jour choisi
  * d'un disque plein. Quand les deux tombent ensemble, le disque garde son
  * anneau, posé un cran plus loin.
+ *//*
+ * Aujourd'hui : un fond `--accent-doux` et un numéro `--accent`.
+ *
+ * C'était un anneau, qui devait cohabiter avec le disque plein du jour
+ * sélectionné. Ce second état a disparu avec la feuille du jour, devenue une
+ * page (section 8.11) : il n'y a plus qu'un état à marquer, et une surface
+ * douce se repère mieux qu'un contour dans une grille de quarante-deux cases.
  */
 .calendrier__case--aujourdhui {
-  border-color: var(--accent);
+  background-color: var(--accent-doux);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.calendrier__case--choisi {
-  border-color: var(--accent);
-  background-color: var(--accent);
-  color: var(--surface);
-  font-weight: 500;
-}
 
-.calendrier__case--aujourdhui.calendrier__case--choisi {
-  outline: 1.5px solid var(--accent);
-  outline-offset: 2px;
-}
+
+
 
 @media (hover: hover) {
   .calendrier__case--choisi:hover {
@@ -1030,10 +1125,16 @@
   gap: var(--point-jour-gap);
 }
 
-.calendrier__points {
+/*
+ * Un trait vertical par révision, à la hauteur de son état. Alignés par le
+ * bas : c'est la hauteur qui porte l'information, et des traits centrés se
+ * compareraient par leurs deux bouts au lieu d'un seul.
+ */
+.calendrier__traits {
   display: flex;
-  height: var(--point-jour);
+  height: var(--trait-jour-retard);
   flex-shrink: 0;
+  align-items: flex-end;
   gap: var(--point-jour-gap);
 }
 
@@ -1043,11 +1144,10 @@
  * Repli sur --accent pour un élément sans matière — la teinte dérivée d'une
  * chaîne vide ne voudrait rien dire.
  */
-.calendrier__point {
-  width: var(--point-jour);
-  height: var(--point-jour);
+.calendrier__trait {
+  width: var(--trait-jour-large);
+  height: var(--trait-jour);
   flex-shrink: 0;
-  border-radius: var(--r-pilule);
   background-color: var(--teinte, var(--accent));
 }
 
@@ -1056,8 +1156,15 @@
  * sien). Journée soldée : les points perdent leur matière et prennent le vert
  * de l'état, que l'étiquette du bouton écrit aussi en toutes lettres.
  */
-.calendrier__point--fait {
+/* Journée soldée : un état l'emporte toujours sur une identité (section 8.11). */
+.calendrier__trait--fait {
   background-color: var(--fait);
+}
+
+/* Le retard dépasse : c'est le seul état du calendrier qui demande quelque chose. */
+.calendrier__trait--retard {
+  height: var(--trait-jour-retard);
+  background-color: var(--retard);
 }
 
 /*
@@ -1073,13 +1180,9 @@
 }
 
 /* Sur le disque plein, les deux repassent en clair pour rester lisibles. */
-.calendrier__case--choisi .calendrier__point {
-  background-color: var(--surface);
-}
 
-.calendrier__case--choisi .calendrier__plus {
-  color: var(--surface);
-}
+
+
 
 /* ------------------------------------------------- feuille du jour ----- */
 
@@ -1718,21 +1821,25 @@ body[data-panneau='ouvert'] {
  * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
  * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
  */
+/*
+ * Un groupe de catégorie n'est plus une carte : un filet en tête, et le titre
+ * de la catégorie. Une carte par catégorie mettait un cadre autour de chaque
+ * tableau, et un tableau porte déjà ses propres lignes — deux grilles
+ * emboîtées dont l'une ne dit rien.
+ */
 .suivi__groupe {
   min-width: 0;
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
+  border-top: var(--bordure);
 }
 
 .suivi__entete-groupe {
   display: flex;
-  min-height: var(--cible);
+  min-height: var(--h-rangee);
   min-width: 0;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--e-2);
-  padding: var(--e-2) var(--e-4);
+  padding-block: var(--e-2);
   cursor: pointer;
   list-style: none;
 }
@@ -1743,7 +1850,6 @@ body[data-panneau='ouvert'] {
 
 .suivi__entete-groupe:hover {
   background-color: var(--surface-survol);
-  border-radius: var(--r-carte);
 }
 
 /*
@@ -1839,6 +1945,11 @@ body[data-panneau='ouvert'] {
   text-align: center;
 }
 
+/*
+ * Les en-têtes de colonnes en chasse fixe : « R1 » à « R5 » et les « J+n »
+ * sont des repères qui se lisent en colonne, comme tout ce qui se compte dans
+ * cette application (section 4).
+ */
 .suivi__entete {
   position: sticky;
   top: 0;
@@ -1846,9 +1957,9 @@ body[data-panneau='ouvert'] {
   min-width: var(--cible);
   padding: var(--e-2) var(--e-1);
   color: var(--encre-2);
+  font-family: var(--police-chiffres);
   font-size: var(--t-xs);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

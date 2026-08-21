@@ -123,6 +123,21 @@ export function formatMonth(date: Date): string {
 }
 
 /**
+ * « mars » et « 2026 », séparément.
+ *
+ * L'en-tête du calendrier les compose lui-même : le mois porte la voix de
+ * l'écran, l'année l'accompagne en chiffres. Un seul gabarit les aurait rendus
+ * de même poids, et l'ordre des deux change avec la langue.
+ */
+export function formatMoisSeul(date: Date): string {
+  return formater(date, textes().dates.moisSeul)
+}
+
+export function formatAnnee(date: Date): string {
+  return formater(date, textes().dates.annee)
+}
+
+/**
  * Libellé relatif court : « aujourd'hui », « demain », « il y a 3 jours »,
  * « dans 12 jours ».
  */

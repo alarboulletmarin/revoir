@@ -573,7 +573,25 @@ La première fois qu'un recalage déplace des échéances, la seconde ligne dit 
 
 ### 8.11 Calendrier
 
-Cases de 44px minimum : la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), et sous eux le reste du compte : « +4 » en `--t-xs` `--encre-2` pour un jour à sept révisions. Trois points ne doivent pas laisser croire qu'il y a trois révisions. Le bloc points + reste garde sa hauteur qu'il soit plein ou vide, pour que les chiffres du mois tiennent tous la même ligne.
+**Une grille réglée, sans carte.** Six semaines de cases de `--h-case-jour`, séparées par un filet. Une grille porte déjà ses propres lignes : l'encadrer, c'était poser un second cadre autour d'un objet qui en est fait, et six semaines espacées flottaient là où six semaines réglées se lisent ligne à ligne, comme un agenda de papier.
+
+**Un trait vertical par révision** sous le numéro, `--trait-jour-large` de large — la largeur d'une graduation de la règle. C'est le même objet que la frise et la règle, et une hauteur se compare d'un regard là où trois diamètres identiques ne disent rien.
+
+| État | Hauteur | Couleur |
+|---|---|---|
+| à faire | `--trait-jour` | teinte de la catégorie, `--accent` sans catégorie |
+| journée soldée | `--trait-jour` | `--fait` |
+| en retard | `--trait-jour-retard` | `--retard` |
+
+Le retard dépasse : c'est le seul état du calendrier qui demande quelque chose, et il doit se voir en balayant le mois sans lire les nombres. Les traits sont alignés par le bas — c'est la hauteur qui porte l'information, et des traits centrés se compareraient par leurs deux bouts.
+
+Trois traits au plus, comme les points d'avant, et le reste du compte s'écrit sous eux : « +4 » pour un jour à sept révisions. Trois traits ne doivent pas laisser croire qu'il y a trois révisions.
+
+**Une phrase sous la grille dit ce qu'ils veulent dire.** Une hauteur et une couleur ne se devinent pas ; elles s'apprennent en une phrase, et cette phrase doit être là où on regarde, pas dans l'aide.
+
+**Aujourd'hui : fond `--accent-doux`, numéro `--accent` en 600.** C'était un anneau, qui devait cohabiter avec le disque plein du jour sélectionné. Ce second état a disparu avec la feuille : il n'y a plus qu'un état à marquer, et une surface douce se repère mieux qu'un contour dans une grille de quarante-deux cases.
+
+**L'en-tête** : deux chevrons de `--cible`, le mois en `--t-section` 700 et l'année en chasse fixe `--encre-2` à côté. On cherche « août », on vérifie « 2026 ».
 
 Chaque point prend la teinte de sa catégorie, comme la chip et la pastille (section 3 bis). C'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un sujet sans catégorie. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
 
@@ -616,6 +634,8 @@ Trois sorties, toutes non destructrices : le bouton « Annuler », Échap et un 
 ---
 
 ### 8.13 Tableau de suivi
+
+**Plus de carte autour d'un groupe** : un filet en tête et le titre de la catégorie. Une carte par catégorie mettait un cadre autour de chaque tableau, et un tableau porte déjà ses lignes — deux grilles emboîtées dont l'une ne dit rien. Les en-têtes de colonnes passent en chasse fixe : « R1 » à « R5 » et les « J+n » sont des repères qui se lisent en colonne.
 
 **C'est un tableau, et il le reste sur un téléphone.** Le replier en cartes sous 480px ferait perdre exactement ce qu'on vient y chercher : comparer les sujets verticalement, les étapes horizontalement, et voir les trous. La réponse au petit écran n'est pas de supprimer le défilement horizontal, c'est de le rendre lisible.
 
@@ -942,6 +962,22 @@ L'export JSON est le geste principal — c'est le seul qui revienne. L'import es
 **Un import refusé s'écrit dans un encadré, pas dans un bandeau.** Il porte le message exact du validateur — « Sujet 3 : catégorie inconnue. » — et surtout le fait que **rien n'a été écrit**. C'est cette seconde phrase qu'on vient chercher, et un bandeau d'une ligne ne lui laissait pas la place. Un bouton « Choisir un autre fichier » suit, parce que c'est le geste suivant.
 
 L'import **remplace**, il ne fusionne pas : c'est l'une des trois actions qu'aucun geste inverse ne rebâtirait, et la seule de cet écran à demander une confirmation (section 8.12).
+
+---
+
+### 8.28 La fiche d'un sujet
+
+**Une ligne d'identité, pas trois chips** : « pastille · Études · programme Simple · départ 14/08 ». Trois encadrés côte à côte donnaient le même poids à trois choses qui n'en ont pas — un sujet n'appartient pas à son programme comme il appartient à sa catégorie. Sans catégorie, ni pastille ni séparateur orphelin.
+
+**La frise en grand, avec ses libellés**, à toutes les largeurs (section 8.25). C'est ici qu'elle se lit, et c'est ce qu'on vient voir.
+
+**La progression s'écrit** : « 2 effectuées · 3 restantes » à gauche, « 40 % » en `--accent` à droite. L'anneau conique disparaît — il demandait qu'on lise un angle pour retrouver un pourcentage écrit à côté, et un sujet à cinq révisions n'a que six états : l'arrondi d'un anneau en dit moins que le compte exact.
+
+**Les échéances sont des rangées réglées** : la case de `--cible`, le décalage en colonne à chasse fixe, la date, l'état à droite. Le décalage tient une largeur fixe — c'est ce qui aligne les `J+n` les uns sous les autres et rend le rythme du programme lisible d'un regard, sans lire les dates.
+
+**Les actions sont des liens soulignés**, la suppression en `--retard-texte`. Aucune n'est celle qu'on vient faire — on vient lire une fiche et cocher une échéance —, et cinq boutons encadrés en bas d'écran leur donnaient le poids d'un choix à faire.
+
+**Les sections n'ont plus de carte.** Leur contenu est déjà réglé ; l'encadrer, c'était mettre un cadre autour d'un objet qui en est fait.
 
 ---
 

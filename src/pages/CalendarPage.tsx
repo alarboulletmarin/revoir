@@ -14,7 +14,14 @@ import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import type { Category } from '../types'
 import { useAujourdhui } from '../state/useAujourdhui'
-import { formatLong, formatMonth, fromKey, toKey, type DateKey } from '../lib/dates'
+import {
+  formatAnnee,
+  formatLong,
+  formatMoisSeul,
+  fromKey,
+  toKey,
+  type DateKey,
+} from '../lib/dates'
 import { teinteDe } from '../lib/categories'
 import {
   densite,
@@ -105,7 +112,7 @@ export function CalendarPage() {
 
   return (
     <>
-      <h1 className="page__titre">{t.calendrier.titre}</h1>
+      <h1 className="invisible">{t.calendrier.titre}</h1>
 
       <section className="calendrier">
         <div className="calendrier__entete">
@@ -117,7 +124,14 @@ export function CalendarPage() {
           >
             <IconeChevron direction="gauche" />
           </button>
-          <h2 className="calendrier__mois">{formatMonth(mois)}</h2>
+          {/*
+            Le mois porte la voix de l'écran, l'année l'accompagne en chiffres :
+            on cherche « août », on vérifie « 2026 ».
+          */}
+          <h2 className="calendrier__mois">
+            {formatMoisSeul(mois)}
+            <span className="calendrier__annee chiffres">{formatAnnee(mois)}</span>
+          </h2>
           <button
             type="button"
             className="calendrier__fleche"
@@ -138,6 +152,13 @@ export function CalendarPage() {
           {jours.map((jour) => {
             const estAujourdhui = jour.cle === aujourdhui
             const toutesFaites = jour.total > 0 && jour.restantes === 0
+            /*
+             * Une journée passée qui garde des révisions est en retard. Ses
+             * traits sont plus hauts et en `--retard` : c'est le seul état du
+             * calendrier qui demande quelque chose, et il doit se voir en
+             * balayant le mois sans lire les nombres.
+             */
+            const enRetard = jour.restantes > 0 && jour.cle < aujourdhui
 
             const classes = [
               'calendrier__case',
@@ -168,16 +189,26 @@ export function CalendarPage() {
                   {jour.numero}
                 </span>
                 <span className="calendrier__indicateurs" aria-hidden="true">
-                  <span className="calendrier__points">
+                  {/*
+                    Un trait vertical par révision, à la hauteur de son état :
+                    plein pour ce qui reste, court pour une journée soldée,
+                    long pour un retard. Un trait plutôt qu'un point parce que
+                    c'est le même objet que la règle et que la frise — une
+                    graduation —, et parce qu'une hauteur se compare d'un
+                    regard là où trois diamètres identiques ne disent rien.
+                  */}
+                  <span className="calendrier__traits">
                     {jour.categories.slice(0, densite(jour.total)).map((categorie, index) => (
                       <span
                         key={index}
                         className={
-                          toutesFaites
-                            ? 'calendrier__point calendrier__point--fait'
-                            : 'calendrier__point'
+                          enRetard
+                            ? 'calendrier__trait calendrier__trait--retard'
+                            : toutesFaites
+                              ? 'calendrier__trait calendrier__trait--fait'
+                              : 'calendrier__trait'
                         }
-                        // Un sujet sans catégorie garde le point --accent :
+                        // Un sujet sans catégorie garde le trait --accent :
                         // il n'y a pas de teinte à en tirer.
                         {...teinteDuPoint(categorie)}
                       />
@@ -198,6 +229,13 @@ export function CalendarPage() {
             )
           })}
         </div>
+
+        {/*
+          Ce que disent les traits, écrit une fois sous la grille. Une hauteur
+          et une couleur ne se devinent pas : elles s'apprennent en une phrase,
+          et cette phrase doit être là où on regarde, pas dans l'aide.
+        */}
+        <p className="calendrier__legende">{t.calendrier.legendeTraits}</p>
 
         {!moisCourant && (
           <div className="calendrier__entete">

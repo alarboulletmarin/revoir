@@ -4,6 +4,13 @@
 
 ## Non publié
 
+### Changé — le calendrier, le suivi et la fiche d'un sujet
+
+- **Le calendrier montre des traits, plus des points.** Un trait par révision, à la hauteur de son état : plein pour ce qui reste, court pour une journée soldée, long et ambré pour un retard. Le mois se lit ligne à ligne, comme un agenda de papier, et une phrase sous la grille dit ce que les traits veulent dire — une hauteur ne se devine pas.
+- **La fiche d'un sujet dit sa progression en toutes lettres** : « 2 effectuées · 3 restantes », et le pourcentage à côté. L'anneau demandait de lire un angle pour retrouver un nombre écrit juste à côté. Les échéances deviennent des rangées où les J+n s'alignent en colonne : le rythme du programme se lit sans lire les dates.
+- **La frise de la fiche garde ses repères sur les petits écrans**, avec sa ligne d'identité — catégorie, programme, date de départ — en une phrase plutôt qu'en trois étiquettes.
+- **Le suivi perd le cadre qui entourait chaque catégorie.** Un tableau porte déjà ses lignes ; deux grilles emboîtées, c'en était une de trop.
+
 ### Changé — les écrans de gestion
 
 - **Les réglages sont une liste, plus une pile de cartes.** Sept cartes qu'il fallait toutes parcourir pour en trouver une sont devenues deux bascules — apparence, langue — et quatre rangées qui mènent à ce qu'elles annoncent. Chaque rangée dit ce qu'on y trouvera : « Sujets archivés · aucun » évite une visite pour rien. La sauvegarde, l'export calendrier, les sujets archivés et les rythmes composés ont chacun leur écran.

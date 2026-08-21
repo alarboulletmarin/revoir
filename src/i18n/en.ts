@@ -64,6 +64,8 @@ export const en: Dictionnaire = {
     compact: 'MM/dd',
     /** « March 2026 » */
     mois: 'MMMM yyyy',
+    moisSeul: 'MMMM',
+    annee: 'yyyy',
     /** « August 8 » */
     echeance: 'MMMM d',
     echeanceAnnee: 'MMMM d, yyyy',
@@ -294,6 +296,8 @@ export const en: Dictionnaire = {
   },
 
   calendrier: {
+    legendeTraits:
+      'One line per review, at the height of its state: solid for what remains, short for what is done, long for overdue.',
     titre: 'Calendar',
     moisPrecedent: 'Previous month',
     moisSuivant: 'Next month',
@@ -398,6 +402,9 @@ export const en: Dictionnaire = {
     archive: 'Archived',
     creeLe: (date: string) => `Created on ${date}`,
     programme: 'Schedule',
+    programmeNomme: (nom: string) => `${nom} schedule`,
+    departCourt: (date: string) => `started ${date}`,
+    part: (pourcent: number) => `${pourcent}%`,
     progression: (pourcent: number) => `Progress: ${pourcent}%`,
     compte: (faites: number, restantes: number) =>
       `${faites} review${s(faites)} done · ${restantes} left`,
