@@ -959,7 +959,11 @@ Le reste devient des **rangées de navigation** de `--h-rangee-nav`, vers Catég
 
 **Le compositeur de rythme s'ouvre sur sa question** — « Quand la révision revient-elle ? » — et non sur son propre nom. Le champ « Nom du programme » passe **en dernier** : on nomme un rythme qu'on vient de composer, et ouvrir sur un champ de nom demande de baptiser quelque chose qui n'existe pas encore. Les graduations gardent leurs trois états (section 8.7) : retenue en `--accent` sur `--accent-doux`, disponible en bordure pleine, indisponible en bordure pointillée avec la phrase qui dit pourquoi.
 
-**Créer une catégorie au milieu d'une autre tâche ne doit pas interrompre cette tâche.** Ouverte depuis la deuxième question de la création d'un sujet, la page « Nouvelle catégorie » y ramène, et y ramène **avec ce qu'elle vient de créer** : sans l'identifiant, il faudrait redésigner dans la liste la catégorie qu'on vient de nommer. Le chemin de retour voyage dans l'état d'historique, et il est relu comme une donnée extérieure — seul un chemin interne est accepté, pour qu'une valeur bricolée ne puisse pas faire sortir l'application d'elle-même après une création.
+**Créer quelque chose au milieu d'une autre tâche ne doit pas interrompre cette tâche.** La règle vaut pour les deux écrans de création qu'un parcours peut ouvrir : « Nouvelle catégorie » depuis la deuxième question, « Composer un rythme » depuis la troisième. Chacun ramène d'où il vient, et y ramène **avec ce qu'il vient de créer** — sans l'identifiant, il faudrait retrouver dans une liste ce qu'on venait justement de construire pour ce sujet-là.
+
+Le chemin de retour voyage dans l'état d'historique, et se relit comme une donnée extérieure (`lib/navigation.ts`, testé) : seule une adresse **interne** est acceptée. `//exemple.com` et `https://exemple.com` passent pour des chemins auprès d'un routeur qui ne regarderait que le premier caractère, et feraient sortir l'application d'elle-même après une création.
+
+Ouverts depuis leur propre liste, ces écrans y retournent : c'est le repli, jamais le chemin principal.
 
 ### 8.27 Sauvegarde et export
 

@@ -386,11 +386,21 @@
   color: var(--encre);
 }
 
+/*
+ * Le nom passe avant son résumé : à 320 px, « 7 révisions · sur deux mois »
+ * ne laissait pas la place d'un nom composé, qui se tronquait en « Examen… ».
+ * Le résumé passe à la ligne plutôt que de rogner ce qu'on vient de nommer.
+ */
 .choix__entete {
   display: flex;
   min-width: 0;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--e-3);
+  gap: var(--e-1) var(--e-3);
+}
+
+.choix__rythme .choix__nom {
+  flex: 0 1 auto;
 }
 
 .choix__jours {

@@ -7,6 +7,7 @@ import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
 import { useBrouillonSujet } from '../state/useBrouillonSujet'
 import { comparerTextes } from '../i18n'
+import { identifiantCree } from '../lib/navigation'
 import { IconeCoche } from '../components/Icons'
 import { PastilleCategorie } from '../components/ChipCategorie'
 import { EtapeCreation } from '../components/EtapeCreation'
@@ -36,9 +37,7 @@ export function NouveauCategorie() {
    * désigner. Le détour par une page ne doit rien coûter au parcours qu'il
    * interrompt.
    */
-  const creee = typeof (state as { categorieCreee?: unknown } | null)?.categorieCreee === 'string'
-    ? (state as { categorieCreee: string }).categorieCreee
-    : null
+  const creee = identifiantCree(state, 'categorieCreee')
 
   useEffect(() => {
     if (creee === null) return

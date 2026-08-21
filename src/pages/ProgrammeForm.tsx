@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
@@ -17,6 +17,7 @@ import {
   reviewsDepuisOffsets,
 } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
+import { cheminInterne } from '../lib/navigation'
 import { Champ, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
 import { BarreAction } from '../components/BarreAction'
@@ -44,6 +45,17 @@ const RYTHME_INITIAL = SCHEDULES[0].offsets
 export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { state } = useLocation()
+  /*
+   * D'où l'on vient, quand ce n'est pas de la liste des rythmes.
+   *
+   * Composer un rythme au milieu de la création d'un sujet ne doit pas
+   * interrompre cette création : on y retourne, et on y retourne avec le
+   * rythme qu'on vient de composer. Sans lui, il faudrait le retrouver dans la
+   * liste et le désigner à nouveau — alors qu'on venait justement de le
+   * construire pour ce sujet-là.
+   */
+  const [retourVers] = useState(() => cheminInterne(state))
   const { programmes, creerProgramme, modifierProgramme, compterUsages, loading } =
     useDonnees()
   const revenir = useRetour()
@@ -127,10 +139,14 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
     try {
       if (mode === 'edit' && existant) {
         await modifierProgramme(existant.id, nom, rythmeFige ? existant.offsets : jours)
+        navigate('/programmes', { replace: true })
       } else {
-        await creerProgramme(nom, jours)
+        const cree = await creerProgramme(nom, jours)
+        navigate(retourVers ?? '/programmes', {
+          replace: true,
+          state: retourVers === null ? undefined : { programmeCree: cree.id },
+        })
       }
-      navigate('/reglages', { replace: true })
     } finally {
       setEnregistrement(false)
     }

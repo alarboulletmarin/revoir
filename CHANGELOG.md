@@ -14,7 +14,8 @@
 ### Changé — les écrans de gestion
 
 - **Les réglages sont une liste, plus une pile de cartes.** Sept cartes qu'il fallait toutes parcourir pour en trouver une sont devenues deux bascules — apparence, langue — et quatre rangées qui mènent à ce qu'elles annoncent. Chaque rangée dit ce qu'on y trouvera : « Sujets archivés · aucun » évite une visite pour rien. La sauvegarde, l'export calendrier, les sujets archivés et les rythmes composés ont chacun leur écran.
-- **Créer une catégorie pendant la création d'un sujet ne fait plus perdre le fil.** On atterrissait sur la liste des catégories, hors du parcours, et il fallait tout reprendre. On revient maintenant à la question qu'on était en train de lire, avec la catégorie qu'on vient de créer déjà sélectionnée.
+- **Créer une catégorie ou composer un rythme pendant la création d'un sujet ne fait plus perdre le fil.** On atterrissait sur la liste des catégories ou sur les réglages, hors du parcours, et il fallait tout reprendre. On revient maintenant à la question qu'on était en train de lire, avec ce qu'on vient de créer déjà sélectionné.
+- Un rythme créé depuis sa propre liste y retourne, au lieu de renvoyer aux réglages : les rythmes ont maintenant leur écran.
 - **« Supprimer » ne s'affiche plus que sur les catégories sans sujet.** Supprimer une catégorie portée reste possible depuis son écran — ses sujets rejoignent « Sans catégorie », aucun n'est perdu — mais ce geste en touche d'autres, et il n'avait rien à faire à côté d'un simple renommage.
 - **Le compositeur de rythme s'ouvre sur sa question** plutôt que sur son propre nom, et le champ du nom passe en dernier : on nomme un rythme qu'on vient de composer, pas l'inverse.
 - Sur les écrans de saisie, la barre des trois vues cède la place à la barre d'action, comme sur les pages de création.

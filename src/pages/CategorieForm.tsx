@@ -21,32 +21,18 @@ import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
 import { useRetour } from '../state/useRetour'
 import { categorieHomonyme } from '../lib/categories'
+import { cheminInterne } from '../lib/navigation'
 import { BarreAction } from '../components/BarreAction'
 import {
   ChampsCategorie,
   type BrouillonCategorie,
 } from '../components/ChampsCategorie'
 
-/**
- * D'où l'on vient, quand ce n'est pas de la liste des catégories.
- *
- * L'état d'historique est une donnée extérieure : il survit au rechargement et
- * s'écrit à la main. On ne retient qu'un chemin interne — une adresse absolue
- * commençant par une seule barre —, pour qu'une valeur bricolée ne puisse pas
- * faire sortir l'application d'elle-même après une création.
- */
-function retourDepuis(state: unknown): string | null {
-  if (typeof state !== 'object' || state === null) return null
-  const { retour } = state as { retour?: unknown }
-  if (typeof retour !== 'string') return null
-  return /^\/[^/]/.test(retour) ? retour : null
-}
-
 export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { state } = useLocation()
-  const [retourVers] = useState(() => retourDepuis(state))
+  const [retourVers] = useState(() => cheminInterne(state))
   const { categories, creerCategorie, modifierCategorie, loading } = useDonnees()
   const revenir = useRetour()
   const t = useTextes()

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
@@ -10,6 +10,7 @@ import { useBrouillonSujet, effacerBrouillon } from '../state/useBrouillonSujet'
 import { buildReviews, getSchedule, listerDecalages, previewDates } from '../lib/schedules'
 import { chargeParDate } from '../lib/stats'
 import { titreValide } from '../lib/brouillon'
+import { identifiantCree } from '../lib/navigation'
 import { formatJourLong, formatShort } from '../lib/dates'
 import { Frise } from '../components/Frise'
 import { EtapeCreation } from '../components/EtapeCreation'
@@ -34,6 +35,25 @@ export function NouveauRythme() {
   const { topics, reviews, programmes, programmesDisponibles, createTopic } = useDonnees()
   const { brouillon, majBrouillon } = useBrouillonSujet()
   const [enregistrement, setEnregistrement] = useState(false)
+  const { state } = useLocation()
+
+  /*
+   * Retour du compositeur, qui rend l'identifiant du rythme qu'il vient de
+   * créer : on le retient d'office.
+   *
+   * Sans cela, composer un rythme au milieu de la création d'un sujet coûtait
+   * deux gestes de plus — le retrouver dans la liste, le désigner —, alors
+   * qu'on venait justement de le construire pour ce sujet-là.
+   */
+  const cree = identifiantCree(state, 'programmeCree')
+
+  useEffect(() => {
+    if (cree === null) return
+    majBrouillon({ scheduleId: cree })
+    // L'état d'historique est consommé : un rechargement ne doit pas
+    // resélectionner un rythme qu'on aurait changé entre-temps.
+    navigate('.', { replace: true, state: null })
+  }, [cree, majBrouillon, navigate])
 
   const depart = brouillon.depart || aujourdhui
 
@@ -132,8 +152,17 @@ export function NouveauRythme() {
         ))}
       </ul>
 
+      {/*
+        Le retour est passé au compositeur : il ramène ici, avec le rythme
+        qu'il vient de composer, plutôt que de déposer sur la liste des rythmes
+        quelqu'un qui était en train de créer un sujet.
+      */}
       <p className="etape__lien">
-        <Link to="/programmes/nouveau" className="lien">
+        <Link
+          to="/programmes/nouveau"
+          state={{ retour: '/nouveau/rythme' }}
+          className="lien"
+        >
           {t.creation.rythme.composer}
         </Link>{' '}
         <span className="discret discret--petit">{t.creation.rythme.composerAide}</span>
