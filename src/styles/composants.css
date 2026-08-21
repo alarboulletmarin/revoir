@@ -363,8 +363,17 @@
  * il n'accuse pas (section 1). La pastille redouble la couleur du texte, elle
  * ne la remplace pas : la mention est écrite en toutes lettres.
  */
+/*
+ * La ligne prend la hauteur d'une cible pour que « la rattraper » en soit une.
+ *
+ * C'est un geste, pas un lien de bas de page : il solde un retard. L'étendre
+ * par un débordement invisible aurait capté les touchers destinés à la règle
+ * au-dessus et à la première révision en dessous ; c'est la ligne entière qui
+ * s'élève, et le lien s'y centre.
+ */
 .regle__retard {
   display: flex;
+  min-height: var(--cible);
   min-width: 0;
   align-items: center;
   gap: var(--e-2);
@@ -372,6 +381,12 @@
   color: var(--retard-texte);
   font-size: var(--t-sm);
   line-height: var(--l-sm);
+}
+
+.regle__retard .lien {
+  display: inline-flex;
+  min-height: var(--cible);
+  align-items: center;
 }
 
 .regle__pastille {
