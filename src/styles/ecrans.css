@@ -1828,12 +1828,7 @@ body[data-panneau='ouvert'] {
  * pas de supprimer le défilement horizontal, c'est de le rendre lisible.
  */
 
-.suivi__reglages {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--e-4);
-}
+
 
 .suivi__filtre {
   display: flex;
@@ -1857,16 +1852,52 @@ body[data-panneau='ouvert'] {
   gap: var(--e-2);
 }
 
-@media (min-width: 480px) {
-  .suivi__reglages {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
+/*
+ * Le titre de la vue et ce qu'elle suit, sur une rangée.
+ */
+.suivi__entete-vue {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2) var(--e-3);
+}
 
+.suivi__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/*
+ * Les deux réglages tiennent sur une rangée dès 320 px.
+ *
+ * Ils s'empilaient, chacun sous son libellé : quatre rangées de chrome avant
+ * la première cellule, sur l'écran dont c'est le seul objet. Le filtre prend
+ * la place qui reste, la bascule garde la sienne — deux mots courts qui ne
+ * doivent pas se replier.
+ */
+.suivi__reglages {
+  display: flex;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+.suivi__filtre {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.suivi__mode {
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
   .suivi__filtre {
-    min-width: 0;
-    flex: 1 1 auto;
     max-width: 320px;
   }
 

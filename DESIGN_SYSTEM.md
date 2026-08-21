@@ -276,7 +276,11 @@ Base 4px.
 ```
 
 - Padding intérieur des cellules : `--e-4` (mobile), `--e-5` (≥ 768px)
-- Marge de page : `--e-4`, avec `max-width: 960px` centré
+- Marge de page : `--e-4`, avec `max-width: 720px` centré
+
+**720 px, et non 960.** La largeur d'avant venait du bento : quatre cellules côte à côte en avaient besoin. Il n'y a plus de grille, et ce qui reste est fait de lignes — une règle graduée, des rangées, des paragraphes. Étalées sur 960 px, elles envoyaient le « J+7 » d'une rangée à neuf cents pixels de son titre, et la règle des quinze jours y perdait la densité qui la rend lisible. 720 px tient une ligne de texte autour de soixante-dix caractères et garde les deux bouts d'une rangée dans le même regard.
+
+Le bouton flottant suit cette colonne plutôt que le bord de la fenêtre : collé au bord d'un écran large, il flottait à trois cents pixels du contenu, là où l'œil ne va jamais.
 
 Deux rayons :
 
@@ -642,6 +646,10 @@ Trois sorties, toutes non destructrices : le bouton « Annuler », Échap et un 
 ---
 
 ### 8.13 Tableau de suivi
+
+**L'écran commence par ses données.** Le titre est au cran des trois vues avec le compte de ce qu'il y a à suivre, les deux réglages tiennent sur une rangée sans libellé flottant — le champ affiche « Toutes les catégories », qui dit ce qu'il règle —, et la légende passe **sous** les tableaux. Empilés, titre, deux réglages étiquetés et légende repliée occupaient 385 px avant la première cellule, sur l'écran dont c'est le seul objet. Une légende se cherche quand une forme résiste, c'est-à-dire après l'avoir vue.
+
+**La bascule montre ce qu'elle donne** : « R1–R5 » et « J+n » sont les en-têtes qu'on obtiendra. « Compact » et « Intervalles » demandaient d'essayer pour savoir.
 
 **Plus de carte autour d'un groupe** : un filet en tête et le titre de la catégorie. Une carte par catégorie mettait un cadre autour de chaque tableau, et un tableau porte déjà ses lignes — deux grilles emboîtées dont l'une ne dit rien. Les en-têtes de colonnes passent en chasse fixe : « R1 » à « R5 » et les « J+n » sont des repères qui se lisent en colonne.
 

@@ -325,8 +325,15 @@ export const fr = {
     categorie: 'Catégorie',
     toutesCategories: 'Toutes les catégories',
     colonnes: 'Colonnes',
-    compact: 'Compact',
-    intervalles: 'Intervalles',
+    /*
+     * La bascule montre ce qu'elle donne, pas un adjectif : « R1–R5 » et
+     * « J+n » sont les en-têtes qu'on obtiendra. « Compact » et « Intervalles »
+     * demandaient d'essayer pour savoir.
+     */
+    compact: 'R1–R5',
+    intervalles: 'J+n',
+    compteVue: (sujets: number, categories: number) =>
+      `${sujets} sujet${s(sujets)} · ${categories} catégorie${s(categories)}`,
     legendeTitre: 'Que veulent dire les formes ?',
     videTitre: 'Rien à suivre pour l’instant.',
     videDetail:

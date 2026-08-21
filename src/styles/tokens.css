@@ -292,7 +292,23 @@
 
   /* Marge de page et largeur de lecture (section 5). */
   --marge-page: var(--e-4);
-  --largeur-page: 960px;
+  /*
+   * Largeur de lecture, et non largeur d'écran.
+   *
+   * Elle valait 960 px, héritée du bento : quatre cellules côte à côte avaient
+   * besoin de cette place. Il n'y a plus de grille, et ce qui reste est fait de
+   * lignes — une règle graduée, des rangées, des paragraphes. Étalées sur
+   * 960 px, elles envoyaient le « J+7 » d'une ligne à neuf cents pixels de son
+   * titre, et la règle des quinze jours perdait la densité qui la rend lisible.
+   *
+   * 720 px tient une ligne de texte autour de soixante-dix caractères, garde
+   * les deux bouts d'une rangée dans le même regard, et laisse à la règle des
+   * cellules de la largeur d'un doigt.
+   *
+   * Le tableau de suivi n'en souffre pas : il défile dans son cadre par
+   * construction (section 8.13), à toutes les largeurs.
+   */
+  --largeur-page: 720px;
 
   /*
    * Pendant haut de --bas-securise. La section 10 exige `env(safe-area-inset-*)`

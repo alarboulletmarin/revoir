@@ -305,8 +305,10 @@ export const en: Dictionnaire = {
     categorie: 'Category',
     toutesCategories: 'All categories',
     colonnes: 'Columns',
-    compact: 'Compact',
-    intervalles: 'Intervals',
+    compact: 'R1–R5',
+    intervalles: 'D+n',
+    compteVue: (sujets: number, categories: number) =>
+      `${sujets} topic${s(sujets)} · ${categories} categor${categories === 1 ? 'y' : 'ies'}`,
     legendeTitre: 'What do the shapes mean?',
     videTitre: 'Nothing to track yet.',
     videDetail:

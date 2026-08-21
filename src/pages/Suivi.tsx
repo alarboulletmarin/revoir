@@ -70,6 +70,12 @@ export function Suivi() {
     [categories, topics, reviews],
   )
 
+  /** Ce qu'il y a à suivre : les sujets actifs, tous groupes confondus. */
+  const topicsSuivis = useMemo(
+    () => groupes.reduce((total, groupe) => total + groupe.topics.length, 0),
+    [groupes],
+  )
+
   /*
    * Une seule catégorie ouverte par défaut — la première. Sur un téléphone,
    * six tableaux dépliés font une page qu'on parcourt au lieu de la lire.
@@ -147,13 +153,26 @@ export function Suivi() {
 
   return (
     <>
-      <div className="page__entete">
-        <h1 className="page__titre">{t.suivi.titre}</h1>
+      {/*
+        Le titre au cran des trois vues, et ce qu'il y a à suivre à côté. Le
+        nom de l'onglet seul répétait ce que la barre du bas disait déjà ; le
+        compte, lui, dit s'il y a matière à faire défiler.
+      */}
+      <div className="suivi__entete-vue">
+        <h1 className="titre-ecran">{t.suivi.titre}</h1>
+        <p className="suivi__compte chiffres">
+          {t.suivi.compteVue(topicsSuivis, groupes.length)}
+        </p>
       </div>
 
       <div className="suivi__reglages">
+        {/*
+          Plus de libellé au-dessus : le champ affiche « Toutes les catégories »,
+          qui dit déjà ce qu'il règle. Deux libellés flottants poussaient les
+          données de trente pixels sur l'écran où l'on vient justement les voir.
+        */}
         <label className="suivi__filtre" htmlFor={champFiltre}>
-          <span className="champ__label">{t.suivi.categorie}</span>
+          <span className="invisible">{t.suivi.categorie}</span>
           {/* Même gabarit que le champ de choix du formulaire : `appearance:
               none` emporte la flèche native, on la redessine. */}
           <div className="champ-select">
@@ -175,7 +194,7 @@ export function Suivi() {
         </label>
 
         <fieldset className="suivi__mode">
-          <legend className="champ__label">{t.suivi.colonnes}</legend>
+          <legend className="invisible">{t.suivi.colonnes}</legend>
           <div className="suivi__bascule">
             {(['compact', 'intervalles'] as const).map((option) => (
               <label
@@ -200,20 +219,6 @@ export function Suivi() {
           </div>
         </fieldset>
       </div>
-
-      {/*
-        Repliée : une légende sert une fois, et prendre huit lignes au-dessus
-        du tableau à chaque visite reviendrait à faire payer aux habitués ce
-        que les nouveaux venus lisent une seule fois. Un `<details>` fermé
-        reste annoncé et atteignable au clavier.
-      */}
-      <details className="suivi__legende">
-        <summary className="suivi__legende-titre">
-          <IconeChevron className="suivi__chevron" width="16" height="16" />
-          {t.suivi.legendeTitre}
-        </summary>
-        <LegendeSuivi />
-      </details>
 
       {visibles.map((groupe, index) => {
         const stats = statsCategorie(groupe.topics, reviews, aujourdhui)
@@ -257,6 +262,23 @@ export function Suivi() {
         Le toast et son « Annuler » viennent d'`useValidation` : la validation
         se dit dans les mêmes mots depuis les listes, la fiche et le tableau.
       */}
+      {/*
+        Sous les tableaux, et repliée.
+
+        Une légende se cherche quand une forme résiste, c'est-à-dire après
+        l'avoir vue. Au-dessus, elle repoussait les données de quarante pixels
+        à chaque visite pour répondre à une question qu'on ne se pose qu'une
+        fois. Un `<details>` fermé reste annoncé et atteignable au clavier.
+      */}
+      <details className="suivi__legende">
+        <summary className="suivi__legende-titre">
+          <IconeChevron className="suivi__chevron" width="16" height="16" />
+          {t.suivi.legendeTitre}
+        </summary>
+        <LegendeSuivi />
+      </details>
+
+
       <PanneauCellule
         visee={visee}
         onFermer={() => setVisee(null)}

@@ -436,9 +436,21 @@
  * Section 8.5 : 56px, cercle, --accent. Le `--bas-securise` est indispensable,
  * sans lui le bouton passe sous la barre d'accueil iOS en mode PWA.
  */
+/*
+ * Le bouton flottant suit la colonne de lecture, pas le bord de la fenêtre.
+ *
+ * Collé au bord droit d'un écran large, il flottait à trois cents pixels du
+ * contenu, dans une zone où il n'y a rien — et il faut aller le chercher là
+ * où l'œil n'est jamais. `max()` le laisse au bord tant que la fenêtre est
+ * plus étroite que la colonne, c'est-à-dire sur tout ce qui est tenu à la
+ * main.
+ */
 .fab {
   position: fixed;
-  right: var(--marge-page);
+  right: max(
+    var(--marge-page),
+    calc(50% - var(--largeur-page) / 2 + var(--marge-page))
+  );
   bottom: var(--bas-fab);
   z-index: 3;
   display: flex;

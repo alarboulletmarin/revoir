@@ -4,6 +4,12 @@
 
 ## Non publié
 
+### Changé — les grands écrans, et le suivi
+
+- **L'application cesse de s'étirer sur un écran large.** La colonne de lecture passe de 960 à 720 pixels : le décalage d'une révision ne se retrouve plus à neuf cents pixels de son titre, la règle des quinze jours garde sa densité, et une ligne de texte revient autour de soixante-dix caractères. Le bouton « + » suit la colonne au lieu de flotter au bord de la fenêtre, loin de tout.
+- **Le suivi commence par ses données.** Le titre, deux réglages étiquetés et une légende occupaient 385 pixels avant la première cellule. Les réglages tiennent sur une rangée, la légende passe sous les tableaux — on la cherche quand une forme résiste, donc après l'avoir vue —, et le titre dit ce qu'il y a à suivre.
+- **La bascule des colonnes montre ce qu'elle donne** : « R1–R5 » et « J+n » plutôt que « Compact » et « Intervalles », qui demandaient d'essayer pour comprendre.
+
 ### Changé — le calendrier, le suivi et la fiche d'un sujet
 
 - **Le calendrier montre des traits, plus des points.** Un trait par révision, à la hauteur de son état : plein pour ce qui reste, court pour une journée soldée, long et ambré pour un retard. Le mois se lit ligne à ligne, comme un agenda de papier, et une phrase sous la grille dit ce que les traits veulent dire — une hauteur ne se devine pas.
