@@ -232,6 +232,17 @@ export const en: Dictionnaire = {
       `Six categories are already there — ${noms}. Rename, recolour or delete them from the settings.`,
   },
 
+  jour: {
+    compte: (total: number, faites: number) =>
+      `${total} review${s(total)} · ${faites} done`,
+    precedent: 'Previous day',
+    suivant: 'Next day',
+    toutMarquer: 'Mark all as reviewed',
+    toutReporter: 'Postpone to tomorrow',
+    marquees: (nombre: number) => `${nombre} review${s(nombre)} saved`,
+    reportees: (nombre: number) => `${nombre} review${s(nombre)} postponed`,
+  },
+
   calendrier: {
     titre: 'Calendar',
     moisPrecedent: 'Previous month',

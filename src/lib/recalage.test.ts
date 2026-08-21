@@ -8,7 +8,9 @@ import {
   dateDeReport,
   dateEffective,
   devaliderRevision,
+  reporterPlusieurs,
   reporterRevision,
+  validerPlusieurs,
   validerRevision,
 } from './recalage'
 
@@ -268,5 +270,119 @@ describe('l’annulation restaure l’état exact', () => {
     expect(dates(avant)).toEqual(
       dates(buildReviews('sujet', DEPART, 'ultime', [], compteur('r'))),
     )
+  })
+})
+
+describe('validerPlusieurs', () => {
+  const HORODATAGE = '2026-03-02T10:00:00.000Z'
+
+  it('valide toutes les révisions visées', () => {
+    const initiales = revisions()
+    const ids = [idDe(initiales, 1), idDe(initiales, 3)]
+    const { reviews, touchees } = validerPlusieurs(
+      initiales,
+      ids,
+      '2026-03-04',
+      HORODATAGE,
+    )
+    expect(touchees).toBe(2)
+    expect(reviews.filter((review) => review.completedAt !== null)).toHaveLength(2)
+  })
+
+  /*
+   * Le cas qui justifie la fonction. Deux validations en retard sur le même
+   * sujet : appelées chacune sur le tableau d'origine, la seconde écraserait
+   * le recalage de la première. Ici, la seconde part de ce que la première a
+   * produit, et le résultat vaut la même chose que deux appels enchaînés.
+   */
+  it('enchaîne les recalages au lieu de les écraser', () => {
+    const initiales = revisions()
+    const ids = [idDe(initiales, 1), idDe(initiales, 3)]
+    const groupe = validerPlusieurs(initiales, ids, '2026-03-10', HORODATAGE)
+
+    const premier = validerRevision(initiales, ids[0], '2026-03-10', HORODATAGE)
+    const second = validerRevision(premier.reviews, ids[1], '2026-03-10', HORODATAGE)
+
+    expect(dates(groupe.reviews)).toEqual(dates(second.reviews))
+    expect(groupe.deplacees).toBe(premier.deplacees + second.deplacees)
+  })
+
+  it('traite les identifiants dans l’ordre du programme, pas dans celui reçu', () => {
+    const initiales = revisions()
+    const ordre = [idDe(initiales, 3), idDe(initiales, 1)]
+    const inverse = [idDe(initiales, 1), idDe(initiales, 3)]
+    expect(dates(validerPlusieurs(initiales, ordre, '2026-03-10', HORODATAGE).reviews))
+      .toEqual(dates(validerPlusieurs(initiales, inverse, '2026-03-10', HORODATAGE).reviews))
+  })
+
+  it('ignore une révision déjà faite, et ne la compte pas', () => {
+    const initiales = revisions()
+    const faite = validerRevision(
+      initiales,
+      idDe(initiales, 1),
+      '2026-03-02',
+      HORODATAGE,
+    ).reviews
+    const groupe = validerPlusieurs(
+      faite,
+      [idDe(faite, 1), idDe(faite, 3)],
+      '2026-03-04',
+      HORODATAGE,
+    )
+    expect(groupe.touchees).toBe(1)
+  })
+
+  it('ignore un identifiant inconnu', () => {
+    const initiales = revisions()
+    const groupe = validerPlusieurs(initiales, ['inconnu'], '2026-03-04', HORODATAGE)
+    expect(groupe.touchees).toBe(0)
+    expect(groupe.reviews).toEqual(initiales)
+  })
+
+  it('ne valide qu’une fois un identifiant répété', () => {
+    const initiales = revisions()
+    const id = idDe(initiales, 1)
+    expect(validerPlusieurs(initiales, [id, id], '2026-03-04', HORODATAGE).touchees).toBe(1)
+  })
+
+  it('ne touche à rien sans identifiant', () => {
+    const initiales = revisions()
+    expect(validerPlusieurs(initiales, [], '2026-03-04', HORODATAGE)).toEqual({
+      reviews: initiales,
+      deplacees: 0,
+      touchees: 0,
+    })
+  })
+})
+
+describe('reporterPlusieurs', () => {
+  it('reporte chaque échéance visée, et elles seules', () => {
+    const initiales = revisions()
+    const ids = [idDe(initiales, 1), idDe(initiales, 3)]
+    const { reviews, touchees } = reporterPlusieurs(initiales, ids, '2026-03-02')
+
+    expect(touchees).toBe(2)
+    const apres = dates(reviews)
+    expect(apres[1]).toBe('2026-03-03')
+    expect(apres[3]).toBe('2026-03-05')
+    // Les échéances non visées n'ont pas bougé.
+    expect(apres[7]).toBe(dates(initiales)[7])
+    expect(apres[30]).toBe(dates(initiales)[30])
+  })
+
+  it('ne reporte pas une révision déjà faite', () => {
+    const initiales = revisions()
+    const faite = validerRevision(initiales, idDe(initiales, 1), '2026-03-02').reviews
+    const groupe = reporterPlusieurs(faite, [idDe(faite, 1)], '2026-03-02')
+    expect(groupe.touchees).toBe(0)
+    expect(dates(groupe.reviews)).toEqual(dates(faite))
+  })
+
+  it('ne reporte qu’une fois un identifiant répété', () => {
+    const initiales = revisions()
+    const id = idDe(initiales, 1)
+    const groupe = reporterPlusieurs(initiales, [id, id], '2026-03-02')
+    expect(groupe.touchees).toBe(1)
+    expect(dates(groupe.reviews)[1]).toBe('2026-03-03')
   })
 })

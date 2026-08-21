@@ -4,6 +4,11 @@
 
 ## Non publié
 
+### Changé — le jour
+
+- **Une journée du calendrier s'ouvre maintenant dans une page**, plus dans une feuille qui glissait du bas. Elle a une adresse : on peut la poser sur un écran d'accueil, y revenir par le retour arrière, la garder ouverte sans qu'un mouvement du pouce la referme au milieu de la liste. Deux flèches passent au jour voisin — il fallait auparavant refermer la feuille, viser une autre case et la rouvrir.
+- **Deux gestes pour toute la journée** : « Tout marquer comme revu » et « Reporter à demain ». Un seul message suit, et il dit combien de révisions ont bougé ; « Annuler » les remet toutes, y compris les échéances que les recalages avaient déplacées.
+
 ### Changé — la création d'un sujet
 
 - **Créer un sujet se fait en trois pages, une question par écran.** Le formulaire demandait quatre choses à la fois — un titre, une catégorie, une date, un programme — à quelqu'un qui, la première fois, n'en connaît aucune. Les questions se posent maintenant dans l'ordre où elles se répondent, chacune tient dans un écran, et un retour est toujours possible.

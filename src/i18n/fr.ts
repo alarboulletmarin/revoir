@@ -242,6 +242,21 @@ export const fr = {
       `Six catégories sont déjà là — ${noms}. Renommez-les, recolorez-les ou supprimez-les depuis les réglages.`,
   },
 
+  jour: {
+    /** « 2 révisions · 0 faite » — l'état de la journée, d'un coup d'œil. */
+    compte: (total: number, faites: number) =>
+      `${total} révision${s(total)} · ${faites} faite${s(faites)}`,
+    precedent: 'Jour précédent',
+    suivant: 'Jour suivant',
+    toutMarquer: 'Tout marquer comme revu',
+    toutReporter: 'Reporter à demain',
+    /** Le message d'un geste groupé : il dit combien, sinon on ne sait pas. */
+    marquees: (nombre: number) =>
+      `${nombre} révision${s(nombre)} enregistrée${s(nombre)}`,
+    reportees: (nombre: number) =>
+      `${nombre} révision${s(nombre)} reportée${s(nombre)}`,
+  },
+
   calendrier: {
     titre: 'Calendrier',
     moisPrecedent: 'Mois précédent',

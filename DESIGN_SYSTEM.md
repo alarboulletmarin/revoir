@@ -583,7 +583,17 @@ Deux états, deux moyens : **aujourd'hui** se marque d'un anneau `--accent`, le 
 
 Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou d'une semaine, Origine et Fin bornent la semaine, Page préc./suiv. changent de mois. Un jour d'un mois voisin reste cliquable et cale le calendrier sur son mois.
 
-**Feuille du jour** (`.feuille`) : `<dialog>` ancré en bas, coins hauts en `--r-carte`, poignée de 32×4px centrée, `::backdrop` à 20 % de `--encre` pour laisser voir le mois. Hauteur suivant le contenu, plafonnée à 78dvh ; seule la liste défile. Quatre sorties : le bouton — un libellé `--t-sm` en `--encre-2`, pas une action —, Échap, le fond, et le glissement vers le bas depuis l'en-tête. Le focus entre dans la feuille à l'ouverture et revient au jour consulté à la fermeture.
+**Ouvrir un jour ouvre une page**, `/jour/:date`, et non plus une feuille glissante.
+
+C'est une décision produit, pas une préférence de mise en page. Une feuille n'a pas d'adresse : on ne peut ni la partager, ni la poser sur un écran d'accueil, ni y revenir par le retour arrière du navigateur. Elle se referme d'un glissement du pouce, ce qui est exactement le geste qu'on fait en parcourant une liste. Et changer de jour y demandait de la refermer, de viser une autre case et de la rouvrir.
+
+La page : un retour vers le calendrier, le jour en titre, « 2 révisions · 0 faite » sous lui, la liste réglée, puis deux gestes — « Tout marquer comme revu » et « Reporter à demain ». Deux chevrons passent au jour voisin ; ils vivent avec le titre et non dans l'en-tête de l'application, qui porte déjà le retour — trois flèches sur une même rangée, dont une seule sort de la page, ne se distingueraient pas.
+
+**Les gestes groupés ne sont pas des boucles.** Chaque validation en retard recale les échéances suivantes du même sujet : deux validations parties du même état s'écraseraient, et le recalage de la première disparaîtrait. La cascade vit dans `lib/recalage.ts` (`validerPlusieurs`, `reporterPlusieurs`), avec ses tests, et le contexte n'écrit qu'une fois par sujet touché. Un seul toast suit le geste, et il dit **combien** : « Révision enregistrée » après avoir coché toute une journée laisserait croire qu'une seule l'a été. Son « Annuler » restaure tous les sujets touchés, jamais la moitié.
+
+**`FeuilleBas` reste** — c'est le panneau d'une cellule du tableau de suivi qui s'en sert (section 8.13). C'est la feuille *du jour* qui disparaît, pas le composant.
+
+Ce qu'était la feuille du jour, pour mémoire : `<dialog>` ancré en bas, poignée centrée, `::backdrop` à 20 % de `--encre`, quatre sorties dont le glissement. Son animation de translation était la deuxième des trois autorisées ; c'est la graduation du jour de la règle qui a pris sa place (section 6).
 
 **Où le focus entre, au juste.** Une feuille qu'on **lit** vise son corps : l'anneau ne doit pas se poser sur « Fermer », qui est une sortie et non une action. L'argument tombe pour une feuille qui n'existe que pour qu'on y **écrive** : l'y laisser imposerait un geste de plus avant d'atteindre le premier champ. D'où `cibleFocus`, que l'appelant fournit ou non. La visée a lieu après `showModal()` : le `<dialog>` est monté bien avant de s'ouvrir, `autoFocus` y aurait tiré à blanc.
 

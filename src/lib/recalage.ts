@@ -136,6 +136,89 @@ export function reporterRevision(
 }
 
 /**
+ * Ce qu'une action groupée a produit sur les révisions d'un sujet.
+ *
+ * `deplacees` cumule les échéances déplacées par les recalages successifs : le
+ * message qui suit le geste n'a qu'un « ajustées » à dire, pas un par
+ * validation.
+ */
+export interface ResultatGroupe {
+  reviews: Review[]
+  deplacees: number
+  /** Combien d'échéances ont réellement changé d'état. */
+  touchees: number
+}
+
+/**
+ * Valide plusieurs révisions d'un même sujet, l'une après l'autre.
+ *
+ * Ce n'est pas la même chose que d'appeler `validerRevision` en boucle depuis
+ * un composant. Chaque validation en retard **recale les suivantes**, donc
+ * chacune doit partir du tableau que la précédente a produit — sinon la
+ * seconde écrase la première et le recalage de l'une disparaît. C'est un cas
+ * réel : deux révisions d'un même sujet peuvent tomber le même jour, un
+ * recalage en produit justement.
+ *
+ * Les identifiants sont traités dans l'ordre de `position`, pas dans celui du
+ * tableau reçu : valider la troisième avant la deuxième recalerait la deuxième
+ * comme si elle venait après.
+ */
+export function validerPlusieurs(
+  reviews: Review[],
+  reviewIds: string[],
+  aujourdhui: DateKey = todayKey(),
+  horodatage: string = new Date().toISOString(),
+): ResultatGroupe {
+  const rangs = new Map(reviews.map((review) => [review.id, review.position]))
+  const ordonnes = [...new Set(reviewIds)]
+    .filter((id) => rangs.has(id))
+    .sort((a, b) => (rangs.get(a) ?? 0) - (rangs.get(b) ?? 0))
+
+  let courantes = reviews
+  let deplacees = 0
+  let touchees = 0
+
+  for (const reviewId of ordonnes) {
+    const cible = courantes.find((review) => review.id === reviewId)
+    // Déjà faite — par une itération précédente ou par un autre écran : il n'y
+    // a rien à valider, et la recompter fausserait le message.
+    if (!cible || cible.completedAt !== null) continue
+    const resultat = validerRevision(courantes, reviewId, aujourdhui, horodatage)
+    courantes = resultat.reviews
+    deplacees += resultat.deplacees
+    touchees += 1
+  }
+
+  return { reviews: courantes, deplacees, touchees }
+}
+
+/**
+ * Reporte plusieurs révisions d'un même sujet, l'une après l'autre.
+ *
+ * Un report ne déplace que son échéance : les appels ne se marchent donc pas
+ * dessus comme les validations. Le passage par le tableau accumulé n'en reste
+ * pas moins nécessaire — sans lui, le second report repartirait des dates
+ * d'avant le premier.
+ */
+export function reporterPlusieurs(
+  reviews: Review[],
+  reviewIds: string[],
+  aujourdhui: DateKey = todayKey(),
+): ResultatGroupe {
+  let courantes = reviews
+  let touchees = 0
+
+  for (const reviewId of new Set(reviewIds)) {
+    const resultat = reporterRevision(courantes, reviewId, aujourdhui)
+    if (resultat.date === null) continue
+    courantes = resultat.reviews
+    touchees += 1
+  }
+
+  return { reviews: courantes, deplacees: 0, touchees }
+}
+
+/**
  * Décoche une révision.
  *
  * Volontairement asymétrique : décocher ne défait pas un recalage, parce que

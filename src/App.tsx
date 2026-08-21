@@ -7,6 +7,7 @@ import { ToastProvider } from './state/ToastContext'
 import { Layout } from './components/Layout'
 import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
+import { JourPage } from './pages/JourPage'
 import { SujetDetail } from './pages/SujetDetail'
 import { SujetForm } from './pages/SujetForm'
 import { NouveauTitre } from './pages/NouveauTitre'
@@ -51,6 +52,12 @@ export function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/revisions/:filtre" element={<ReviewList />} />
                 <Route path="/calendrier" element={<CalendarPage />} />
+                {/*
+                  Le jour est une page, plus une feuille (section 8.11) : il a
+                  une adresse, donc un lien à poser et un retour arrière qui
+                  fonctionne.
+                */}
+                <Route path="/jour/:date" element={<JourPage />} />
                 <Route path="/suivi" element={<Suivi />} />
                 {/*
                   La création est une suite de pages, une question par écran

@@ -41,6 +41,8 @@ export function estRacine(pathname: string): boolean {
 export function parentDe(pathname: string): string {
   const modifie = /^\/sujet\/([^/]+)\/modifier$/.exec(pathname)
   if (modifie) return `/sujet/${modifie[1]}`
+  if (pathname.startsWith('/jour/')) return '/calendrier'
+  if (pathname.startsWith('/nouveau')) return '/'
   if (pathname.startsWith('/categories/')) return '/categories'
   if (pathname === '/categories') return '/reglages'
   if (pathname.startsWith('/programmes')) return '/reglages'

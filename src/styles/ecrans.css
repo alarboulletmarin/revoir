@@ -350,6 +350,106 @@
   line-height: var(--l-xs);
 }
 
+
+/* ======================================================== le jour ====== */
+
+/*
+ * La page d'un jour — section 8.11. C'était une feuille glissante.
+ *
+ * Même mise en page que l'écran « Aujourd'hui » : les lignes traversent le
+ * papier, leur contenu se retire de la marge. Les deux écrans montrent la même
+ * chose — une journée de révisions — et n'ont aucune raison de ne pas se
+ * ressembler.
+ */
+.page-jour {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+  margin-inline: calc(-1 * var(--marge-page));
+}
+
+.page-jour__entete {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-inline: var(--marge-page);
+}
+
+.page-jour__titres {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+/*
+ * « vendredi 21 août » devient « Vendredi 21 août ».
+ *
+ * En CSS et non dans le dictionnaire : le nom du jour s'écrit en minuscule en
+ * français, et ce n'est qu'ici, en tête de titre, qu'il prend une capitale. Le
+ * gabarit de date sert aussi ailleurs — au sur-titre d'« Aujourd'hui », au
+ * milieu d'une phrase — où la capitale serait une faute. `::first-letter` la
+ * pose sans toucher au texte, donc sans toucher à ce que lit un lecteur
+ * d'écran ni à ce qu'affiche `<title>`.
+ *
+ * Ciblé sur cette page seulement : la même règle sur tous les titres de page
+ * recapitaliserait un titre de sujet écrit en minuscules par son auteur.
+ */
+.page-jour__titres .titre-page::first-letter {
+  text-transform: uppercase;
+}
+
+.page-jour__compte {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/*
+ * Les deux chevrons du jour voisin. Ils vivent avec le titre et non dans
+ * l'en-tête de l'application, qui porte déjà le retour : trois flèches sur une
+ * même rangée, dont une seule sort de la page, ne se distingueraient pas.
+ */
+.page-jour__navigation {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.page-jour__chevron {
+  display: inline-flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pilule);
+  color: var(--encre-2);
+  transition: background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.page-jour__chevron:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+/*
+ * Les deux gestes de la journée. Ils se replient l'un sous l'autre à 320px
+ * plutôt que de rogner leurs libellés : « Tout marquer comme revu » ne se
+ * tronque pas sans devenir « Tout marquer… », qui ne dit plus rien.
+ */
+.page-jour__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
+}
+
 /* ======================================================== formulaire === */
 
 .formulaire {

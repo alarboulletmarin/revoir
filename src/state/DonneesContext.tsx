@@ -42,7 +42,14 @@ import {
   tousLesProgrammes,
   type Schedule,
 } from '../lib/schedules'
-import { devaliderRevision, reporterRevision, validerRevision } from '../lib/recalage'
+import {
+  devaliderRevision,
+  reporterPlusieurs as reporterPlusieursRevisions,
+  reporterRevision,
+  validerPlusieurs as validerPlusieursRevisions,
+  validerRevision,
+  type ResultatGroupe,
+} from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
 
 export interface SujetDraft {
@@ -68,6 +75,21 @@ export interface ValidationEffectuee {
   /** Jours de retard absorbés. 0 si la validation n'était pas en retard. */
   retard: number
   /** Échéances à venir déplacées par le recalage. */
+  deplacees: number
+}
+
+/**
+ * Ce qu'un geste portant sur plusieurs révisions renvoie à l'appelant.
+ *
+ * Les révisions d'un même jour appartiennent à plusieurs sujets : l'état à
+ * restaurer est donc un tableau par sujet, et « Annuler » les rejoue tous.
+ */
+export interface GesteGroupe {
+  /** Les révisions d'avant, par sujet touché — la cible d'« Annuler ». */
+  precedentes: Map<string, Review[]>
+  /** Combien de révisions ont réellement changé d'état. */
+  touchees: number
+  /** Échéances à venir déplacées par les recalages, tous sujets confondus. */
   deplacees: number
 }
 
@@ -137,6 +159,17 @@ export interface DonneesContextValue {
    * n°6). Renvoie null si la révision est déjà faite ou introuvable.
    */
   reporter: (reviewId: string) => ReportEffectue | null
+  /**
+   * Valide plusieurs révisions d'un coup — « Tout marquer comme revu ».
+   *
+   * Ce n'est pas une boucle sur `valider` : chaque validation en retard recale
+   * les suivantes du même sujet, et deux appels partis du même état
+   * s'écraseraient l'un l'autre. La cascade vit dans `lib/recalage.ts`, avec
+   * ses tests.
+   */
+  validerPlusieurs: (reviewIds: string[]) => GesteGroupe
+  /** Reporte plusieurs échéances d'un jour, sans toucher aux suivantes. */
+  reporterPlusieurs: (reviewIds: string[]) => GesteGroupe
   /** Remet les révisions d'un sujet dans l'état fourni. Sert à « Annuler ». */
   restaurerRevisions: (topicId: string, precedentes: Review[]) => void
 
@@ -427,6 +460,59 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
     [reviews, persistRevisions],
   )
 
+  /**
+   * Le patron commun aux deux gestes groupés : regrouper les identifiants par
+   * sujet, appliquer la cascade sujet par sujet, écrire chaque sujet une seule
+   * fois. Écrire par révision produirait autant d'écritures que de coches et
+   * autant d'états intermédiaires visibles.
+   */
+  const geste = useCallback(
+    (
+      reviewIds: string[],
+      appliquer: (revisions: Review[], ids: string[]) => ResultatGroupe,
+    ): GesteGroupe => {
+      const parSujet = new Map<string, string[]>()
+      for (const reviewId of reviewIds) {
+        const cible = reviews.find((review) => review.id === reviewId)
+        if (!cible) continue
+        parSujet.set(cible.topicId, [...(parSujet.get(cible.topicId) ?? []), reviewId])
+      }
+
+      const precedentes = new Map<string, Review[]>()
+      let touchees = 0
+      let deplacees = 0
+
+      for (const [topicId, ids] of parSujet) {
+        const avant = revisionsDe(topicId, reviews)
+        const resultat = appliquer(avant, ids)
+        if (resultat.touchees === 0) continue
+        precedentes.set(topicId, avant)
+        touchees += resultat.touchees
+        deplacees += resultat.deplacees
+        persistRevisions(topicId, resultat.reviews)
+      }
+
+      return { precedentes, touchees, deplacees }
+    },
+    [reviews, persistRevisions],
+  )
+
+  const validerToutes = useCallback(
+    (reviewIds: string[]) =>
+      geste(reviewIds, (revisions, ids) =>
+        validerPlusieursRevisions(revisions, ids, todayKey()),
+      ),
+    [geste],
+  )
+
+  const reporterToutes = useCallback(
+    (reviewIds: string[]) =>
+      geste(reviewIds, (revisions, ids) =>
+        reporterPlusieursRevisions(revisions, ids, todayKey()),
+      ),
+    [geste],
+  )
+
   const devalider = useCallback(
     (reviewId: string) => {
       const cible = reviews.find((review) => review.id === reviewId)
@@ -562,6 +648,8 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       valider,
       devalider,
       reporter,
+      validerPlusieurs: validerToutes,
+      reporterPlusieurs: reporterToutes,
       restaurerRevisions,
       importer,
     }),
@@ -589,6 +677,8 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       valider,
       devalider,
       reporter,
+      validerToutes,
+      reporterToutes,
       restaurerRevisions,
       importer,
     ],
