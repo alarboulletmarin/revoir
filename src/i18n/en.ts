@@ -15,27 +15,6 @@ import type { Dictionnaire } from '.'
 const s = (nombre: number) => (nombre === 1 ? '' : 's')
 
 /**
- * The number spelled out, up to nine — the screen title is a sentence, and a
- * sentence does not open on a digit. Past nine the word takes longer to read
- * than the number it spells, and the digit takes over.
- */
-const NUMBERS = [
-  'zero',
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-  'nine',
-]
-const lettres = (nombre: number) => NUMBERS[nombre] ?? String(nombre)
-
-const capitale = (mot: string) => mot.charAt(0).toUpperCase() + mot.slice(1)
-
-/**
  * English ordinals: 1st, 2nd, 3rd, then th — with the teens as the exception
  * they always are (11th, 12th, 13th).
  */
@@ -166,16 +145,15 @@ export const en: Dictionnaire = {
 
   dashboard: {
     titre: 'Today',
-    aFaire: (restantes: number) =>
-      `${capitale(lettres(restantes))} review${s(restantes)} today.`,
-    tempsTermine: 'Everything is done for today.',
-    rienDePrevu: 'No reviews scheduled today.',
+    aFaire: (restantes: number) => `review${s(restantes)} today`,
+    tempsTermine: 'Everything is done.',
+    rienDePrevu: 'No reviews scheduled.',
     ensuite: 'up next',
     revuAujourdhui: 'reviewed today',
-    plusRien: 'Nothing left to review: the schedule resumes at the next due date.',
+    plusRien: 'The schedule resumes at the next due date.',
     aVenirIci: 'Upcoming reviews will show up here.',
     prochaine: (date: string, sujets: number) =>
-      `Next review: ${date}, ${sujets} topic${s(sujets)}.`,
+      `Next: ${date}, ${sujets} topic${s(sujets)}.`,
     enRetard: 'overdue',
     restantes: (nombre: number) => `review${s(nombre)} left`,
     charge: (jours: number) => `Load over ${jours} days`,

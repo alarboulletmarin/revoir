@@ -16,34 +16,6 @@
 /** Marque du pluriel français : rien au singulier, « s » au-delà. */
 const s = (nombre: number) => (nombre > 1 ? 's' : '')
 
-/**
- * Le nombre en toutes lettres, jusqu'à neuf.
- *
- * Le titre de l'écran « Aujourd'hui » est une phrase — « Deux révisions
- * aujourd'hui. » —, et une phrase n'ouvre pas sur un chiffre. Au-delà de neuf,
- * la lettre devient plus longue à lire que le nombre qu'elle écrit, et le
- * chiffre reprend la main.
- *
- * Le féminin est le seul accord dont ce dictionnaire ait besoin : ce qui se
- * compte ici, ce sont des révisions.
- */
-const NOMBRES = [
-  'zéro',
-  'une',
-  'deux',
-  'trois',
-  'quatre',
-  'cinq',
-  'six',
-  'sept',
-  'huit',
-  'neuf',
-]
-const lettres = (nombre: number) => NOMBRES[nombre] ?? String(nombre)
-
-/** Capitale initiale, pour un nombre qui ouvre une phrase. */
-const capitale = (mot: string) => mot.charAt(0).toUpperCase() + mot.slice(1)
-
 export const fr = {
   /** Le nom de la langue, écrit dans cette langue. */
   nom: 'Français',
@@ -172,19 +144,28 @@ export const fr = {
 
   dashboard: {
     titre: "Aujourd'hui",
-    /** Le titre de l'écran : une phrase, donc un point et un nombre en lettres. */
-    aFaire: (restantes: number) =>
-      `${capitale(lettres(restantes))} révision${s(restantes)} aujourd’hui.`,
-    tempsTermine: 'Tout est terminé pour aujourd’hui.',
-    rienDePrevu: 'Aucune révision prévue aujourd’hui.',
+    /**
+     * Ce qui accompagne le compte. Le nombre n'y figure plus : il est écrit à
+     * côté, en grand, et le répéter en lettres le ferait lire deux fois.
+     */
+    aFaire: (restantes: number) => `révision${s(restantes)} aujourd’hui`,
+    /*
+     * Court, et pour deux raisons : le sur-titre date déjà l'écran, et le
+     * compte à zéro est juste au-dessus. « pour aujourd'hui » redisait une
+     * troisième fois la même chose — et faisait passer le libellé à trois
+     * lignes à 320 px, ce qui déplaçait tout l'écran sous le doigt qui venait
+     * de cocher.
+     */
+    tempsTermine: 'Tout est terminé.',
+    rienDePrevu: 'Aucune révision prévue.',
     /** Le sur-titre des prochaines échéances, sous la règle. */
     ensuite: 'ensuite',
     /** Le sur-titre de ce qui a été coché dans la journée. */
     revuAujourdhui: 'revu aujourd’hui',
-    plusRien: 'Plus rien à revoir : le programme reprendra à la prochaine échéance.',
-    aVenirIci: 'Les prochaines révisions apparaîtront ici.',
+    plusRien: 'Le programme reprendra à la prochaine échéance.',
+    aVenirIci: 'Les révisions à venir apparaîtront ici.',
     prochaine: (date: string, sujets: number) =>
-      `Prochaine révision : ${date}, ${sujets} sujet${s(sujets)}.`,
+      `Prochaine : ${date}, ${sujets} sujet${s(sujets)}.`,
     enRetard: 'en retard',
     restantes: (nombre: number) => `révision${s(nombre)} restante${s(nombre)}`,
     charge: (jours: number) => `Charge sur ${jours} jours`,

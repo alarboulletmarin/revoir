@@ -48,6 +48,11 @@
 
 ### Changé — l'écran « Aujourd'hui »
 
+- **Le nombre de révisions du jour redevient un grand chiffre.** Il était écrit en toutes lettres dans une phrase, ce qui le faisait lire au lieu de le faire voir. C'est la réponse qu'on vient chercher : elle s'affiche en grand, avec son libellé dessous.
+- **L'écran ne saute plus quand vous cochez.** Le titre passait d'une ligne à deux en changeant d'état, la ligne « Prochaine révision » apparaissait avec lui, et tout se déplaçait sous le doigt qui venait de valider — au moment précis du geste le plus fréquent de l'application. L'en-tête réserve désormais sa hauteur, quel que soit ce qu'il a à dire.
+- Les messages d'état sont plus courts — « Tout est terminé. » plutôt que « Tout est terminé pour aujourd'hui. » : la date est déjà écrite juste au-dessus, et le compte à zéro juste à côté.
+
+
 - **Une règle graduée remplace les trois cartes du tableau de bord.** La journée, le retard et la charge des quinze jours se disputaient la même question en trois blocs de même poids, et il fallait choisir lequel y répondait. Il y a maintenant un seul objet à balayer : quatorze jours, une graduation par jour, sa hauteur donne la charge, et le jour courant s'y trouve sans être cherché. Le retard se lit sous l'axe et propose de le rattraper ; ce qui reste à faire est écrit en toutes lettres au-dessus, en titre.
 - **La hauteur d'une journée ne dépend plus de ce qui l'entoure.** Les anciennes barres se remesuraient sur la journée la plus chargée : la même journée à trois révisions montait ou descendait selon la semaine. Quatre paliers fixes la laissent à la même hauteur d'un jour à l'autre, et le nombre reste écrit au-dessus pour qui veut le compte exact.
 - **La liste du jour dit où en est chaque sujet** — « Études · 3ᵉ passage sur 5 » — et porte son décalage au bout de la ligne, en colonne. Le cercle à cocher grandit : c'est le geste central de l'application, et sa cible ne se voit pas.

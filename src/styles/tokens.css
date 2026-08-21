@@ -72,6 +72,14 @@
   --t-page: 30px;
   --t-section: 22px;
 
+  /*
+   * Le compte du jour, sur « Aujourd'hui ». Plus grand que tous les titres,
+   * et c'est voulu : c'est la réponse à la question de la section 1, et on
+   * vient la voir, pas la lire. C'est le rôle que tenait le grand chiffre du
+   * bento, rendu à l'écran qui l'a perdu avec lui.
+   */
+  --t-compte: 56px;
+
   /* Le logotype, et lui seul (section 2). */
   --t-marque: 14px;
 
@@ -255,6 +263,32 @@
   --l-ecran: 1.08;
   --l-page: 1.1;
   --l-section: 1.2;
+  /* Un chiffre n'a ni jambage ni accent : son interligne est sa hauteur. */
+  --l-compte: 1;
+
+  /*
+   * Hauteur réservée par l'en-tête d'« Aujourd'hui ».
+   *
+   * Sans elle, l'écran saute au moment précis où l'on coche : « Tout est
+   * terminé pour aujourd'hui. » tient sur deux lignes là où « révisions
+   * aujourd'hui » n'en tient qu'une, et la ligne « Prochaine révision : … »
+   * apparaît en même temps. Trois objets se déplaçaient sous le doigt qui
+   * venait de valider — et c'est justement le geste central de l'application.
+   *
+   * La hauteur couvre le cas le plus haut, mesuré à 320 px — la largeur qui
+   * décide de tout : le sur-titre, le compte, une ligne de libellé, deux
+   * lignes de suite. Le sur-titre en fait partie parce qu'il vit dans le même
+   * bloc — l'oublier laissait deux pixels de jeu, et deux pixels se voient
+   * quand c'est toute la page qui les prend.
+   * C'est aussi pourquoi les libellés sont courts : ils tiennent tous sur une
+   * ligne à cette largeur, et la réserve n'a pas à prévoir un repli qui
+   * n'arrive jamais. Elle est dérivée de ses parts, jamais mesurée en dur.
+   */
+  --h-reponse: calc(
+    var(--t-xs) * var(--l-xs) + var(--e-2) + var(--t-compte) * var(--l-compte) +
+      var(--e-2) + var(--t-lg) * var(--l-lg) + var(--e-2) + 2 *
+      (var(--t-base) * var(--l-base))
+  );
 
   /* Marge de page et largeur de lecture (section 5). */
   --marge-page: var(--e-4);

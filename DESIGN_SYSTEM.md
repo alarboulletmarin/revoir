@@ -353,7 +353,7 @@ Hauteurs : `dvh`, jamais `vh`. La barre d'URL mobile fausse `100vh` et fait dép
 
 Le tableau de bord avait un bento : trois cellules de même poids — la journée, le retard, la charge — posées côte à côte, et il fallait choisir laquelle répondait à la question de la section 1. Trois blocs pour une seule question, dont deux qui la reformulaient. La règle des quatorze jours (section 8.8) les remplace tous les trois : le retard s'y lit sous l'axe, la charge est l'axe lui-même, et la journée est écrite en toutes lettres au-dessus, en titre.
 
-Ce qui disparaît avec le bento : `.bento`, `.cellule` et ses variantes, la cellule héros à fond `--accent` plein, la cellule « retard », la cellule « synthèse », le mini-mois de tablette. Les six stats de la spécification initiale n'ont pas migré ailleurs : elles vivent dans la fiche d'un sujet et dans le suivi, où on va les chercher.
+Ce qui disparaît avec le bento : `.bento`, `.cellule` et ses variantes, la cellule héros à fond `--accent` plein, la cellule « retard », la cellule « synthèse », le mini-mois de tablette. **Le grand chiffre, lui, revient** — pas dans une carte, mais en tête d'écran (section 8.9) : c'était la meilleure idée du bento, et la perdre avec lui aurait coûté à l'écran sa réponse la plus rapide. Les six stats de la spécification initiale n'ont pas migré ailleurs : elles vivent dans la fiche d'un sujet et dans le suivi, où on va les chercher.
 
 **L'écran n'a donc plus d'unique cellule `--accent` pleine**, et la hiérarchie ne tient plus à une surface de couleur. Elle tient au titre, à son cran, à sa graisse et à sa place — première chose écrite, seule de son cran sur l'écran (section 4). C'est ce déplacement qui a fait tomber l'interdit du 700.
 
@@ -544,7 +544,15 @@ Aucune révision prévue aujourd'hui
 Prochaine révision : jeu. 6 août, 3 sujets.
 ```
 
-Il s'écrit en titre d'écran, à la place de la phrase qu'il remplace — il n'y a plus de cellule héros à faire basculer (section 7.2). La deuxième ligne est une information utile, pas un encouragement, et elle n'apparaît que là : une journée qui a encore des révisions n'a pas besoin qu'on lui annonce la suivante. Aucune illustration, aucun emoji.
+**L'écran répond par un chiffre, et il est grand.** Le compte de ce qu'il reste à revoir aujourd'hui s'écrit en `--t-compte`, au-dessus de son libellé : c'est ce qu'on vient chercher, et une phrase qui l'écrit en toutes lettres le fait lire au lieu de le faire voir. C'est le principe que portait le grand chiffre du bento — chiffre d'abord, label ensuite —, rendu à l'écran qui l'avait perdu avec lui.
+
+Il est dans la police des titres et non dans celle des chiffres. La chasse fixe sert à ce qui se lit en colonne (section 4) ; un chiffre seul de 56 px ne se lit pas en colonne, il se regarde — et à cette taille, la pile monospace du système imposerait son dessin, un zéro barré sur l'un et ouvert sur l'autre, à la première chose vue de l'application. `tabular-nums` reste, hérité de son `<output>` : c'est lui qui garde la même largeur entre « 1 » et « 2 », et empêche le libellé de bouger dessous quand le compte descend. L'`<output>` porte aussi une région vive, ce que la section 10 demande d'un compteur qui change.
+
+**L'en-tête réserve sa hauteur** (`--h-reponse`), et c'est la correction d'un vrai défaut : l'écran sautait au moment précis où l'on coche. Le libellé passait d'une ligne à deux en changeant d'état, la ligne de suite apparaissait avec lui, et trois objets se déplaçaient sous le doigt qui venait de valider — le geste central de l'application. La réserve couvre le cas le plus haut mesuré à 320 px, la largeur qui décide de tout, et elle est dérivée de ses parts plutôt que mesurée en dur.
+
+C'est aussi pourquoi **les libellés d'état sont courts** — « Tout est terminé. », « Aucune révision prévue. » : ils tiennent tous sur une ligne à 320 px, et la réserve n'a pas à prévoir un repli qui n'arrive jamais. « pour aujourd'hui » disparaît sans rien coûter : le sur-titre date déjà l'écran, et le compte à zéro est juste au-dessus.
+
+Le libellé s'écrit sous le compte, à la place de la phrase qu'il remplace — il n'y a plus de cellule héros à faire basculer (section 7.2). La deuxième ligne est une information utile, pas un encouragement, et elle n'apparaît que là : une journée qui a encore des révisions n'a pas besoin qu'on lui annonce la suivante. Aucune illustration, aucun emoji.
 
 **Une journée bouclée ne se solde pas sur un écran vide.** Ce qui vient d'être coché reste sous la main, sous « revu aujourd'hui », chaque ligne barrée gardant son « Annuler ». Le « Annuler » du toast expire au bout de cinq secondes, celui-ci dure autant que la journée.
 

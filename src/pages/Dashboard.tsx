@@ -74,14 +74,25 @@ export function Dashboard() {
   return (
     <div className="aujourdhui">
       {/*
-        Le sur-titre date l'écran, le titre répond à la question. Deux lignes,
-        et rien entre elles : c'est le premier objet de l'écran, il n'a pas à
-        partager sa place avec une carte.
+        Le sur-titre date l'écran, le compte y répond.
+
+        Le nombre est un chiffre, et il est grand : c'est ce qu'on vient
+        chercher, et une phrase qui l'écrit en toutes lettres le fait lire au
+        lieu de le faire voir. C'est le principe que portait le grand chiffre
+        du bento, et qu'il fallait retrouver sans lui.
+
+        `<output>` et non `<span>` : il porte un rôle de région vive, donc le
+        compte qui change est annoncé sans que rien ne prenne le focus
+        (section 10). Il hérite au passage de la chasse fixe des chiffres, ce
+        qui l'empêche de changer de largeur entre « 2 » et « 3 ».
       */}
       <div className="aujourdhui__entete">
         <p className="surtitre">{formatJourLong(aujourdhui)}</p>
-        <h1 className="titre-ecran">
-          {titreDuJour(vue.dujour.length, vue.prevuesDuJour)}
+        <h1 className="aujourdhui__reponse">
+          <output className="aujourdhui__compte">{vue.dujour.length}</output>
+          <span className="aujourdhui__libelle">
+            {libelleDuJour(vue.dujour.length, vue.prevuesDuJour)}
+          </span>
         </h1>
         {bouclee && (
           <p className="aujourdhui__suite">
@@ -161,11 +172,14 @@ export function Dashboard() {
 }
 
 /**
- * Une journée bouclée n'est pas une journée vide. `restantes` à zéro se lit
- * « Tout est terminé » quand quelque chose était prévu, et « Aucune révision
- * prévue » quand rien ne l'était.
+ * Ce qui accompagne le compte.
+ *
+ * Une journée bouclée n'est pas une journée vide. Zéro se lit « Tout est
+ * terminé » quand quelque chose était prévu, et « Aucune révision prévue »
+ * quand rien ne l'était — le chiffre est le même, c'est le libellé qui les
+ * distingue.
  */
-function titreDuJour(restantes: number, prevues: number): string {
+function libelleDuJour(restantes: number, prevues: number): string {
   const t = textes().dashboard
   if (restantes > 0) return t.aFaire(restantes)
   return prevues > 0 ? t.tempsTermine : t.rienDePrevu
