@@ -9,6 +9,9 @@ import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
 import { SujetDetail } from './pages/SujetDetail'
 import { SujetForm } from './pages/SujetForm'
+import { NouveauTitre } from './pages/NouveauTitre'
+import { NouveauCategorie } from './pages/NouveauCategorie'
+import { NouveauRythme } from './pages/NouveauRythme'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { CategorieForm } from './pages/CategorieForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
@@ -49,7 +52,17 @@ export function App() {
                 <Route path="/revisions/:filtre" element={<ReviewList />} />
                 <Route path="/calendrier" element={<CalendarPage />} />
                 <Route path="/suivi" element={<Suivi />} />
-                <Route path="/nouveau" element={<SujetForm mode="create" />} />
+                {/*
+                  La création est une suite de pages, une question par écran
+                  (section 8.22). `/nouveau` reste une adresse valide — le
+                  bouton « + » y mène, et des raccourcis peuvent y pointer —
+                  mais elle n'affiche plus rien : elle ouvre la première
+                  question.
+                */}
+                <Route path="/nouveau" element={<Navigate to="/nouveau/titre" replace />} />
+                <Route path="/nouveau/titre" element={<NouveauTitre />} />
+                <Route path="/nouveau/categorie" element={<NouveauCategorie />} />
+                <Route path="/nouveau/rythme" element={<NouveauRythme />} />
                 <Route path="/sujet/:id" element={<SujetDetail />} />
                 <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
                 <Route path="/reglages" element={<Settings />} />

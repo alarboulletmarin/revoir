@@ -105,6 +105,251 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+/* ============================================ création en trois pages == */
+
+/*
+ * Une question par écran — section 8.22.
+ *
+ * La page réserve en bas la hauteur de sa barre d'action : celle-ci est fixe,
+ * et sans cette purge le dernier élément du contenu finirait dessous. Elle
+ * remplace la purge de la barre du bas, qui ne s'affiche pas ici.
+ */
+.etape {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-4);
+  padding-bottom: var(--purge-action);
+}
+
+/*
+ * Trois segments, pas une barre continue : on ne mesure pas une progression en
+ * pourcentage quand il y a trois questions, on les compte. Le segment franchi
+ * passe à l'encre ; les autres restent au trait, et le contraste entre les
+ * deux ne dépend pas de la teinte.
+ */
+.etape__progression {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-1);
+}
+
+.etape__segment {
+  min-width: 0;
+  flex: 1 1 0;
+  height: var(--segment-etape);
+  border-radius: var(--r-pilule);
+  background-color: var(--trait);
+}
+
+.etape__segment--fait {
+  background-color: var(--encre);
+}
+
+.etape__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.etape__intro {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.etape__corps {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.etape__lien {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+/*
+ * La barre d'action, fixe au-dessus de la marge système.
+ *
+ * Elle occupe la place de la barre du bas, qui s'efface sur ces écrans : deux
+ * barres empilées, ce sont cent vingt pixels de chrome sous le pouce et deux
+ * réponses à « comment je sors d'ici ? ». La sortie est un lien souligné, à
+ * gauche : sortir doit être aussi lisible qu'avancer.
+ */
+.barre-action {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  border-top: var(--bordure);
+  background-color: var(--papier);
+  padding: var(--e-3) var(--marge-page);
+  padding-bottom: calc(var(--e-3) + var(--bas-securise));
+}
+
+.barre-action__sortie {
+  min-height: var(--cible);
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-base);
+}
+
+.barre-action__sortie:hover {
+  color: var(--encre);
+}
+
+/*
+ * L'action principale est plus haute que la cible minimale : c'est le seul
+ * bouton de l'écran, il est à portée de pouce, et sa hauteur dit qu'il conclut
+ * la page.
+ */
+.barre-action__principale {
+  min-height: var(--h-action);
+  /*
+   * Toujours à droite, sortie ou pas. La dernière étape n'a rien à sauter et
+   * n'affiche donc pas de lien de sortie ; sans cette marge, `space-between`
+   * ramènerait l'action à gauche et le bouton changerait de place entre deux
+   * écrans du même parcours.
+   */
+  margin-left: auto;
+  flex: 0 1 auto;
+  padding-inline: var(--e-5);
+}
+
+/* -------------------------------------------------------- exemples ----- */
+
+.exemples {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.exemples__liste {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/*
+ * Un exemple est touchable, pas décoratif : il remplit le champ. D'où la
+ * cible, et d'où le fait qu'il ne ressemble pas à une étiquette.
+ */
+.pilule {
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  border: var(--bordure);
+  border-radius: var(--r-pilule);
+  background-color: var(--surface);
+  padding-inline: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  transition: background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.pilule:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+/* ------------------------------------------------- rangées de choix ---- */
+
+.choix {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.choix > * {
+  border-bottom: var(--bordure);
+}
+
+/*
+ * Une rangée de choix : on désigne, on ne tape pas. Elle dépasse la cible
+ * minimale — c'est une liste qu'on parcourt du pouce, et 44px collés les uns
+ * aux autres se visent mal.
+ */
+.choix__rangee {
+  display: flex;
+  width: 100%;
+  min-height: var(--h-rangee);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+  text-align: left;
+}
+
+.choix__rangee:hover {
+  background-color: var(--surface-survol);
+}
+
+.choix__nom {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.choix__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+.choix__coche {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* Le rythme déplie sa frise : on choisit un rythme, pas un mot (section 8.7). */
+.choix__rythme {
+  display: flex;
+  width: 100%;
+  min-height: var(--h-rangee);
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  padding-block: var(--e-3);
+  text-align: left;
+}
+
+.choix__rythme--actif {
+  color: var(--encre);
+}
+
+.choix__entete {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: var(--e-3);
+}
+
+.choix__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
 /* ======================================================== formulaire === */
 
 .formulaire {

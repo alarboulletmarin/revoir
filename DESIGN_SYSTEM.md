@@ -329,6 +329,8 @@ La coque a **deux barres**, et chacune a son emploi.
 
 En **bas**, fixe, la navigation : les trois vues — Aujourd'hui, Calendrier, Suivi —, l'icône au-dessus de son mot (section 8.18). En bas parce que c'est là que le pouce arrive : l'application s'installe et se tient d'une main, et le geste central — cocher — se fait justement du pouce.
 
+**Elle s'efface là où une barre d'action fixe prend le relais** (section 8.22) : les trois vues ne changent ni de nombre, ni d'ordre, ni de comportement, elles ne s'empilent simplement pas sous une seconde barre. Empiler 52 px d'action sur 58 px de navigation et la marge système, ce sont cent vingt pixels de chrome sous le pouce et deux réponses à « comment je sors d'ici ? ». Ces écrans-là sont un parcours à sortir, pas une vue à quitter : ils ont un retour en haut et une sortie écrite en bas à gauche.
+
 En **haut**, collant, la coque : à gauche le logotype sur une vue, le retour partout ailleurs (section 8.19) ; à droite l'aide et les réglages. Ce sont les **deux seuls liens de l'app réduits à leur signe** (sections 8.14 et 8.16). Ni l'un ni l'autre n'est une vue, et une quatrième part dans la barre du bas ferait tomber chaque libellé sous 72px à 320px.
 
 Une seule chose à gauche de l'en-tête, jamais deux : la marque et le retour mènent tous deux en arrière — l'une vers la racine, l'autre vers l'écran précédent — et les afficher ensemble donnerait deux réponses à la même question. La barre du bas, elle, reste là dans les deux cas : c'est ce qui rend l'effacement de la marque sans conséquence.
@@ -820,6 +822,34 @@ Chacun est une **bascule** : le gabarit de radios natifs habillés en segments q
 **Chaque langue se nomme dans sa propre langue** : « Français », « English ». Quelqu'un qui ouvre l'application dans une langue qu'il ne lit pas doit pouvoir y reconnaître la sienne.
 
 Ni l'un ni l'autre n'appartient aux données : ils ne s'exportent pas, ne s'importent pas, ne se synchronisent pas. Un fichier de sauvegarde décrit des révisions, pas l'écran sur lequel on les lit. Ils vivent dans `localStorage`, et une écriture qui échoue n'est pas une erreur : en navigation privée l'application marche, elle oublie simplement le choix d'une visite à l'autre. Les deux blocs le disent.
+
+---
+
+### 8.22 La création, en trois pages
+
+**Une question par écran, et rien d'écrit avant la dernière.**
+
+Le formulaire d'un seul écran demandait quatre choses à la fois — un titre, une catégorie, une date, un programme — à quelqu'un qui, la première fois, n'en connaît aucune. Trois pages posent les questions dans l'ordre où elles se répondent, et chacune tient dans un écran sans défilement.
+
+Adresses : `/nouveau/titre`, `/nouveau/categorie`, `/nouveau/rythme`. `/nouveau` reste valide et ouvre la première — le bouton « + » y mène, et des raccourcis d'écran d'accueil peuvent y pointer.
+
+| Étape | Question | Sortie | Action |
+|---|---|---|---|
+| 1 | Qu'est-ce que vous voulez revoir ? | « Plus tard », vers Aujourd'hui | Continuer |
+| 2 | Dans quelle catégorie ? | « Passer », vers l'étape 3 | Continuer |
+| 3 | À quel rythme ? | — | Créer le sujet |
+
+**La deuxième a une sortie parce que la catégorie est facultative** : un sujet sans catégorie est un état normal, pas un oubli à réparer. « Passer » mène à l'étape suivante et non hors du parcours — sauter une question n'est pas abandonner. La troisième n'a pas de sortie : il n'y a plus rien à sauter, et un « Passer » y voudrait dire « créer », ce que le bouton dit déjà. L'action reste à droite dans les deux cas, pour ne pas changer de place d'un écran à l'autre du même parcours.
+
+**Trois segments de 2px** en haut, pas une barre de progression : on ne mesure pas un avancement en pourcentage quand il y a trois questions, on les compte. Le compte est aussi écrit dans l'en-tête, à la place de l'aide et des réglages — ouvrir les réglages au milieu d'une saisie abandonnerait le parcours, et le retour de gauche suffit à en sortir.
+
+**Le brouillon vit dans le `sessionStorage`**, pas dans un contexte React. Ces pages ont des adresses, et une adresse se recharge : un onglet rafraîchi au milieu de l'étape 2 perdrait le titre saisi à l'étape 1 sans que rien ne l'annonce. Il meurt avec l'onglet — la durée de vie exacte d'un brouillon, et la raison pour laquelle ce n'est pas `localStorage` : un sujet abandonné il y a trois semaines n'a pas à ressurgir dans un formulaire vide. La validation de ce qu'on en relit vit dans `lib/brouillon.ts`, avec ses tests : ce qui sort d'un stockage est une donnée extérieure.
+
+**L'étape 3 se garde elle-même.** Ouverte sans titre — un favori, un onglet restauré —, elle renvoie à la question qui manque plutôt que d'offrir un bouton qui échouerait.
+
+**Ce qui n'est pas passé aux trois pages** : la modification d'un sujet et la duplication gardent le formulaire d'un seul écran. Dérouler trois pages pour changer un titre serait une régression, et une duplication arrive déjà remplie.
+
+**La barre d'action est fixe, et la barre du bas s'efface** (section 7.3). La sortie est un lien souligné à gauche, jamais un bouton gris : sortir doit être aussi lisible qu'avancer, et une sortie qu'on ne trouve pas est une impasse.
 
 ---
 

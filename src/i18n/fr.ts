@@ -383,6 +383,59 @@ export const fr = {
     toastDesarchive: 'Sujet désarchivé',
   },
 
+  creation: {
+    /** L'étape, dans l'en-tête. « n / 3 », en chiffres : c'est un compteur. */
+    etape: (rang: number, total: number) => `étape ${rang} / ${total}`,
+    etapeIntitule: (rang: number, total: number) =>
+      `Création d’un sujet, étape ${rang} sur ${total}`,
+    /** La sortie de l'étape 1 : rien n'a été écrit, il n'y a rien à annuler. */
+    plusTard: 'Plus tard',
+    passer: 'Passer',
+    continuer: 'Continuer',
+    creer: 'Créer le sujet',
+
+    titre: {
+      question: 'Qu’est-ce que vous voulez revoir ?',
+      intro:
+        'Un sujet, pas une matière. Revoir en garde le titre — jamais le contenu.',
+      champ: 'Titre',
+      exemple: 'Les dérivées, les accords majeurs…',
+      erreur:
+        'Le titre est obligatoire — écrivez ce que vous voulez revoir pour continuer.',
+      exemplesIntitule: 'Ou partir d’un exemple',
+      exemples: [
+        'les dérivées',
+        'les accords majeurs',
+        'le vocabulaire du voyage',
+        'les règles de priorité',
+      ],
+      rassurance:
+        'Rien n’est enregistré avant la dernière étape. Vous pouvez revenir en arrière à tout moment.',
+    },
+
+    categorie: {
+      question: 'Dans quelle catégorie ?',
+      intro: (titre: string) =>
+        `« ${titre} » ira rejoindre l’une d’elles. Facultatif : un sujet sans catégorie est un état normal.`,
+      introSansTitre:
+        'Facultatif : un sujet sans catégorie est un état normal.',
+      aucune: 'Sans catégorie',
+      nouvelle: 'Nouvelle catégorie',
+      compte: (nombre: number) =>
+        nombre === 0 ? 'aucun' : `${nombre} sujet${s(nombre)}`,
+      note:
+        'La couleur appartient à la catégorie, pas au sujet : elle se règle sur l’écran des catégories, et la changer la change partout.',
+    },
+
+    rythme: {
+      question: 'À quel rythme ?',
+      depart: (date: string) => `Départ aujourd’hui, ${date}.`,
+      composer: 'Composer un rythme',
+      composerAide: 'graduation par graduation',
+      apercu: 'Dates générées · charge déjà prévue',
+    },
+  },
+
   sujetForm: {
     titreCreation: 'Nouveau sujet',
     titreEdition: 'Modifier le sujet',

@@ -17,7 +17,22 @@ import { estRacine, useRetour } from '../state/useRetour'
  * seule des deux formes laisserait le bouton flotter sur un formulaire.
  */
 function fabVisible(pathname: string): boolean {
-  return !/\/(nouveau|nouvelle|modifier)$/.test(pathname)
+  return !/\/(nouveau|nouvelle|modifier)$/.test(pathname) && etapeCreation(pathname) === null
+}
+
+/** Les trois questions de la création, dans l'ordre où elles se posent. */
+const ETAPES = ['/nouveau/titre', '/nouveau/categorie', '/nouveau/rythme']
+
+/**
+ * Le rang de l'étape de création en cours, ou null hors du parcours.
+ *
+ * Il est lu du chemin plutôt que remonté par la page. Un contexte pour trois
+ * mots dans un en-tête coûterait un fournisseur, un abonnement et un état à
+ * synchroniser ; le chemin, lui, est déjà là et il est déjà juste.
+ */
+function etapeCreation(pathname: string): number | null {
+  const rang = ETAPES.indexOf(pathname)
+  return rang === -1 ? null : rang + 1
 }
 
 /**
@@ -50,6 +65,7 @@ export function Layout() {
   useRemonterEnHaut(pathname)
 
   const racine = estRacine(pathname)
+  const etape = etapeCreation(pathname)
 
   return (
     <div className="appli">
@@ -94,37 +110,48 @@ export function Layout() {
           Les deux seuls liens de l'app réduits à un signe. Le mot reste lu par
           les lecteurs d'écran et s'affiche au survol : un signe sans nom n'est
           pas un signe, c'est une devinette.
-        */}
-        <div className="appli__outils">
-          {/*
-            Un point d'interrogation composé, pas une dixième icône : la
-            section 11 arrête la liste des signes dessinés, et un « ? » est une
-            lettre. Il dit déjà ce qu'aucun dessin ne dirait mieux.
-          */}
-          <NavLink
-            to="/aide"
-            aria-label={t.coque.aide}
-            title={t.coque.aide}
-            className={({ isActive }) =>
-              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
-            }
-          >
-            <span className="appli__aide" aria-hidden="true">
-              ?
-            </span>
-          </NavLink>
 
-          <NavLink
-            to="/reglages"
-            aria-label={t.coque.reglages}
-            title={t.coque.reglages}
-            className={({ isActive }) =>
-              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
-            }
-          >
-            <IconeReglages width="20" height="20" />
-          </NavLink>
-        </div>
+          Pendant la création, ils cèdent tous deux la place au compteur
+          d'étape. Ce ne sont pas des sorties de secours : ouvrir les réglages
+          au milieu d'une saisie abandonnerait le parcours, et le retour de
+          gauche suffit à en sortir.
+        */}
+        {etape !== null ? (
+          <p className="appli__etape chiffres">
+            {t.creation.etape(etape, ETAPES.length)}
+          </p>
+        ) : (
+          <div className="appli__outils">
+            {/*
+              Un point d'interrogation composé, pas une dixième icône : la
+              section 11 arrête la liste des signes dessinés, et un « ? » est
+              une lettre. Il dit déjà ce qu'aucun dessin ne dirait mieux.
+            */}
+            <NavLink
+              to="/aide"
+              aria-label={t.coque.aide}
+              title={t.coque.aide}
+              className={({ isActive }) =>
+                isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+              }
+            >
+              <span className="appli__aide" aria-hidden="true">
+                ?
+              </span>
+            </NavLink>
+
+            <NavLink
+              to="/reglages"
+              aria-label={t.coque.reglages}
+              title={t.coque.reglages}
+              className={({ isActive }) =>
+                isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+              }
+            >
+              <IconeReglages width="20" height="20" />
+            </NavLink>
+          </div>
+        )}
       </header>
 
       <main className="page" id="contenu">
@@ -142,7 +169,13 @@ export function Layout() {
         </Link>
       )}
 
-      <NavBar />
+      {/*
+        La barre du bas s'efface là où une barre d'action fixe prend le relais
+        (section 7.3). Les trois vues ne changent ni de nombre, ni d'ordre, ni
+        de comportement : elles ne s'empilent simplement pas sous une seconde
+        barre, ce qui coûterait cent vingt pixels de chrome sous le pouce.
+      */}
+      {etape === null && <NavBar />}
 
       <UpdatePrompt />
     </div>

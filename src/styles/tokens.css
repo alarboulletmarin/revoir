@@ -123,6 +123,24 @@
    */
   --cible: 44px;
   --bas-securise: env(safe-area-inset-bottom, 0px);
+
+  /*
+   * Hauteur d'une rangée de choix. Au-dessus de la cible minimale : c'est une
+   * liste qu'on parcourt du pouce, et des cibles de 44 px collées les unes aux
+   * autres se visent mal — la marge d'erreur du doigt est plus large que
+   * l'écart entre deux rangées.
+   */
+  --h-rangee: 52px;
+
+  /*
+   * Hauteur de l'action qui conclut une page. Elle dépasse la cible parce
+   * qu'elle est seule de son espèce sur l'écran, en bas, à portée de pouce :
+   * sa hauteur dit qu'elle termine quelque chose.
+   */
+  --h-action: 52px;
+
+  /* Épaisseur d'un segment d'avancement (section 8.22). */
+  --segment-etape: 2px;
   --h-fab: 56px;
   /* Hauteur utile de la barre du bas : icône, libellé, et l'air autour. */
   --h-nav: 58px;
@@ -131,6 +149,16 @@
   --bas-fab: calc(var(--pile-nav) + var(--e-3));
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
+
+  /*
+   * Ce qu'une page à barre d'action fixe doit réserver sous son contenu. La
+   * barre du bas ne s'y affiche pas : la purge se calcule sur la barre
+   * d'action seule, et non sur les deux, sans quoi la page finirait sur un
+   * grand vide.
+   */
+  --purge-action: calc(
+    var(--h-action) + var(--e-3) + var(--e-3) + var(--bas-securise) + var(--e-5)
+  );
 
   color-scheme: light;
 }

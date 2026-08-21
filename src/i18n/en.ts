@@ -366,6 +366,48 @@ export const en: Dictionnaire = {
     toastDesarchive: 'Topic unarchived',
   },
 
+  creation: {
+    etape: (rang: number, total: number) => `step ${rang} / ${total}`,
+    etapeIntitule: (rang: number, total: number) =>
+      `Creating a topic, step ${rang} of ${total}`,
+    plusTard: 'Later',
+    passer: 'Skip',
+    continuer: 'Continue',
+    creer: 'Create topic',
+
+    titre: {
+      question: 'What do you want to review?',
+      intro: 'A topic, not a subject. Revoir keeps its title — never its content.',
+      champ: 'Title',
+      exemple: 'Derivatives, major chords…',
+      erreur: 'A title is required — write what you want to review to continue.',
+      exemplesIntitule: 'Or start from an example',
+      exemples: ['derivatives', 'major chords', 'travel vocabulary', 'right of way rules'],
+      rassurance:
+        'Nothing is saved before the last step. You can go back at any time.',
+    },
+
+    categorie: {
+      question: 'Which category?',
+      intro: (titre: string) =>
+        `“${titre}” will join one of them. Optional: a topic without a category is a normal state.`,
+      introSansTitre: 'Optional: a topic without a category is a normal state.',
+      aucune: 'No category',
+      nouvelle: 'New category',
+      compte: (nombre: number) => (nombre === 0 ? 'none' : `${nombre} topic${s(nombre)}`),
+      note:
+        'The colour belongs to the category, not to the topic: it is set on the categories screen, and changing it changes it everywhere.',
+    },
+
+    rythme: {
+      question: 'At what pace?',
+      depart: (date: string) => `Starting today, ${date}.`,
+      composer: 'Compose a pace',
+      composerAide: 'one graduation at a time',
+      apercu: 'Generated dates · load already scheduled',
+    },
+  },
+
   sujetForm: {
     titreCreation: 'New topic',
     titreEdition: 'Edit topic',

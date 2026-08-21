@@ -4,6 +4,15 @@
 
 ## Non publié
 
+### Changé — la création d'un sujet
+
+- **Créer un sujet se fait en trois pages, une question par écran.** Le formulaire demandait quatre choses à la fois — un titre, une catégorie, une date, un programme — à quelqu'un qui, la première fois, n'en connaît aucune. Les questions se posent maintenant dans l'ordre où elles se répondent, chacune tient dans un écran, et un retour est toujours possible.
+- **Rien n'est enregistré avant la dernière étape**, et la première page le dit. Ce qui a été répondu survit au rechargement de la page mais pas à la fermeture de l'onglet : c'est un brouillon, pas un sujet abandonné qui ressurgirait dans trois semaines.
+- **La catégorie se passe.** Elle est facultative, un sujet sans catégorie est un état normal, et « Passer » mène à la question suivante plutôt que hors du parcours.
+- **Le titre se prend dans un exemple.** « Sujet » est un mot large, et personne ne sait à froid s'il faut y écrire « Mathématiques » ou « les dérivées » : quatre exemples se touchent et remplissent le champ.
+- Modifier un sujet et le dupliquer gardent le formulaire d'un seul écran : dérouler trois pages pour changer un titre serait une régression, et une duplication arrive déjà remplie.
+- Sur ces trois pages, la barre des trois vues cède la place à la barre d'action. Les vues ne changent pas ; elles ne s'empilent simplement pas sous une seconde barre, ce qui prenait cent vingt pixels sous le pouce et donnait deux réponses à « comment je sors d'ici ? ».
+
 ### Changé — l'écran « Aujourd'hui »
 
 - **Une règle graduée remplace les trois cartes du tableau de bord.** La journée, le retard et la charge des quinze jours se disputaient la même question en trois blocs de même poids, et il fallait choisir lequel y répondait. Il y a maintenant un seul objet à balayer : quatorze jours, une graduation par jour, sa hauteur donne la charge, et le jour courant s'y trouve sans être cherché. Le retard se lit sous l'axe et propose de le rattraper ; ce qui reste à faire est écrit en toutes lettres au-dessus, en titre.
