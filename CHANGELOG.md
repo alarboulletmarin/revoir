@@ -4,6 +4,13 @@
 
 ## Non publié
 
+### Changé — l'écriture de l'interface
+
+- **L'application prend une voix.** Les titres, les étiquettes et les chiffres ne s'écrivent plus dans la police que le système voulait bien donner — SF Pro ici, Roboto là, Segoe ailleurs, trois dessins pour un même écran. Arial est nommée en tête, avec Liberation Sans pour repli sur Linux, dont les chasses sont les siennes. Rien n'est téléchargé pour autant : c'est un nom, pas un fichier, et l'application continue de ne faire aucun appel réseau.
+- **Les chiffres tiennent leur colonne.** Les dates, les compteurs et les décalages passent en chasse fixe, celle du système. Une échéance ne se décale plus d'un pixel par rapport à celle du dessus, et un compteur ne saute plus quand il change.
+- **Le logotype s'écrit en capitales ouvertes**, à côté de sa règle graduée. C'est une marque, pas une phrase : ce que lit un lecteur d'écran reste le mot « Revoir ».
+- Les titres gagnent une graisse et une chasse resserrée, et l'échelle typographique gagne trois crans nommés par ce qu'ils ouvrent — un écran, une page, un bloc — plutôt que par leur rang dans une suite.
+
 ### Changé — licence
 
 - **Revoir passe de la licence MIT à l'AGPL-3.0.** La MIT laissait reprendre le code dans un produit fermé et payant sans rien rendre ; l'AGPL demande que toute version modifiée reste libre, y compris quand elle n'est qu'hébergée pour d'autres. L'usage, la modification et l'hébergement restent libres, commerce compris : ce qui change, c'est qu'on ne peut plus refermer ce qui part d'ici. Les réglages affichent désormais la version et le commit exact du build à côté du lien vers le code source : c'est ce que l'article 13 demande d'une application qu'on atteint par le réseau.

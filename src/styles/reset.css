@@ -100,9 +100,20 @@ a {
   text-decoration: none;
 }
 
-/* Chiffres tabulaires : non négociable (section 4). */
+/*
+ * Le rôle « chiffres » (section 4), posé sur les deux éléments qui ne portent
+ * jamais autre chose : une date et une valeur calculée.
+ *
+ * `font-size: 1em` n'est pas une précaution de style. Une famille qui retombe
+ * sur le générique `monospace` fait appliquer aux navigateurs leur taille de
+ * police à chasse fixe par défaut — 13 px chez la plupart —, et une date se
+ * mettrait à rapetisser au milieu de sa ligne. La taille est donc réaffirmée
+ * comme celle du parent, quelle qu'elle soit.
+ */
 time,
 output {
+  font-family: var(--police-chiffres);
+  font-size: 1em;
   font-variant-numeric: tabular-nums;
 }
 

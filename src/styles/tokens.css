@@ -19,20 +19,35 @@
   --fait-texte: #4F6E50;
 
   /*
-   * Typographie — pile système, zéro octet téléchargé.
+   * Typographie — trois rôles, zéro octet téléchargé.
    *
    * `--police-titre` nommait « Instrument Sans » sans que personne ne la
-   * charge : ni `@font-face`, ni fichier dans `/public`, ni lien. Tous les
-   * titres tombaient donc déjà sur la pile système, et la spécification
-   * décrivait une police que l'application n'a jamais servie. Entre embarquer
-   * un woff2 et dire ce qui se passe vraiment, la section 4 tranche pour la
-   * seconde : « le design tient, il perd juste un peu de caractère ».
+   * charge : ni `@font-face`, ni fichier dans `/public`, ni lien. La question
+   * s'est reposée à la refonte, et la réponse n'a pas changé : rien n'est
+   * téléchargé, parce qu'aucun appel réseau n'a lieu à l'exécution. Le
+   * caractère vient d'ailleurs — d'Arial nommée en tête de pile, de deux
+   * graisses tenues, et de chasses réglées plutôt que laissées par défaut.
    *
-   * Les deux variables restent distinctes : les rôles n'ont pas fusionné, et
-   * une police de titres se réintroduira ici, à un seul endroit.
+   * Arial d'abord, la pile système ensuite. Ce n'est pas une police
+   * téléchargée : c'est un nom présent sur tout ce qui n'est pas Linux, et sur
+   * Linux le repli tombe sur Liberation Sans, dont les chasses sont
+   * identiques. Nommer Arial plutôt que `system-ui` évite qu'un même écran
+   * s'écrive en SF Pro sur un appareil, en Roboto sur un autre, en Segoe sur
+   * un troisième : trois dessins qui ne portent pas le même titre à −0,035 em.
+   *
+   * `--police-chiffres` est le troisième rôle, et il est nouveau. Les chiffres,
+   * les dates et les compteurs de l'application se lisent en colonne — la règle
+   * des quinze jours, les échéances d'une fiche, les comptes d'une liste — et
+   * une chasse variable les décale les uns par rapport aux autres. La pile
+   * système suffit : le dessin change d'un système à l'autre, la chasse fixe,
+   * elle, est garantie partout, et c'est elle qu'on vient chercher.
+   * `font-variant-numeric: tabular-nums` reste posé avec (section 4) : la
+   * chasse fixe aligne les colonnes, les chiffres tabulaires empêchent un
+   * compteur de sauter quand il change.
    */
-  --police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --police-titre: Arial, Helvetica, sans-serif;
+  --police-ui: Arial, Helvetica, sans-serif;
+  --police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;
@@ -40,6 +55,37 @@
   --t-base: 15px;
   --t-sm: 13px;
   --t-xs: 12px;
+
+  /*
+   * Les trois crans de titre de la refonte, nommés par leur rôle et non par
+   * leur rang — comme `--t-champ`, qui est un plancher et pas une taille.
+   * L'échelle `xs → xl` sert le corps de texte et ne bouge pas ; ces trois-là
+   * servent la voix de l'écran, et c'est le rôle qui décide, pas la place dans
+   * une suite.
+   *
+   * `--t-ecran` ouvre une des trois vues, `--t-page` ouvre une page qui a un
+   * retour, `--t-section` titre un bloc à l'intérieur. Un écran n'en porte
+   * jamais deux du même cran : c'est ce qui rend la hiérarchie lisible sans
+   * qu'aucune règle de couleur n'ait à s'en mêler.
+   */
+  --t-ecran: 34px;
+  --t-page: 30px;
+  --t-section: 22px;
+
+  /* Le logotype, et lui seul (section 2). */
+  --t-marque: 14px;
+
+  /*
+   * Chasses. Trois valeurs, trois emplois, et aucune improvisée sur place.
+   *
+   * Les titres se resserrent : à 34 px, l'espacement par défaut d'Arial creuse
+   * les mots et fait perdre au titre sa tenue de bloc. Les sur-titres et le
+   * logotype s'ouvrent au contraire, parce qu'ils sont courts, petits et en
+   * capitales — trois raisons de laisser respirer.
+   */
+  --chasse-titre: -0.035em;
+  --chasse-surtitre: 0.14em;
+  --chasse-marque: 0.24em;
 
   /* Espacement */
   --e-1: 4px;
@@ -128,6 +174,19 @@
   --l-sm: 1.45;
   --l-xs: 1.4;
   --l-champ: 1.4;
+
+  /*
+   * Les trois crans de titre. Ils descendent sous l'interligne du corps de
+   * texte parce qu'un titre de deux lignes à 34 px est un bloc, pas un
+   * paragraphe : au-delà de 1,1, les deux lignes cessent de se lire ensemble.
+   *
+   * `--l-section` reste au-dessus des autres, et pas par symétrie : à 22 px,
+   * un interligne de 1 rognerait les jambages et les accents d'un mois écrit
+   * en français — « août » y perd son accent circonflexe avant tout le reste.
+   */
+  --l-ecran: 1.08;
+  --l-page: 1.1;
+  --l-section: 1.2;
 
   /* Marge de page et largeur de lecture (section 5). */
   --marge-page: var(--e-4);

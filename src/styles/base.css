@@ -79,9 +79,21 @@
   gap: var(--e-2);
   color: var(--encre);
   font-family: var(--police-titre);
-  font-size: var(--t-md);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: var(--t-marque);
+  font-weight: 700;
+  /*
+   * Le mot du logotype, en capitales ouvertes.
+   *
+   * La casse forcée est proscrite partout ailleurs (section 11), et pour une
+   * raison qui tient : le français accentué en capitales se lit mal. Elle ne
+   * s'applique ici qu'à un mot de six lettres sans accent, écrit une fois par
+   * écran, qui n'est pas du texte mais une marque — la même que celle posée
+   * sur l'écran d'accueil. Le DOM garde « Revoir » en casse normale : c'est le
+   * mot que lit un lecteur d'écran, pas six lettres épelées.
+   */
+  text-transform: uppercase;
+  letter-spacing: var(--chasse-marque);
+  line-height: 1;
 }
 
 /*
@@ -309,7 +321,14 @@
   line-height: var(--l-sm);
 }
 
+/*
+ * Le rôle « chiffres » pour ce qui n'est ni un `<time>` ni un `<output>` :
+ * un « J+7 », un « 3 / 5 », un compte au bout d'une rangée. Même paire que
+ * dans le reset, et la taille réaffirmée pour la même raison.
+ */
 .chiffres {
+  font-family: var(--police-chiffres);
+  font-size: 1em;
   font-variant-numeric: tabular-nums;
 }
 

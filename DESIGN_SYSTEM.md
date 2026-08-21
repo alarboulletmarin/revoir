@@ -191,39 +191,76 @@ L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et l
 
 ## 4. Typographie
 
-Deux rôles, deux familles.
+Trois rôles, deux familles.
 
 ```css
---police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
---police-ui:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+--police-titre:    Arial, Helvetica, sans-serif;
+--police-ui:       Arial, Helvetica, sans-serif;
+--police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
 ```
 
-- **`--police-titre`** : chiffres du bento, titres de page, titres de sujets.
+- **`--police-titre`** : titres d'écran, de page, de section, titres de sujets, logotype.
 - **`--police-ui`** : tout le reste.
+- **`--police-chiffres`** : chiffres, dates, compteurs, décalages `J+n`.
 
-**Deux rôles, une seule famille : la pile système.** Zéro octet téléchargé, rendu natif, aucune bascule au chargement.
+**Zéro octet téléchargé, et aucun appel réseau.** C'est la contrainte du projet, pas une préférence, et elle n'a pas bougé.
 
-Cette section a longtemps décrit une autre réalité : « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé : aucun `@font-face`, aucun lien, aucun fichier. Tous les titres tombaient déjà sur la pile système, et la spécification décrivait une police que l'application n'a jamais servie. Elle dit maintenant ce qui se passe.
+Cette section a longtemps décrit une autre réalité : « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé. La question s'est reposée à la refonte — embarquer un woff2 local, ou tenir la pile système — et la réponse est restée la seconde. Ce qui change, c'est que le caractère ne se cherche plus dans un fichier de police : il vient d'**Arial nommée en tête de pile**, de **deux graisses tenues** et de **chasses réglées**.
 
-Les deux variables restent distinctes, bien qu'elles vaillent la même chose : les rôles n'ont pas fusionné. Une police de titres se réintroduit ici, en un seul endroit, auto-hébergée, jamais appelée à un CDN, et sa licence versée à `THIRD-PARTY.txt` comme celle de toute autre dépendance.
+**Pourquoi Arial et non `system-ui`.** `system-ui` n'est pas un dessin, c'est un renvoi : SF Pro sur un appareil, Roboto sur un autre, Segoe UI sur un troisième. Trois dessins qui ne portent pas le même titre à −0,035 em, et un design qu'on ne peut ni régler ni vérifier. Arial est présente partout sauf sur Linux, où le repli tombe sur Liberation Sans, dessinée à ses chasses exactes. Rien n'est téléchargé : c'est un nom, pas un fichier.
+
+**Pourquoi une chasse fixe pour les chiffres.** Ils se lisent en colonne dans cette application — les quinze jours de la règle, les échéances d'une fiche, les comptes au bout des rangées —, et une chasse variable les décale les uns par rapport aux autres. La pile système suffit : son dessin change d'un système à l'autre, sa chasse fixe est garantie partout, et c'est elle qu'on vient chercher. Le rôle est posé à deux endroits, jamais recopié ailleurs : `time, output` dans le reset, et l'utilitaire `.chiffres` pour ce qui n'est ni l'un ni l'autre. Les deux réaffirment `font-size: 1em`, sans quoi le générique `monospace` ferait appliquer au texte la taille par défaut du navigateur — 13 px chez la plupart.
 
 ### Échelle
 
+Deux échelles, et elles ne servent pas la même chose. Celle du corps de texte est nommée par son rang, celle des titres par son rôle : un titre ne se choisit pas par sa place dans une suite mais par ce qu'il ouvre.
+
 | Token | Taille / interligne | Usage |
 |---|---|---|
+| `--t-ecran` | 34px / 1,08 | titre d'une des trois vues |
+| `--t-page` | 30px / 1,1 | titre d'une page qui a un retour |
+| `--t-section` | 22px / 1,2 | titre d'un bloc dans une page |
+| `--t-marque` | 14px / 1 | le logotype, et lui seul |
 | `--t-champ` | 16px / 1,4 | **valeur plancher des champs de saisie** (anti-zoom iOS) |
-| `--t-xl` | 28px / 1,15 | chiffres des cellules, titre de la cellule du jour |
-| `--t-lg` | 20px / 1,3 | titre de page, titre de fiche |
+| `--t-xl` | 28px / 1,15 | grands chiffres |
+| `--t-lg` | 20px / 1,3 | titre secondaire |
 | `--t-md` | 17px / 1,4 | titre de sujet dans une liste |
 | `--t-base` | 15px / 1,5 | texte courant |
-| `--t-sm` | 13px / 1,45 | labels de cellules, métadonnées |
-| `--t-xs` | 12px / 1,4 | graduations de la frise, catégories |
+| `--t-sm` | 13px / 1,45 | métadonnées |
+| `--t-xs` | 12px / 1,4 | sur-titres, graduations, catégories |
 
-Trois graisses seulement : 400 (courant), 500 (labels, boutons), 600 (chiffres, titres). Jamais de 700.
+**12px est un plancher absolu**, jamais franchi vers le bas.
 
-**Tous les chiffres, dates et compteurs** portent `font-variant-numeric: tabular-nums`. Non négociable : sans ça, les compteurs sautent à chaque validation.
+Un écran ne porte jamais deux titres du même cran : c'est ce qui rend sa hiérarchie lisible sans qu'aucune couleur n'ait à s'en mêler.
 
-Labels de cellules : 13px, poids 500, `letter-spacing: 0.02em`, en casse normale. **Pas de majuscules forcées** : le français accentué en capitales est laid et moins lisible.
+### Graisses
+
+Quatre, et pas une de plus : 400 (courant), 500 (labels, boutons), 600 (chiffres, états actifs), **700 (titres et logotype, et rien d'autre)**.
+
+Le 700 était interdit, et l'interdit disait quelque chose de juste : une graisse de plus est une nuance de plus à distinguer, et un écran qui compte quatre poids n'en hiérarchise aucun. Il tombe pour une raison plus forte. La refonte fait porter la voix de l'écran à un seul titre — plus de cellule pleine, plus de carte en couleur —, et à 34 px resserré à −0,035 em, c'est le poids du titre qui tient le bloc. Le 600 d'Arial y rend un titre mou, qui ne dit pas qu'il est le premier objet de l'écran. Le 700 ne se répand pas pour autant : il est réservé aux trois crans de titre et au logotype, et il est absent de tout ce qui n'est pas un titre.
+
+### Chasses
+
+```css
+--chasse-titre:    -0.035em;   /* les trois crans de titre */
+--chasse-surtitre:  0.14em;    /* sur-titres, 12px, capitales */
+--chasse-marque:    0.24em;    /* le logotype */
+```
+
+Les titres se resserrent parce qu'à 34 px l'espacement par défaut d'Arial creuse les mots et fait perdre au titre sa tenue de bloc. Les sur-titres et le logotype s'ouvrent au contraire : ils sont courts, petits et en capitales, trois raisons de laisser respirer.
+
+### Capitales
+
+**La casse forcée reste proscrite dans le texte**, et pour la raison d'origine : le français accentué en capitales est laid et moins lisible. Les labels, les libellés de boutons, les titres et les métadonnées s'écrivent en casse normale.
+
+Elle est admise à deux endroits, tous deux hors du texte :
+
+1. **Le logotype.** Six lettres sans accent, une fois par écran, une marque et non une phrase. Le DOM garde « Revoir » en casse normale : c'est le mot que lit un lecteur d'écran, pas six lettres épelées.
+2. **Les sur-titres**, à 12 px, en `--encre-2`, ouverts à 0,14 em : « vendredi 21 août », « les quinze jours », « ensuite ». Ce sont des étiquettes de section de quelques mots, pas des phrases, et l'ouverture de la chasse compense très largement ce que la capitale coûte en lisibilité à cette taille. Un sur-titre ne porte jamais d'information qu'on ne retrouve pas dessous.
+
+Hors de ces deux emplois, `text-transform: uppercase` est un défaut.
+
+**Tous les chiffres, dates et compteurs** portent `font-variant-numeric: tabular-nums`, en plus de la chasse fixe. Non négociable : la chasse fixe aligne les colonnes, les chiffres tabulaires empêchent un compteur de sauter quand il change.
 
 ---
 
@@ -846,13 +883,17 @@ Une seule langue est active à la fois dans un onglet ; elle vit donc dans un mo
 
 ## 11. Interdits
 
-Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées dans le texte · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
 
 Le « ? » de l'aide (section 8.16) n'entame pas le compte : c'est une lettre cerclée, pas un signe dessiné. La règle vise les dessins qu'il faut apprendre à lire, et l'alphabet n'en fait pas partie.
 
-**Deux interdits sont tombés, et il faut dire pourquoi.**
+**Quatre interdits sont tombés, et il faut dire pourquoi.**
 
 Le **thème sombre** était interdit pour une bonne raison — une palette de huit valeurs se double, se remesure et se maintient en double — et pour une mauvaise : l'application s'installe et s'ouvre le soir, sur un appareil que son propriétaire a déjà réglé en sombre, et lui répondre par un écran crème est une décision prise à sa place. Il est donc autorisé sous les conditions de la section 3 ter : deux apparences seulement, contrastes remesurés, et la même palette de huit valeurs, pas une de plus.
+
+La **graisse 700** entre, pour les titres et le logotype seuls (section 4). L'interdit tenait tant que la voix de l'écran était portée par une cellule pleine `--accent` : le titre n'avait pas à crier, la couleur le faisait pour lui. La refonte retire cette cellule et fait porter la hiérarchie à un seul titre, à 34 px resserré ; à ce format, le 600 d'Arial rend un titre mou, qui ne dit pas qu'il est le premier objet de l'écran. Le 700 ne va nulle part ailleurs : ni bouton, ni label, ni métadonnée.
+
+Les **majuscules forcées** entrent au logotype et aux sur-titres, et nulle part ailleurs (section 4). La raison de l'interdit — le français accentué en capitales se lit mal — vaut pour du texte : elle ne vaut pas pour un mot de six lettres sans accent, ni pour une étiquette de section de 12 px ouverte à 0,14 em qui ne porte aucune information absente de ce qu'elle surmonte. Dans le texte, la casse forcée reste un défaut.
 
 Les **icônes** passent de sept à neuf, et pas d'une de plus. Les deux ajoutées — jour et suivi — servent la barre du bas, où les trois vues portent leur signe au-dessus de leur mot (section 8.18). Elles ne remplacent aucun libellé : le mot reste écrit sous chacune. Ce qui n'est toujours pas dans la liste s'écrit en toutes lettres.
 
@@ -883,8 +924,16 @@ Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-tab
   --fait-texte: #4F6E50;
 
   /* Typographie */
-  --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --police-titre: Arial, Helvetica, sans-serif;
+  --police-ui: Arial, Helvetica, sans-serif;
+  --police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --t-ecran: 34px;
+  --t-page: 30px;
+  --t-section: 22px;
+  --t-marque: 14px;
+  --chasse-titre: -0.035em;
+  --chasse-surtitre: 0.14em;
+  --chasse-marque: 0.24em;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;
