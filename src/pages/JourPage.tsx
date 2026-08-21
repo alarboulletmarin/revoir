@@ -12,6 +12,7 @@ import { addDaysToKey, formatJourLong, type DateKey } from '../lib/dates'
 import { entriesForDate } from '../lib/stats'
 import { estFaite } from '../lib/sujets'
 import { LigneRevision } from '../components/LigneRevision'
+import { Gabarit } from '../components/Etats'
 import { Bouton } from '../components/Bouton'
 import { IconeChevron } from '../components/Icons'
 
@@ -97,7 +98,7 @@ export function JourPage() {
       </div>
 
       {loading ? (
-        <p className="discret">{t.commun.chargement}</p>
+        <Gabarit lignes={2} />
       ) : entrees.length === 0 ? (
         <p className="discret discret--petit">{t.calendrier.aucuneCeJour}</p>
       ) : (

@@ -1274,8 +1274,88 @@ body[data-panneau='ouvert'] {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-3);
+  gap: var(--e-4);
   align-items: flex-start;
+}
+
+/*
+ * Un état vide qui montre ce qui viendra plutôt qu'un écran qui constate qu'il
+ * n'y a rien (section 8.9). Encadré parce que c'est un exemple et non l'écran
+ * réel : sans cette bordure, les cinq formes passeraient pour un tableau vide.
+ */
+.etat-vide__apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+/* ==================================================== états d'écran ==== */
+
+/*
+ * Le gabarit d'attente — section 8.23. Pas de tourniquet : une lecture locale
+ * dure quelques dizaines de millisecondes, et une roue n'aurait le temps que
+ * d'apparaître. Pas de pouls non plus — ce serait une quatrième animation, et
+ * la section 6 en autorise trois.
+ */
+.gabarit__pile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.gabarit__bloc {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-gabarit);
+  background-color: var(--surface-survol);
+}
+
+.gabarit__bloc--surtitre {
+  width: var(--e-7);
+  height: var(--t-xs);
+}
+
+.gabarit__bloc--titre {
+  width: 70%;
+  height: var(--t-ecran);
+}
+
+.gabarit__bloc--regle {
+  height: var(--regle-hauteur);
+}
+
+.gabarit__bloc--ligne {
+  height: var(--h-rangee);
+}
+
+/*
+ * L'erreur de lecture. Elle prend la place du contenu : sans données, l'écran
+ * qui suivrait serait vide, et un tableau de bord à zéro se lit « vous n'avez
+ * rien » et non « je n'ai pas pu lire ».
+ */
+.erreur {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-4);
+  border: var(--trait-alerte) solid var(--retard);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+.erreur__texte {
+  min-width: 0;
+  color: var(--retard-texte);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
 }
 
 /* ===================================================== catégories ====== */

@@ -6,6 +6,7 @@ import { NavBar } from './NavBar'
 import { IconeChevron, IconePlus, IconeReglages } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
+import { ErreurLecture } from './Etats'
 import { useDonnees } from '../state/useDonnees'
 import { useTextes } from '../state/usePreferences'
 import { estRacine, useRetour } from '../state/useRetour'
@@ -155,12 +156,13 @@ export function Layout() {
       </header>
 
       <main className="page" id="contenu">
-        {error && (
-          <p className="banniere banniere--retard" role="status">
-            {error}
-          </p>
-        )}
-        <Outlet />
+        {/*
+          Une erreur de lecture n'est pas une remarque en marge : sans données,
+          l'écran qui suivrait serait vide, et un tableau de bord à zéro se lit
+          « vous n'avez rien » et non « je n'ai pas pu lire ». Elle prend donc
+          la place du contenu, et propose de réessayer (section 8.23).
+        */}
+        {error !== null ? <ErreurLecture message={error} /> : <Outlet />}
       </main>
 
       {fabVisible(pathname) && (

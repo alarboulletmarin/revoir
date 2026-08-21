@@ -81,6 +81,7 @@ export const en: Dictionnaire = {
   commun: {
     chargement: 'Loading…',
     annuler: 'Cancel',
+    reessayer: 'Try again',
     fermer: 'Close',
     supprimer: 'Delete',
     modifier: 'Edit',

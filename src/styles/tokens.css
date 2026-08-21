@@ -99,7 +99,20 @@
   /* Formes */
   --r-carte: 12px;
   --r-pilule: 999px;
+  /*
+   * Le rayon d'un bloc de gabarit. Un troisième rayon, et il se justifie : à
+   * 12 px, un bloc de la hauteur d'une ligne de texte devient une gélule et
+   * cesse de ressembler à du texte à venir. C'est le seul emploi.
+   */
+  --r-gabarit: 6px;
   --bordure: 1px solid var(--trait);
+  /*
+   * L'épaisseur d'un encadré qui alerte — erreur de lecture, import refusé,
+   * champ fautif. Un pixel et demi, pas un : à un pixel, le trait `--retard`
+   * ne se distingue du trait ordinaire que par sa couleur, et la couleur ne
+   * porte jamais l'information seule (section 1).
+   */
+  --trait-alerte: 1.5px;
 
   /*
    * Mouvement (section 6). Trois durées, trois animations.

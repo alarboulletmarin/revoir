@@ -21,6 +21,7 @@ import { estFaite } from '../lib/sujets'
 import { LigneRevision } from '../components/LigneRevision'
 import { LigneEcheance } from '../components/LigneEcheance'
 import { Regle } from '../components/Regle'
+import { Gabarit } from '../components/Etats'
 import { LienBouton } from '../components/Bouton'
 import { Accueil } from './Accueil'
 
@@ -59,9 +60,9 @@ export function Dashboard() {
     }
   }, [topics, reviews, aujourdhui])
 
-  if (loading) {
-    return <p className="discret">{t.commun.chargement}</p>
-  }
+  // La forme de l'écran est posée avant les données : la page ne saute pas
+  // quand elles arrivent (section 8.23).
+  if (loading) return <Gabarit />
 
   // Aucun sujet : l'écran qui explique le projet, et non une règle de zéros.
   if (topics.length === 0) {

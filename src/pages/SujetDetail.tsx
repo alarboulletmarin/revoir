@@ -27,6 +27,7 @@ import {
 } from '../components/Icons'
 import { ChipCategorie } from '../components/ChipCategorie'
 import { SelecteurPratique } from '../components/SelecteurPratique'
+import { Gabarit } from '../components/Etats'
 
 export function SujetDetail() {
   const { id } = useParams<{ id: string }>()
@@ -59,7 +60,7 @@ export function SujetDetail() {
 
   if (!topic) {
     return loading ? (
-      <p className="discret">{t.commun.chargement}</p>
+      <Gabarit lignes={4} />
     ) : (
       <div className="etat-vide">
         <p className="discret">{t.sujet.introuvable}</p>

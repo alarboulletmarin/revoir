@@ -4,6 +4,12 @@
 
 ## Non publié
 
+### Changé — ce qu'un écran montre avant d'avoir ses données
+
+- **La forme de l'écran est posée avant les données.** Un gabarit remplace le mot « Chargement… » : la page ne saute plus quand les révisions arrivent. Aucun tourniquet — la lecture est locale, elle dure quelques dizaines de millisecondes, et une roue n'aurait le temps que d'apparaître.
+- **Une erreur de lecture prend l'écran et propose de réessayer.** Elle se glissait en bandeau au-dessus d'un tableau de bord vide, qui se lisait « vous n'avez rien » plutôt que « je n'ai pas pu lire ». Le message dit d'abord ce qui s'est passé, puis que rien n'est perdu, puis quoi faire.
+- **Le suivi vide montre les cinq formes** avant qu'il y ait un tableau où les lire.
+
 ### Changé — le jour
 
 - **Une journée du calendrier s'ouvre maintenant dans une page**, plus dans une feuille qui glissait du bas. Elle a une adresse : on peut la poser sur un écran d'accueil, y revenir par le retour arrière, la garder ouverte sans qu'un mouvement du pouce la referme au milieu de la liste. Deux flèches passent au jour voisin — il fallait auparavant refermer la feuille, viser une autre case et la rouvrir.

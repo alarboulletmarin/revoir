@@ -23,6 +23,7 @@ import { LegendeSuivi } from '../components/LegendeSuivi'
 import { Bouton, LienBouton } from '../components/Bouton'
 import { SelecteurPratique } from '../components/SelecteurPratique'
 import { TableauSuivi, type CelluleVisee } from '../components/TableauSuivi'
+import { Gabarit } from '../components/Etats'
 
 const CLE_MODE = 'revoir.suivi.mode'
 const CLE_OUVERTES = 'revoir.suivi.ouvertes'
@@ -118,13 +119,25 @@ export function Suivi() {
     (groupe) => filtreEffectif === TOUTES || groupe.cle === filtreEffectif,
   )
 
-  if (loading) return <p className="discret">{t.commun.chargement}</p>
+  if (loading) return <Gabarit />
 
   if (groupes.length === 0) {
     return (
       <div className="etat-vide">
-        <h1 className="page__titre">{t.suivi.videTitre}</h1>
+        <h1 className="titre-ecran">{t.suivi.videTitre}</h1>
         <p className="discret">{t.suivi.videDetail}</p>
+
+        {/*
+          Les cinq formes, avant qu'il n'y ait un tableau où les lire. C'est
+          un état vide qui montre ce qui viendra plutôt qu'un écran qui
+          constate qu'il n'y a rien (section 8.9) — et la légende existe déjà,
+          elle n'est pas redessinée pour l'occasion.
+        */}
+        <section className="etat-vide__apercu">
+          <h2 className="surtitre">{t.suivi.legendeTitre}</h2>
+          <LegendeSuivi />
+        </section>
+
         <LienBouton vers="/nouveau" variante="primaire">
           {t.suivi.creerSujet}
         </LienBouton>

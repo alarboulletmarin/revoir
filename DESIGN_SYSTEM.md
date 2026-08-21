@@ -863,6 +863,24 @@ Adresses : `/nouveau/titre`, `/nouveau/categorie`, `/nouveau/rythme`. `/nouveau`
 
 ---
 
+### 8.23 Les états d'un écran
+
+Deux, parce qu'il n'y en a que deux : la lecture est en cours, ou elle a échoué. Il n'y a ni réseau, ni requête à retenter en boucle, ni chargement progressif — la base est locale et répond en quelques dizaines de millisecondes.
+
+**Le gabarit d'attente** (`.gabarit`) : des blocs `--surface-survol` arrondis à `--r-gabarit`, à la forme de l'écran — un sur-titre, un titre, la règle, des lignes. Il réserve la place, et la page ne saute pas quand les données arrivent.
+
+Pas de tourniquet. Une roue n'aurait le temps que d'apparaître, et sa rotation dirait « c'est long » là où il ne se passe rien. Pas de pouls non plus : ce serait une quatrième animation, et la section 6 en autorise trois.
+
+Il est entièrement masqué aux lecteurs d'écran — ce sont des rectangles, ils n'ont rien à dire. C'est la région qui l'entoure qui porte `aria-busy` et le mot « Chargement ».
+
+**L'erreur de lecture** (`.erreur`) : un encadré `--trait-alerte` en `--retard`, le message de `i18n.erreurs.lecture`, et « Réessayer ». Elle **prend la place du contenu** au lieu de se glisser en bannière au-dessus de lui : sans données, l'écran qui suivrait serait vide, et un tableau de bord à zéro se lit « vous n'avez rien » et non « je n'ai pas pu lire ».
+
+Le message dit trois choses, dans cet ordre : ce qui s'est passé, que rien n'est perdu, quoi faire. La deuxième est la plus importante — les données sont locales, et « impossible de lire » se lit sinon comme « tout a disparu ». « Réessayer » rejoue la lecture initiale : un stockage indisponible ne l'est pas toujours pour toujours, et proposer de réessayer coûte moins qu'expliquer comment recharger une page.
+
+**Ce que ces états ne couvrent pas**, et qui vit ailleurs : l'état vide d'un écran (section 8.9), la mise à jour du Service Worker (section 8.10), et l'adresse inconnue, qui est une page — « Cette adresse ne correspond à aucune page de Revoir », avec un retour vers Aujourd'hui, jamais une impasse.
+
+---
+
 ## 9. Écriture
 
 L'interface est en **français et en anglais**, en casse normale, à l'infinitif pour les actions.

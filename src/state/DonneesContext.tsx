@@ -109,6 +109,8 @@ export interface DonneesContextValue {
   loading: boolean
   /** Message d'erreur si IndexedDB est indisponible (navigation privée, quota). */
   error: string | null
+  /** Rejoue la lecture initiale — le « Réessayer » de l'écran d'erreur. */
+  relire: () => Promise<void>
 
   /**
    * Renvoie la catégorie créée : l'appelant a besoin de son identifiant pour la
@@ -186,34 +188,47 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([getAllCategories(), getAllTopics(), getAllReviews(), getAllProgrammes()])
+  /**
+   * La lecture initiale, rejouable.
+   *
+   * Elle a une seconde vie : le bouton « Réessayer » de l'écran d'erreur
+   * (section 8.23). Un stockage indisponible ne l'est pas toujours pour
+   * toujours — un autre onglet tenait une transaction, le navigateur venait de
+   * refuser le quota —, et proposer de réessayer coûte moins qu'expliquer
+   * comment recharger la page.
+   */
+  const relire = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    return Promise.all([
+      getAllCategories(),
+      getAllTopics(),
+      getAllReviews(),
+      getAllProgrammes(),
+    ])
       .then(([lues, sujets, revisions, rythmes]) => {
-        if (cancelled) return
         setCategories(lues)
         setTopics(sujets)
         setReviews(revisions)
         setProgrammes(rythmes)
       })
       .catch(() => {
-        if (!cancelled) {
-          /*
-           * Ce message couvre deux causes très différentes : un stockage
-           * indisponible, et une mise à jour de la base qui a échoué. Dans les
-           * deux cas la base est intacte — une transaction de mise à jour qui
-           * lève est annulée —, et le conseil utile est le même.
-           */
-          setError(textes().erreurs.lecture)
-        }
+        /*
+         * Ce message couvre deux causes très différentes : un stockage
+         * indisponible, et une mise à jour de la base qui a échoué. Dans les
+         * deux cas la base est intacte — une transaction de mise à jour qui
+         * lève est annulée —, et le conseil utile est le même.
+         */
+        setError(textes().erreurs.lecture)
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        setLoading(false)
       })
-    return () => {
-      cancelled = true
-    }
   }, [])
+
+  useEffect(() => {
+    void relire()
+  }, [relire])
 
   const signaler = useCallback((message: string) => {
     return (promesse: Promise<unknown>) => {
@@ -630,6 +645,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
+      relire,
       creerCategorie,
       modifierCategorie,
       supprimerCategorie,
@@ -659,6 +675,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
+      relire,
       creerCategorie,
       modifierCategorie,
       supprimerCategorie,

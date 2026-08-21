@@ -79,6 +79,7 @@ export const fr = {
   commun: {
     chargement: 'Chargement…',
     annuler: 'Annuler',
+    reessayer: 'Réessayer',
     fermer: 'Fermer',
     supprimer: 'Supprimer',
     modifier: 'Modifier',
