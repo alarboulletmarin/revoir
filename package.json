@@ -32,6 +32,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/generate-icons.mjs",
+    "social": "node scripts/generate-social.mjs",
     "notices": "node scripts/generate-notices.mjs"
   },
   "dependencies": {

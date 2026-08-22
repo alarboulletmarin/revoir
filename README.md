@@ -133,6 +133,7 @@ npm run preview
 | `npm run typecheck` | Vérification TypeScript seule |
 | `npm test` | Tests unitaires de la logique métier (Vitest) |
 | `npm run icons` | Régénère les icônes PNG et l'image de partage de `public/` |
+| `npm run social` | Régénère les visuels de présentation de `media/social/` |
 | `npm run notices` | Régénère `public/THIRD-PARTY.txt`, joué par `build` |
 
 ## Structure
@@ -150,7 +151,10 @@ src/
 └── styles/       tokens.css, reset.css, base.css, composants.css, ecrans.css
 scripts/
 ├── generate-icons.mjs     icônes PNG et image de partage, sans dépendance
-└── generate-notices.mjs   licences des composants tiers, sans dépendance
+├── generate-notices.mjs   licences des composants tiers, sans dépendance
+└── generate-social.mjs    visuels de présentation, rendus par Chromium
+media/
+└── social/                les six visuels, en 16:9 et en 9:16
 ```
 
 La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, le regroupement par catégorie, l'attribution des teintes dans les deux thèmes, les catégories proposées et le détachement des sujets d'une catégorie supprimée, les statistiques, le modèle du tableau de suivi, la migration des anciennes données, le formatage et la validation des sauvegardes, la sérialisation du calendrier `.ics`, et l'accord des deux dictionnaires.
