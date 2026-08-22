@@ -70,8 +70,10 @@ export function CategoriesPage() {
 
   return (
     <>
-      <h1 className="page__titre">{t.categories.titre}</h1>
-      <p className="discret">{t.categories.intro}</p>
+      <div className="page__entete">
+        <h1 className="titre-page">{t.categories.titre}</h1>
+        <p className="page__intro">{t.categories.intro}</p>
+      </div>
 
       {retour && (
         <p className="banniere banniere--fait" role="status">
@@ -94,27 +96,42 @@ export function CategoriesPage() {
       ) : (
         <>
           <ul className="categories">
-            {rangees.map((categorie) => (
-              <li key={categorie.id} className="categorie">
-                <div className="categorie__entete">
+            {rangees.map((categorie) => {
+              const sujets = compterSujets(categorie.id, topics)
+              return (
+                <li key={categorie.id} className="categorie">
                   <span className="categorie__nom">
                     <PastilleCategorie categorie={categorie} />
                     {categorie.name}
                   </span>
-                  <span className="categorie__compte">
-                    {direSujets(compterSujets(categorie.id, topics))}
+                  <span className="categorie__compte">{direSujets(sujets)}</span>
+                  {/*
+                    « Modifier » toujours ; « Supprimer » seulement sur une
+                    catégorie que personne ne porte.
+                    
+                    Supprimer une catégorie portée reste possible et sans danger
+                    — ses sujets rejoignent « Sans catégorie » —, mais ce n'est
+                    pas le même geste : il en touche d'autres, il se confirme, et
+                    il n'a rien à faire au même niveau qu'un renommage, sur une
+                    rangée qu'on parcourt du pouce. Il se fait depuis l'écran de
+                    la catégorie, où l'on est venu s'en occuper.
+                  */}
+                  <span className="categorie__actions">
+                    <LienBouton
+                      vers={`/categories/${categorie.id}/modifier`}
+                      variante="texte"
+                    >
+                      {t.commun.modifier}
+                    </LienBouton>
+                    {sujets === 0 && (
+                      <Bouton variante="texte" onClick={() => setVisee(categorie)}>
+                        {t.commun.supprimer}
+                      </Bouton>
+                    )}
                   </span>
-                </div>
-                <div className="categorie__actions">
-                  <LienBouton vers={`/categories/${categorie.id}/modifier`}>
-                    {t.commun.modifier}
-                  </LienBouton>
-                  <Bouton variante="danger" onClick={() => setVisee(categorie)}>
-                    {t.commun.supprimer}
-                  </Bouton>
-                </div>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
 
           <div className="reglages__actions">

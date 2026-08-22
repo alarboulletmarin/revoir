@@ -83,6 +83,18 @@ export function formatLong(key: DateKey): string {
   return formater(fromKey(key), textes().dates.long)
 }
 
+/**
+ * « vendredi 21 août » · « Friday, August 21 » — le jour en toutes lettres,
+ * sans son année.
+ *
+ * C'est le sur-titre de l'écran « Aujourd'hui » et le titre de la page du
+ * jour : à cet endroit, l'année n'apprend rien, et le nom du jour est
+ * justement ce qu'on vient vérifier.
+ */
+export function formatJourLong(key: DateKey): string {
+  return formater(fromKey(key), textes().dates.jourLong)
+}
+
 /** « sam. 14 mars » · « Sat, Mar 14 » */
 export function formatShort(key: DateKey): string {
   return formater(fromKey(key), textes().dates.court)
@@ -108,6 +120,21 @@ export function formatEcheance(key: DateKey, reference: DateKey): string {
 /** « mars 2026 » · « March 2026 » */
 export function formatMonth(date: Date): string {
   return formater(date, textes().dates.mois)
+}
+
+/**
+ * « mars » et « 2026 », séparément.
+ *
+ * L'en-tête du calendrier les compose lui-même : le mois porte la voix de
+ * l'écran, l'année l'accompagne en chiffres. Un seul gabarit les aurait rendus
+ * de même poids, et l'ordre des deux change avec la langue.
+ */
+export function formatMoisSeul(date: Date): string {
+  return formater(date, textes().dates.moisSeul)
+}
+
+export function formatAnnee(date: Date): string {
+  return formater(date, textes().dates.annee)
 }
 
 /**

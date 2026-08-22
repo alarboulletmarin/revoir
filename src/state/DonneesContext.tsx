@@ -42,8 +42,16 @@ import {
   tousLesProgrammes,
   type Schedule,
 } from '../lib/schedules'
-import { devaliderRevision, reporterRevision, validerRevision } from '../lib/recalage'
+import {
+  devaliderRevision,
+  reporterPlusieurs as reporterPlusieursRevisions,
+  reporterRevision,
+  validerPlusieurs as validerPlusieursRevisions,
+  validerRevision,
+  type ResultatGroupe,
+} from '../lib/recalage'
 import { todayKey, type DateKey } from '../lib/dates'
+import { construireJeuExemple } from '../lib/exemple'
 
 export interface SujetDraft {
   title: string
@@ -71,6 +79,21 @@ export interface ValidationEffectuee {
   deplacees: number
 }
 
+/**
+ * Ce qu'un geste portant sur plusieurs révisions renvoie à l'appelant.
+ *
+ * Les révisions d'un même jour appartiennent à plusieurs sujets : l'état à
+ * restaurer est donc un tableau par sujet, et « Annuler » les rejoue tous.
+ */
+export interface GesteGroupe {
+  /** Les révisions d'avant, par sujet touché — la cible d'« Annuler ». */
+  precedentes: Map<string, Review[]>
+  /** Combien de révisions ont réellement changé d'état. */
+  touchees: number
+  /** Échéances à venir déplacées par les recalages, tous sujets confondus. */
+  deplacees: number
+}
+
 /** Ce qu'un report renvoie à l'appelant pour construire son toast. */
 export interface ReportEffectue {
   topicId: string
@@ -87,6 +110,8 @@ export interface DonneesContextValue {
   loading: boolean
   /** Message d'erreur si IndexedDB est indisponible (navigation privée, quota). */
   error: string | null
+  /** Rejoue la lecture initiale — le « Réessayer » de l'écran d'erreur. */
+  relire: () => Promise<void>
 
   /**
    * Renvoie la catégorie créée : l'appelant a besoin de son identifiant pour la
@@ -137,8 +162,28 @@ export interface DonneesContextValue {
    * n°6). Renvoie null si la révision est déjà faite ou introuvable.
    */
   reporter: (reviewId: string) => ReportEffectue | null
+  /**
+   * Valide plusieurs révisions d'un coup — « Tout marquer comme revu ».
+   *
+   * Ce n'est pas une boucle sur `valider` : chaque validation en retard recale
+   * les suivantes du même sujet, et deux appels partis du même état
+   * s'écraseraient l'un l'autre. La cascade vit dans `lib/recalage.ts`, avec
+   * ses tests.
+   */
+  validerPlusieurs: (reviewIds: string[]) => GesteGroupe
+  /** Reporte plusieurs échéances d'un jour, sans toucher aux suivantes. */
+  reporterPlusieurs: (reviewIds: string[]) => GesteGroupe
   /** Remet les révisions d'un sujet dans l'état fourni. Sert à « Annuler ». */
   restaurerRevisions: (topicId: string, precedentes: Review[]) => void
+
+  /**
+   * Charge le jeu d'exemple et rend les identifiants des sujets créés
+   * (section 8.24). Ce sont des sujets ordinaires : rien ne les distingue en
+   * base, seul l'appareil se souvient de les avoir demandés.
+   */
+  chargerJeuExemple: () => Promise<string[]>
+  /** Retire les sujets d'exemple encore présents, et eux seuls. */
+  effacerJeuExemple: (ids: string[]) => Promise<void>
 
   importer: (contenu: ContenuSauvegarde) => Promise<void>
 }
@@ -153,34 +198,47 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([getAllCategories(), getAllTopics(), getAllReviews(), getAllProgrammes()])
+  /**
+   * La lecture initiale, rejouable.
+   *
+   * Elle a une seconde vie : le bouton « Réessayer » de l'écran d'erreur
+   * (section 8.23). Un stockage indisponible ne l'est pas toujours pour
+   * toujours — un autre onglet tenait une transaction, le navigateur venait de
+   * refuser le quota —, et proposer de réessayer coûte moins qu'expliquer
+   * comment recharger la page.
+   */
+  const relire = useCallback(() => {
+    setLoading(true)
+    setError(null)
+    return Promise.all([
+      getAllCategories(),
+      getAllTopics(),
+      getAllReviews(),
+      getAllProgrammes(),
+    ])
       .then(([lues, sujets, revisions, rythmes]) => {
-        if (cancelled) return
         setCategories(lues)
         setTopics(sujets)
         setReviews(revisions)
         setProgrammes(rythmes)
       })
       .catch(() => {
-        if (!cancelled) {
-          /*
-           * Ce message couvre deux causes très différentes : un stockage
-           * indisponible, et une mise à jour de la base qui a échoué. Dans les
-           * deux cas la base est intacte — une transaction de mise à jour qui
-           * lève est annulée —, et le conseil utile est le même.
-           */
-          setError(textes().erreurs.lecture)
-        }
+        /*
+         * Ce message couvre deux causes très différentes : un stockage
+         * indisponible, et une mise à jour de la base qui a échoué. Dans les
+         * deux cas la base est intacte — une transaction de mise à jour qui
+         * lève est annulée —, et le conseil utile est le même.
+         */
+        setError(textes().erreurs.lecture)
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        setLoading(false)
       })
-    return () => {
-      cancelled = true
-    }
   }, [])
+
+  useEffect(() => {
+    void relire()
+  }, [relire])
 
   const signaler = useCallback((message: string) => {
     return (promesse: Promise<unknown>) => {
@@ -427,6 +485,82 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
     [reviews, persistRevisions],
   )
 
+  /**
+   * Le patron commun aux deux gestes groupés : regrouper les identifiants par
+   * sujet, appliquer la cascade sujet par sujet, écrire chaque sujet une seule
+   * fois. Écrire par révision produirait autant d'écritures que de coches et
+   * autant d'états intermédiaires visibles.
+   */
+  const geste = useCallback(
+    (
+      reviewIds: string[],
+      appliquer: (revisions: Review[], ids: string[]) => ResultatGroupe,
+    ): GesteGroupe => {
+      const parSujet = new Map<string, string[]>()
+      for (const reviewId of reviewIds) {
+        const cible = reviews.find((review) => review.id === reviewId)
+        if (!cible) continue
+        parSujet.set(cible.topicId, [...(parSujet.get(cible.topicId) ?? []), reviewId])
+      }
+
+      const precedentes = new Map<string, Review[]>()
+      let touchees = 0
+      let deplacees = 0
+
+      for (const [topicId, ids] of parSujet) {
+        const avant = revisionsDe(topicId, reviews)
+        const resultat = appliquer(avant, ids)
+        if (resultat.touchees === 0) continue
+        precedentes.set(topicId, avant)
+        touchees += resultat.touchees
+        deplacees += resultat.deplacees
+        persistRevisions(topicId, resultat.reviews)
+      }
+
+      return { precedentes, touchees, deplacees }
+    },
+    [reviews, persistRevisions],
+  )
+
+  const validerToutes = useCallback(
+    (reviewIds: string[]) =>
+      geste(reviewIds, (revisions, ids) =>
+        validerPlusieursRevisions(revisions, ids, todayKey()),
+      ),
+    [geste],
+  )
+
+  const reporterToutes = useCallback(
+    (reviewIds: string[]) =>
+      geste(reviewIds, (revisions, ids) =>
+        reporterPlusieursRevisions(revisions, ids, todayKey()),
+      ),
+    [geste],
+  )
+
+  const chargerJeuExemple = useCallback(async () => {
+    const { topics: sujets, reviews: revisions } = construireJeuExemple(categories)
+
+    setTopics((actuels) => [...actuels, ...sujets])
+    setReviews((actuelles) => [...actuelles, ...revisions])
+
+    await Promise.all([
+      ...sujets.map((topic) => putTopic(topic)),
+      ...revisions.map((review) => putReview(review)),
+    ])
+    return sujets.map((topic) => topic.id)
+  }, [categories])
+
+  const effacerJeuExemple = useCallback(async (ids: string[]) => {
+    const vises = new Set(ids)
+    setTopics((actuels) => actuels.filter((topic) => !vises.has(topic.id)))
+    setReviews((actuelles) => actuelles.filter((review) => !vises.has(review.topicId)))
+
+    // Un sujet d'exemple a pu être supprimé à la main : `deleteTopicWithReviews`
+    // sur un identifiant absent est sans effet, et c'est ce qu'on veut.
+    await Promise.all(ids.map((id) => deleteTopicWithReviews(id)))
+  }, [])
+
   const devalider = useCallback(
     (reviewId: string) => {
       const cible = reviews.find((review) => review.id === reviewId)
@@ -544,6 +678,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
+      relire,
       creerCategorie,
       modifierCategorie,
       supprimerCategorie,
@@ -562,7 +697,11 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       valider,
       devalider,
       reporter,
+      validerPlusieurs: validerToutes,
+      reporterPlusieurs: reporterToutes,
       restaurerRevisions,
+      chargerJeuExemple,
+      effacerJeuExemple,
       importer,
     }),
     [
@@ -571,6 +710,7 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       reviews,
       loading,
       error,
+      relire,
       creerCategorie,
       modifierCategorie,
       supprimerCategorie,
@@ -589,7 +729,11 @@ export function DonneesProvider({ children }: { children: ReactNode }) {
       valider,
       devalider,
       reporter,
+      validerToutes,
+      reporterToutes,
       restaurerRevisions,
+      chargerJeuExemple,
+      effacerJeuExemple,
       importer,
     ],
   )

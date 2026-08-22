@@ -9,13 +9,19 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { addMonths, startOfMonth, subMonths } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
-import { useValidation } from '../state/useValidation'
-import { usePanneauOuvert, useTitrePage } from '../state/useTitrePage'
+import { useTitrePage } from '../state/useTitrePage'
 import type { Category } from '../types'
 import { useAujourdhui } from '../state/useAujourdhui'
-import { formatLong, formatMonth, fromKey, toKey, type DateKey } from '../lib/dates'
-import { entriesForDate } from '../lib/stats'
+import {
+  formatAnnee,
+  formatLong,
+  formatMoisSeul,
+  fromKey,
+  toKey,
+  type DateKey,
+} from '../lib/dates'
 import { teinteDe } from '../lib/categories'
 import {
   densite,
@@ -26,21 +32,18 @@ import {
 } from '../lib/calendrier'
 import { textes } from '../i18n'
 import { useTextes } from '../state/usePreferences'
-import { LigneRevision } from '../components/LigneRevision'
-import { FeuilleBas } from '../components/FeuilleBas'
 import { Bouton } from '../components/Bouton'
 import { IconeChevron } from '../components/Icons'
 import { proprietesTeinte } from '../components/teinte'
 
 export function CalendarPage() {
   const t = useTextes()
+  const navigate = useNavigate()
   useTitrePage(t.calendrier.titre)
   const { topics, reviews, categories } = useDonnees()
-  const { validerEntree, devaliderEntree } = useValidation()
   const aujourdhui = useAujourdhui()
 
   const [mois, setMois] = useState(() => startOfMonth(fromKey(aujourdhui)))
-  const [choisi, setChoisi] = useState<DateKey | null>(null)
   /*
    * Un seul jour est atteignable à la tabulation, les flèches font le reste
    * (« roving tabindex »). Sans cela, traverser le calendrier au clavier
@@ -51,15 +54,9 @@ export function CalendarPage() {
   const cases = useRef(new Map<DateKey, HTMLButtonElement>())
   const aFocaliser = useRef<DateKey | null>(null)
 
-  usePanneauOuvert(choisi !== null)
-
   const jours = useMemo(
     () => grilleDuMois(topics, reviews, categories, mois),
     [topics, reviews, categories, mois],
-  )
-  const entrees = useMemo(
-    () => (choisi ? entriesForDate(topics, reviews, choisi) : []),
-    [topics, reviews, choisi],
   )
 
   // Le focus suit le jour visé, y compris quand l'atteindre a changé de mois
@@ -85,20 +82,16 @@ export function CalendarPage() {
     [jours],
   )
 
-  /** Ouvre la feuille du jour, et cale le mois sur lui s'il vient d'à côté. */
-  const choisir = (cle: DateKey) => {
-    setChoisi(cle)
+  /**
+   * Ouvrir un jour, c'est aller à sa page (section 8.11).
+   *
+   * C'était une feuille glissante, ouverte et refermée sans quitter le mois.
+   * La page a une adresse, un retour, et le retour arrière du navigateur
+   * ramène ici — au mois d'où l'on vient, à la position d'où l'on vient.
+   */
+  const ouvrirJour = (cle: DateKey) => {
     setAncre(cle)
-    if (!jours.some((jour) => jour.cle === cle && jour.dansLeMois)) {
-      setMois(startOfMonth(fromKey(cle)))
-    }
-  }
-
-  const fermer = () => {
-    // Le jour rendu au focus est celui qu'on vient de consulter : après un
-    // changement de mois, le bouton d'origine n'existe plus.
-    if (choisi !== null) aFocaliser.current = choisi
-    setChoisi(null)
+    navigate(`/jour/${cle}`)
   }
 
   const surTouche = (event: KeyboardEvent<HTMLButtonElement>, cle: DateKey) => {
@@ -119,7 +112,7 @@ export function CalendarPage() {
 
   return (
     <>
-      <h1 className="page__titre">{t.calendrier.titre}</h1>
+      <h1 className="invisible">{t.calendrier.titre}</h1>
 
       <section className="calendrier">
         <div className="calendrier__entete">
@@ -131,7 +124,14 @@ export function CalendarPage() {
           >
             <IconeChevron direction="gauche" />
           </button>
-          <h2 className="calendrier__mois">{formatMonth(mois)}</h2>
+          {/*
+            Le mois porte la voix de l'écran, l'année l'accompagne en chiffres :
+            on cherche « août », on vérifie « 2026 ».
+          */}
+          <h2 className="calendrier__mois">
+            {formatMoisSeul(mois)}
+            <span className="calendrier__annee chiffres">{formatAnnee(mois)}</span>
+          </h2>
           <button
             type="button"
             className="calendrier__fleche"
@@ -151,14 +151,19 @@ export function CalendarPage() {
         <div className="calendrier__grille">
           {jours.map((jour) => {
             const estAujourdhui = jour.cle === aujourdhui
-            const estChoisi = jour.cle === choisi
             const toutesFaites = jour.total > 0 && jour.restantes === 0
+            /*
+             * Une journée passée qui garde des révisions est en retard. Ses
+             * traits sont plus hauts et en `--retard` : c'est le seul état du
+             * calendrier qui demande quelque chose, et il doit se voir en
+             * balayant le mois sans lire les nombres.
+             */
+            const enRetard = jour.restantes > 0 && jour.cle < aujourdhui
 
             const classes = [
               'calendrier__case',
               jour.dansLeMois ? null : 'calendrier__case--hors',
               estAujourdhui ? 'calendrier__case--aujourdhui' : null,
-              estChoisi ? 'calendrier__case--choisi' : null,
             ]
               .filter(Boolean)
               .join(' ')
@@ -175,9 +180,8 @@ export function CalendarPage() {
                 // Le seul jour tabulable de la grille ; les flèches déplacent
                 // le focus d'une case à l'autre.
                 tabIndex={jour.cle === ancre ? 0 : -1}
-                aria-pressed={estChoisi}
                 aria-label={etiquetteJour(jour, estAujourdhui, toutesFaites)}
-                onClick={() => choisir(jour.cle)}
+                onClick={() => ouvrirJour(jour.cle)}
                 onFocus={() => setAncre(jour.cle)}
                 onKeyDown={(event) => surTouche(event, jour.cle)}
               >
@@ -185,16 +189,26 @@ export function CalendarPage() {
                   {jour.numero}
                 </span>
                 <span className="calendrier__indicateurs" aria-hidden="true">
-                  <span className="calendrier__points">
+                  {/*
+                    Un trait vertical par révision, à la hauteur de son état :
+                    plein pour ce qui reste, court pour une journée soldée,
+                    long pour un retard. Un trait plutôt qu'un point parce que
+                    c'est le même objet que la règle et que la frise — une
+                    graduation —, et parce qu'une hauteur se compare d'un
+                    regard là où trois diamètres identiques ne disent rien.
+                  */}
+                  <span className="calendrier__traits">
                     {jour.categories.slice(0, densite(jour.total)).map((categorie, index) => (
                       <span
                         key={index}
                         className={
-                          toutesFaites
-                            ? 'calendrier__point calendrier__point--fait'
-                            : 'calendrier__point'
+                          enRetard
+                            ? 'calendrier__trait calendrier__trait--retard'
+                            : toutesFaites
+                              ? 'calendrier__trait calendrier__trait--fait'
+                              : 'calendrier__trait'
                         }
-                        // Un sujet sans catégorie garde le point --accent :
+                        // Un sujet sans catégorie garde le trait --accent :
                         // il n'y a pas de teinte à en tirer.
                         {...teinteDuPoint(categorie)}
                       />
@@ -216,6 +230,13 @@ export function CalendarPage() {
           })}
         </div>
 
+        {/*
+          Ce que disent les traits, écrit une fois sous la grille. Une hauteur
+          et une couleur ne se devinent pas : elles s'apprennent en une phrase,
+          et cette phrase doit être là où on regarde, pas dans l'aide.
+        */}
+        <p className="calendrier__legende">{t.calendrier.legendeTraits}</p>
+
         {!moisCourant && (
           <div className="calendrier__entete">
             <Bouton
@@ -228,29 +249,6 @@ export function CalendarPage() {
         )}
       </section>
 
-      <FeuilleBas
-        ouverte={choisi !== null}
-        titre={choisi === null ? '' : formatLong(choisi)}
-        onFermer={fermer}
-      >
-        {entrees.length === 0 ? (
-          <p className="discret discret--petit">{t.calendrier.aucuneCeJour}</p>
-        ) : (
-          <ul className="liste-revisions liste-revisions--separee">
-            {entrees.map((entree) => (
-              <LigneRevision
-                key={entree.review.id}
-                entry={entree}
-                aujourdhui={aujourdhui}
-                onValider={validerEntree}
-                onDevalider={devaliderEntree}
-                masquerDate
-                detail="progression"
-              />
-            ))}
-          </ul>
-        )}
-      </FeuilleBas>
     </>
   )
 }

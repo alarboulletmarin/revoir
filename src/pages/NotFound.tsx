@@ -10,7 +10,7 @@ export function NotFound() {
 
   return (
     <div className="etat-vide">
-      <h1 className="page__titre">{t.erreurs.introuvable}</h1>
+      <h1 className="titre-page">{t.erreurs.introuvable}</h1>
       <p className="discret">{t.erreurs.adresseInconnue}</p>
       <LienBouton vers="/" variante="primaire">
         {t.sujet.retourTableau}

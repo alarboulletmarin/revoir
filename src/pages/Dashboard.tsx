@@ -4,11 +4,11 @@ import { useMemo } from 'react'
 import { useDonnees } from '../state/useDonnees'
 import { useValidation } from '../state/useValidation'
 import { useAujourdhui } from '../state/useAujourdhui'
-import { useMediaQuery } from '../state/useMediaQuery'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
 import { textes } from '../i18n'
-import { formatLong, formatShort } from '../lib/dates'
+import { formatJourLong, formatShort } from '../lib/dates'
+import { JOURS_REGLE } from '../lib/regle'
 import {
   computeStats,
   loadForDays,
@@ -18,27 +18,21 @@ import {
   upcomingEntries,
 } from '../lib/stats'
 import { estFaite } from '../lib/sujets'
-import { Cellule } from '../components/Cellule'
 import { LigneRevision } from '../components/LigneRevision'
-import { BarresCharge } from '../components/BarresCharge'
-import { MiniMois } from '../components/MiniMois'
+import { LigneEcheance } from '../components/LigneEcheance'
+import { Regle } from '../components/Regle'
+import { Gabarit } from '../components/Etats'
 import { LienBouton } from '../components/Bouton'
 import { Accueil } from './Accueil'
 
-/** Section 7.2 : 3 items sous 480px, la cellule ne tient pas davantage. */
-const ITEMS_HERO_ETROIT = 3
-const ITEMS_HERO_LARGE = 6
-
-/** Ce qui vient ensuite, sous le bento. Au-delà, c'est le calendrier. */
-const PROCHAINES_VISIBLES = 5
+/** Ce qui vient ensuite, sous la règle. Au-delà, c'est le calendrier. */
+const PROCHAINES_VISIBLES = 3
 
 export function Dashboard() {
   const t = useTextes()
   useTitrePage(t.dashboard.titre)
-  const { topics, reviews, categories, loading } = useDonnees()
+  const { topics, reviews, loading } = useDonnees()
   const { validerEntree, devaliderEntree } = useValidation()
-  const large = useMediaQuery('(min-width: 480px)')
-  const tablette = useMediaQuery('(min-width: 768px)')
   const aujourdhui = useAujourdhui()
 
   const vue = useMemo(() => {
@@ -47,6 +41,12 @@ export function Dashboard() {
       /** Ce qu'il reste à faire aujourd'hui. */
       dujour: dujour.filter((entree) => !estFaite(entree.review)),
       /**
+       * Ce qui a été coché dans la journée. La journée bouclée ne se solde pas
+       * sur un écran vide : ce qui vient d'être fait reste lisible, et chaque
+       * ligne garde son « Annuler » (section 1).
+       */
+      faites: dujour.filter((entree) => estFaite(entree.review)),
+      /**
        * Ce qui était prévu aujourd'hui, coché ou non. Sans ce compte, une
        * journée bouclée et une journée sans rien de prévu se ressemblent —
        * or ce ne sont pas du tout les mêmes nouvelles.
@@ -54,145 +54,141 @@ export function Dashboard() {
       prevuesDuJour: dujour.length,
       retard: overdueEntries(topics, reviews, aujourdhui),
       stats: computeStats(topics, reviews, aujourdhui),
-      charge: loadForDays(topics, reviews, 14, aujourdhui),
+      charge: loadForDays(topics, reviews, JOURS_REGLE, aujourdhui),
       prochainJour: nextReviewDay(topics, reviews, aujourdhui),
       prochaines: upcomingEntries(topics, reviews, PROCHAINES_VISIBLES, aujourdhui),
     }
   }, [topics, reviews, aujourdhui])
 
-  if (loading) {
-    return <p className="discret">{t.commun.chargement}</p>
-  }
+  // La forme de l'écran est posée avant les données : la page ne saute pas
+  // quand elles arrivent (section 8.23).
+  if (loading) return <Gabarit />
 
-  // Aucun sujet : l'écran qui explique le projet, et non une grille de zéros.
+  // Aucun sujet : l'écran qui explique le projet, et non une règle de zéros.
   if (topics.length === 0) {
     return <Accueil />
   }
 
-  const plafond = large ? ITEMS_HERO_LARGE : ITEMS_HERO_ETROIT
-  const visibles = vue.dujour.slice(0, plafond)
-  const reste = vue.dujour.length - visibles.length
-  const sansRetard = vue.retard.length === 0
+  const bouclee = vue.dujour.length === 0
 
   return (
-    <>
-      <div className="page__entete">
-        <h1 className="page__titre">{t.dashboard.titre}</h1>
-        <p className="page__intro">{formatLong(aujourdhui)}</p>
-      </div>
+    <div className="aujourdhui">
+      {/*
+        Le sur-titre date l'écran, le compte y répond.
 
-      <div className={sansRetard ? 'bento bento--sans-retard' : 'bento'}>
-        {/* L'unique cellule --accent pleine de l'écran (section 3). */}
-        <Cellule zone="aujourdhui" accent>
-          <h2 className="hero__titre">{titreDuJour(vue.dujour.length, vue.prevuesDuJour)}</h2>
+        Le nombre est un chiffre, et il est grand : c'est ce qu'on vient
+        chercher, et une phrase qui l'écrit en toutes lettres le fait lire au
+        lieu de le faire voir. C'est le principe que portait le grand chiffre
+        du bento, et qu'il fallait retrouver sans lui.
 
-          {vue.dujour.length === 0 ? (
-            <p className="hero__vide">{secondeLigne(vue.prevuesDuJour, vue.prochainJour)}</p>
-          ) : (
-            <>
-              <ul className="hero__liste">
-                {visibles.map((entree) => (
-                  <LigneRevision
-                    key={entree.review.id}
-                    entry={entree}
-                    aujourdhui={aujourdhui}
-                    onValider={validerEntree}
-                    onDevalider={devaliderEntree}
-                    masquerDate
-                    detail="aucun"
-                  />
-                ))}
-              </ul>
-              {reste > 0 && (
-                <p className="hero__pied">
-                  <LienBouton vers="/revisions/aujourdhui" variante="texte">
-                    {t.dashboard.toutVoirCompte(vue.dujour.length)}
-                  </LienBouton>
-                </p>
-              )}
-            </>
-          )}
-        </Cellule>
-
-        {/* Disparaît du DOM à zéro : la grille se recompose (section 7.2). */}
-        {!sansRetard && (
-          <Cellule zone="retard" vers="/revisions/retard" label={t.dashboard.enRetard}>
-            <span className="retard__valeur">
-              <span className="retard__point" aria-hidden="true" />
-              <output className="cellule__chiffre">{vue.retard.length}</output>
-            </span>
-          </Cellule>
-        )}
-
-        {/*
-          Une seule cellule pour le total et sa répartition : deux cartes
-          disaient la même chose — combien il reste — à deux échelles. Le
-          chiffre d'abord, la forme des quinze jours qui viennent en dessous.
-        */}
-        <Cellule zone="synthese">
-          <output className="cellule__chiffre">{vue.stats.remainingReviews}</output>
-          <p className="cellule__label">
-            {t.dashboard.restantes(vue.stats.remainingReviews)}
+        `<output>` et non `<span>` : il porte un rôle de région vive, donc le
+        compte qui change est annoncé sans que rien ne prenne le focus
+        (section 10). Il hérite au passage de la chasse fixe des chiffres, ce
+        qui l'empêche de changer de largeur entre « 2 » et « 3 ».
+      */}
+      <div className="aujourdhui__entete">
+        <p className="surtitre">{formatJourLong(aujourdhui)}</p>
+        <h1 className="aujourdhui__reponse">
+          <output className="aujourdhui__compte">{vue.dujour.length}</output>
+          <span className="aujourdhui__libelle">
+            {libelleDuJour(vue.dujour.length, vue.prevuesDuJour)}
+          </span>
+        </h1>
+        {bouclee && (
+          <p className="aujourdhui__suite">
+            {secondeLigne(vue.prevuesDuJour, vue.prochainJour)}
           </p>
-          <p className="synthese__intitule">{t.dashboard.charge(vue.charge.length)}</p>
-          <BarresCharge charge={vue.charge} aujourdhui={aujourdhui} />
-        </Cellule>
-
-        {/*
-          ≥ 768px uniquement (section 7.2). La cellule n'est pas seulement
-          masquée : « calendrier » n'existe pas dans les zones de la grille
-          sous 768px, et une cellule qui vise une zone inconnue fait créer à
-          la grille des colonnes implicites qui écrasent tout le bento.
-        */}
-        {tablette && (
-          <Cellule zone="calendrier" vers="/calendrier" label={t.dashboard.ceMois}>
-            <MiniMois
-              topics={topics}
-              reviews={reviews}
-              categories={categories}
-              aujourdhui={aujourdhui}
-            />
-          </Cellule>
         )}
       </div>
+
+      <Regle
+        charge={vue.charge}
+        aujourdhui={aujourdhui}
+        restantes={vue.stats.remainingReviews}
+        retard={vue.retard.length}
+      />
 
       {/*
-        Sous le bento, jamais dedans : le tableau de bord reste une réponse.
-        Ce qui vient ensuite, et rien de plus — la consultation par catégorie
-        a maintenant sa propre vue, « Suivi ».
+        Ce qu'on fait, par opposition à ce qui répond : la liste du jour, ce
+        qui a été revu, ce qui vient ensuite. Regroupé parce qu'au bureau
+        c'est une colonne à part (section 7.5) — sur un téléphone, le
+        conteneur ne fait que reprendre l'espacement de son parent.
       */}
-      {vue.prochaines.length > 0 && (
-        <section className="pile pile--serree">
-          <h2 className="section__titre">{t.dashboard.prochainesEcheances}</h2>
-          <ul className="liste-revisions">
-            {vue.prochaines.map((entree) => (
+      <div className="aujourdhui__travail">
+      {vue.dujour.length > 0 && (
+        <ul className="liste-reglee">
+          {vue.dujour.map((entree) => (
+            <LigneRevision
+              key={entree.review.id}
+              entry={entree}
+              aujourdhui={aujourdhui}
+              onValider={validerEntree}
+              onDevalider={devaliderEntree}
+              masquerDate
+              detail="passage"
+            />
+          ))}
+        </ul>
+      )}
+
+      {/*
+        Ce qui a été coché reste sous la main tant que la journée dure. La
+        validation s'annule, elle ne se confirme pas : le « Annuler » du toast
+        expire au bout de cinq secondes, celui-ci non.
+      */}
+      {vue.faites.length > 0 && (
+        <section className="aujourdhui__section">
+          <h2 className="surtitre">{t.dashboard.revuAujourdhui}</h2>
+          <ul className="liste-reglee">
+            {vue.faites.map((entree) => (
               <LigneRevision
                 key={entree.review.id}
                 entry={entree}
                 aujourdhui={aujourdhui}
                 onValider={validerEntree}
                 onDevalider={devaliderEntree}
-                detail="progression"
+                masquerDate
+                detail="passage"
               />
             ))}
           </ul>
-          <p className="hero__pied">
+        </section>
+      )}
+
+      {/*
+        Trois échéances, pas cinq : ce qui vient ensuite se lit déjà sur la
+        règle, et cette liste ne fait que nommer les trois premières.
+      */}
+      {vue.prochaines.length > 0 && (
+        <section className="aujourdhui__section">
+          <h2 className="surtitre">{t.dashboard.ensuite}</h2>
+          <ul className="liste-reglee">
+            {vue.prochaines.map((entree) => (
+              <LigneEcheance key={entree.review.id} entry={entree} />
+            ))}
+          </ul>
+          <p className="aujourdhui__pied">
             <LienBouton vers="/revisions/prochaines" variante="texte">
               {t.dashboard.toutVoir}
             </LienBouton>
           </p>
         </section>
       )}
-    </>
+      </div>
+
+    </div>
   )
 }
 
 /**
- * Une journée bouclée n'est pas une journée vide. `restantes` à zéro se lit
- * « Tout est terminé » quand quelque chose était prévu, et « Aucune révision
- * prévue » quand rien ne l'était.
+ * Ce qui accompagne le compte.
+ *
+ * Une journée bouclée n'est pas une journée vide. Zéro se lit « Tout est
+ * terminé » quand quelque chose était prévu, et « Aucune révision prévue »
+ * quand rien ne l'était — le chiffre est le même, c'est le libellé qui les
+ * distingue.
  */
-function titreDuJour(restantes: number, prevues: number): string {
+function libelleDuJour(restantes: number, prevues: number): string {
   const t = textes().dashboard
   if (restantes > 0) return t.aFaire(restantes)
   return prevues > 0 ? t.tempsTermine : t.rienDePrevu
@@ -207,4 +203,3 @@ function secondeLigne(prevues: number, prochain: { date: string; count: number }
   if (prochain === null) return prevues > 0 ? t.plusRien : t.aVenirIci
   return t.prochaine(formatShort(prochain.date), prochain.count)
 }
-

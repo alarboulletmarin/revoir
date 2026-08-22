@@ -42,6 +42,8 @@ Où elle apparaît : fiche d'un sujet (grande, avec libellés), ligne de liste (
 
 Où elle n'apparaît pas : partout ailleurs. Une signature qui se répète cesse d'en être une.
 
+**Elle ne se confond pas avec la règle** (section 8.8), qui porte un axe calendaire et des hauteurs de charge. Deux objets, deux géométries, deux modules : la frise dit *quand reviennent les échéances d'un sujet*, la règle dit *ce que pèsent les quinze jours qui viennent*.
+
 ### Le signe de l'en-tête
 
 Une exception, et une seule : `.appli__signe`, accolé au mot « Revoir ». Ce n'est pas une frise — aucune date ne s'y lit, ses graduations sont figées sur le programme Simple —, c'est le **logotype** : la même forme que l'icône posée sur l'écran d'accueil, à la géométrie près. Il ne compte donc pas parmi les neuf icônes de la section 11.
@@ -152,7 +154,7 @@ Trois règles, sans exception :
 
 1. **Jamais en surface pleine.** Trait, texte et pastille uniquement. Une catégorie qui remplirait une carte concurrencerait l'unique cellule `--accent` de l'écran, et la hiérarchie retomberait.
 2. **La couleur ne porte jamais l'information seule.** Ces huit teintes ont des luminances voisines : elles ne se distinguent pas en niveaux de gris. Le nom de la catégorie est donc toujours écrit à côté de sa pastille.
-3. **Sur fond `--accent` plein, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le reste de la cellule héros.
+3. **Sur une surface `--accent` pleine, la teinte cède.** Une teinte de catégorie y serait illisible : la chip repasse en `--surface`, comme le texte qui l'entoure.
 
 Les huit sont redéfinies pour le thème sombre : ce ne sont pas d'autres couleurs, ce sont les mêmes, éclaircies en OKLab — teinte et chroma conservées, seule la clarté monte — jusqu'à retrouver sur le papier de nuit le contraste qu'elles tenaient sur le clair. De 5,50:1 (ocre) à 5,54:1 (ardoise et bleu). Les composants n'en savent rien : ils lisent toujours `--teinte` et `--teinte-texte`, et ce sont les variables `--cat-*` qui changent sous eux.
 
@@ -191,39 +193,76 @@ L'encre est dérivée en OKLab, où la clarté est perceptuelle : la teinte et l
 
 ## 4. Typographie
 
-Deux rôles, deux familles.
+Trois rôles, deux familles.
 
 ```css
---police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
---police-ui:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+--police-titre:    Arial, Helvetica, sans-serif;
+--police-ui:       Arial, Helvetica, sans-serif;
+--police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
 ```
 
-- **`--police-titre`** : chiffres du bento, titres de page, titres de sujets.
+- **`--police-titre`** : titres d'écran, de page, de section, titres de sujets, logotype.
 - **`--police-ui`** : tout le reste.
+- **`--police-chiffres`** : chiffres, dates, compteurs, décalages `J+n`.
 
-**Deux rôles, une seule famille : la pile système.** Zéro octet téléchargé, rendu natif, aucune bascule au chargement.
+**Zéro octet téléchargé, et aucun appel réseau.** C'est la contrainte du projet, pas une préférence, et elle n'a pas bougé.
 
-Cette section a longtemps décrit une autre réalité : « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé : aucun `@font-face`, aucun lien, aucun fichier. Tous les titres tombaient déjà sur la pile système, et la spécification décrivait une police que l'application n'a jamais servie. Elle dit maintenant ce qui se passe.
+Cette section a longtemps décrit une autre réalité : « Instrument Sans, variable, woff2 sous-ensemble latin, auto-hébergée dans `/public/fonts` ». Ce dossier n'a jamais existé. La question s'est reposée à la refonte — embarquer un woff2 local, ou tenir la pile système — et la réponse est restée la seconde. Ce qui change, c'est que le caractère ne se cherche plus dans un fichier de police : il vient d'**Arial nommée en tête de pile**, de **deux graisses tenues** et de **chasses réglées**.
 
-Les deux variables restent distinctes, bien qu'elles vaillent la même chose : les rôles n'ont pas fusionné. Une police de titres se réintroduit ici, en un seul endroit, auto-hébergée, jamais appelée à un CDN, et sa licence versée à `THIRD-PARTY.txt` comme celle de toute autre dépendance.
+**Pourquoi Arial et non `system-ui`.** `system-ui` n'est pas un dessin, c'est un renvoi : SF Pro sur un appareil, Roboto sur un autre, Segoe UI sur un troisième. Trois dessins qui ne portent pas le même titre à −0,035 em, et un design qu'on ne peut ni régler ni vérifier. Arial est présente partout sauf sur Linux, où le repli tombe sur Liberation Sans, dessinée à ses chasses exactes. Rien n'est téléchargé : c'est un nom, pas un fichier.
+
+**Pourquoi une chasse fixe pour les chiffres.** Ils se lisent en colonne dans cette application — les quinze jours de la règle, les échéances d'une fiche, les comptes au bout des rangées —, et une chasse variable les décale les uns par rapport aux autres. La pile système suffit : son dessin change d'un système à l'autre, sa chasse fixe est garantie partout, et c'est elle qu'on vient chercher. Le rôle est posé à deux endroits, jamais recopié ailleurs : `time, output` dans le reset, et l'utilitaire `.chiffres` pour ce qui n'est ni l'un ni l'autre. Les deux réaffirment `font-size: 1em`, sans quoi le générique `monospace` ferait appliquer au texte la taille par défaut du navigateur — 13 px chez la plupart.
 
 ### Échelle
 
+Deux échelles, et elles ne servent pas la même chose. Celle du corps de texte est nommée par son rang, celle des titres par son rôle : un titre ne se choisit pas par sa place dans une suite mais par ce qu'il ouvre.
+
 | Token | Taille / interligne | Usage |
 |---|---|---|
+| `--t-ecran` | 34px / 1,08 | titre d'une des trois vues |
+| `--t-page` | 30px / 1,1 | titre d'une page qui a un retour |
+| `--t-section` | 22px / 1,2 | titre d'un bloc dans une page |
+| `--t-marque` | 14px / 1 | le logotype, et lui seul |
 | `--t-champ` | 16px / 1,4 | **valeur plancher des champs de saisie** (anti-zoom iOS) |
-| `--t-xl` | 28px / 1,15 | chiffres des cellules, titre de la cellule du jour |
-| `--t-lg` | 20px / 1,3 | titre de page, titre de fiche |
+| `--t-xl` | 28px / 1,15 | grands chiffres |
+| `--t-lg` | 20px / 1,3 | titre secondaire |
 | `--t-md` | 17px / 1,4 | titre de sujet dans une liste |
 | `--t-base` | 15px / 1,5 | texte courant |
-| `--t-sm` | 13px / 1,45 | labels de cellules, métadonnées |
-| `--t-xs` | 12px / 1,4 | graduations de la frise, catégories |
+| `--t-sm` | 13px / 1,45 | métadonnées |
+| `--t-xs` | 12px / 1,4 | sur-titres, graduations, catégories |
 
-Trois graisses seulement : 400 (courant), 500 (labels, boutons), 600 (chiffres, titres). Jamais de 700.
+**12px est un plancher absolu**, jamais franchi vers le bas.
 
-**Tous les chiffres, dates et compteurs** portent `font-variant-numeric: tabular-nums`. Non négociable : sans ça, les compteurs sautent à chaque validation.
+Un écran ne porte jamais deux titres du même cran : c'est ce qui rend sa hiérarchie lisible sans qu'aucune couleur n'ait à s'en mêler.
 
-Labels de cellules : 13px, poids 500, `letter-spacing: 0.02em`, en casse normale. **Pas de majuscules forcées** : le français accentué en capitales est laid et moins lisible.
+### Graisses
+
+Quatre, et pas une de plus : 400 (courant), 500 (labels, boutons), 600 (chiffres, états actifs), **700 (titres et logotype, et rien d'autre)**.
+
+Le 700 était interdit, et l'interdit disait quelque chose de juste : une graisse de plus est une nuance de plus à distinguer, et un écran qui compte quatre poids n'en hiérarchise aucun. Il tombe pour une raison plus forte. La refonte fait porter la voix de l'écran à un seul titre — plus de cellule pleine, plus de carte en couleur —, et à 34 px resserré à −0,035 em, c'est le poids du titre qui tient le bloc. Le 600 d'Arial y rend un titre mou, qui ne dit pas qu'il est le premier objet de l'écran. Le 700 ne se répand pas pour autant : il est réservé aux trois crans de titre et au logotype, et il est absent de tout ce qui n'est pas un titre.
+
+### Chasses
+
+```css
+--chasse-titre:    -0.035em;   /* les trois crans de titre */
+--chasse-surtitre:  0.14em;    /* sur-titres, 12px, capitales */
+--chasse-marque:    0.24em;    /* le logotype */
+```
+
+Les titres se resserrent parce qu'à 34 px l'espacement par défaut d'Arial creuse les mots et fait perdre au titre sa tenue de bloc. Les sur-titres et le logotype s'ouvrent au contraire : ils sont courts, petits et en capitales, trois raisons de laisser respirer.
+
+### Capitales
+
+**La casse forcée reste proscrite dans le texte**, et pour la raison d'origine : le français accentué en capitales est laid et moins lisible. Les labels, les libellés de boutons, les titres et les métadonnées s'écrivent en casse normale.
+
+Elle est admise à deux endroits, tous deux hors du texte :
+
+1. **Le logotype.** Six lettres sans accent, une fois par écran, une marque et non une phrase. Le DOM garde « Revoir » en casse normale : c'est le mot que lit un lecteur d'écran, pas six lettres épelées.
+2. **Les sur-titres**, à 12 px, en `--encre-2`, ouverts à 0,14 em : « vendredi 21 août », « les quinze jours », « ensuite ». Ce sont des étiquettes de section de quelques mots, pas des phrases, et l'ouverture de la chasse compense très largement ce que la capitale coûte en lisibilité à cette taille. Un sur-titre ne porte jamais d'information qu'on ne retrouve pas dessous.
+
+Hors de ces deux emplois, `text-transform: uppercase` est un défaut.
+
+**Tous les chiffres, dates et compteurs** portent `font-variant-numeric: tabular-nums`, en plus de la chasse fixe. Non négociable : la chasse fixe aligne les colonnes, les chiffres tabulaires empêchent un compteur de sauter quand il change.
 
 ---
 
@@ -236,14 +275,17 @@ Base 4px.
 --e-5: 24px;   --e-6: 32px;   --e-7: 48px;
 ```
 
-- Gouttière du bento : `--e-3`
 - Padding intérieur des cellules : `--e-4` (mobile), `--e-5` (≥ 768px)
-- Marge de page : `--e-4`, avec `max-width: 960px` centré
+- Marge de page : `--e-4`, avec `max-width: 720px` centré
+
+**720 px, et non 960.** La largeur d'avant venait du bento : quatre cellules côte à côte en avaient besoin. Il n'y a plus de grille, et ce qui reste est fait de lignes — une règle graduée, des rangées, des paragraphes. Étalées sur 960 px, elles envoyaient le « J+7 » d'une rangée à neuf cents pixels de son titre, et la règle des quinze jours y perdait la densité qui la rend lisible. 720 px tient une ligne de texte autour de soixante-dix caractères et garde les deux bouts d'une rangée dans le même regard.
+
+Le bouton flottant suit cette colonne plutôt que le bord de la fenêtre : collé au bord d'un écran large, il flottait à trois cents pixels du contenu, là où l'œil ne va jamais.
 
 Deux rayons :
 
 ```css
---r-carte:  12px;   /* cellules bento, champs, boutons */
+--r-carte:  12px;   /* champs, boutons, dialogues */
 --r-pilule: 999px;  /* badges, chips de catégorie */
 ```
 
@@ -258,14 +300,17 @@ Traits : `1px solid var(--trait)`. C'est le seul mécanisme de séparation.
 ```css
 --duree-court: 120ms;
 --duree-moyen: 200ms;
+--duree-regle: 320ms;
 --courbe: cubic-bezier(0.2, 0, 0, 1);
 ```
 
 **Trois animations autorisées, pas une de plus :**
 
 1. La coche de validation (`--duree-court`, opacité + `scale` 0.9 → 1)
-2. Le panneau du jour dans le calendrier (`--duree-moyen`, translation depuis le bas)
+2. La graduation du jour, sur la règle (`--duree-regle`, `scaleY` 0 → 1, une seule fois à l'ouverture de l'écran)
 3. Le toast (`--duree-moyen`, opacité + 8px de translation)
+
+La deuxième a changé d'objet : c'était la translation du panneau du jour dans le calendrier, qui est devenu une page (section 8.11) et n'a plus rien à faire glisser. La règle hérite de sa place, et c'est la seule animation de l'application qui **explique** quelque chose au lieu d'accompagner un geste — elle se joue une fois, et rien ne la rejoue. Elle est aussi la plus lente du projet, pour la même raison.
 
 Tout le reste : transitions de couleur sur `:hover` / `:active` en `--duree-court`, point final.
 
@@ -288,6 +333,8 @@ La coque a **deux barres**, et chacune a son emploi.
 
 En **bas**, fixe, la navigation : les trois vues — Aujourd'hui, Calendrier, Suivi —, l'icône au-dessus de son mot (section 8.18). En bas parce que c'est là que le pouce arrive : l'application s'installe et se tient d'une main, et le geste central — cocher — se fait justement du pouce.
 
+**Elle s'efface là où une barre d'action fixe prend le relais** (section 8.22) : les trois vues ne changent ni de nombre, ni d'ordre, ni de comportement, elles ne s'empilent simplement pas sous une seconde barre. Empiler 52 px d'action sur 58 px de navigation et la marge système, ce sont cent vingt pixels de chrome sous le pouce et deux réponses à « comment je sors d'ici ? ». Ces écrans-là sont un parcours à sortir, pas une vue à quitter : ils ont un retour en haut et une sortie écrite en bas à gauche.
+
 En **haut**, collant, la coque : à gauche le logotype sur une vue, le retour partout ailleurs (section 8.19) ; à droite l'aide et les réglages. Ce sont les **deux seuls liens de l'app réduits à leur signe** (sections 8.14 et 8.16). Ni l'un ni l'autre n'est une vue, et une quatrième part dans la barre du bas ferait tomber chaque libellé sous 72px à 320px.
 
 Une seule chose à gauche de l'en-tête, jamais deux : la marque et le retour mènent tous deux en arrière — l'une vers la racine, l'autre vers l'écran précédent — et les afficher ensemble donnerait deux réponses à la même question. La barre du bas, elle, reste là dans les deux cas : c'est ce qui rend l'effacement de la marque sans conséquence.
@@ -296,7 +343,7 @@ Une seule chose à gauche de l'en-tête, jamais deux : la marque et le retour m�
 
 ```css
 @media (min-width: 480px)  { }  /* grands mobiles */
-@media (min-width: 768px)  { }  /* tablette : le bento passe à 4 colonnes */
+@media (min-width: 768px)  { }  /* tablette */
 @media (min-width: 1024px) { }  /* bureau : max-width 960px, marges --e-6 */
 ```
 
@@ -304,49 +351,17 @@ Largeurs de test obligatoires : **320, 375, 414, 768, 1024, 1280**. Le 320 n'est
 
 Hauteurs : `dvh`, jamais `vh`. La barre d'URL mobile fausse `100vh` et fait dépasser le contenu sous le pli. Écran plein : `min-height: 100dvh`.
 
-### 7.2 Grille bento
+### 7.2 Une colonne, partout
 
-Réservée au **tableau de bord**. Le calendrier, le suivi, la fiche d'un sujet et le formulaire utilisent une colonne simple. Étendre le bento partout le banaliserait.
+**Il n'y a plus de grille.** Tous les écrans sont une colonne simple.
 
-```css
-.bento {
-  display: grid;
-  gap: var(--e-3);
-  grid-auto-rows: minmax(96px, auto);
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:
-    "aujourdhui aujourdhui"
-    "retard     retard"
-    "synthese   synthese";
-}
+Le tableau de bord avait un bento : trois cellules de même poids — la journée, le retard, la charge — posées côte à côte, et il fallait choisir laquelle répondait à la question de la section 1. Trois blocs pour une seule question, dont deux qui la reformulaient. La règle des quatorze jours (section 8.8) les remplace tous les trois : le retard s'y lit sous l'axe, la charge est l'axe lui-même, et la journée est écrite en toutes lettres au-dessus, en titre.
 
-@media (min-width: 768px) {
-  .bento {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-areas:
-      "aujourdhui aujourdhui retard     retard"
-      "aujourdhui aujourdhui synthese   synthese"
-      "aujourdhui aujourdhui calendrier calendrier";
-  }
-}
-```
+Ce qui disparaît avec le bento : `.bento`, `.cellule` et ses variantes, la cellule héros à fond `--accent` plein, la cellule « retard », la cellule « synthèse », le mini-mois de tablette. **Le grand chiffre, lui, revient** — pas dans une carte, mais en tête d'écran (section 8.9) : c'était la meilleure idée du bento, et la perdre avec lui aurait coûté à l'écran sa réponse la plus rapide. Les six stats de la spécification initiale n'ont pas migré ailleurs : elles vivent dans la fiche d'un sujet et dans le suivi, où on va les chercher.
 
-`grid-auto-rows: minmax(96px, auto)` est obligatoire : le français est plus long que l'anglais et casserait une grille à hauteur fixe.
+**L'écran n'a donc plus d'unique cellule `--accent` pleine**, et la hiérarchie ne tient plus à une surface de couleur. Elle tient au titre, à son cran, à sa graisse et à sa place — première chose écrite, seule de son cran sur l'écran (section 4). C'est ce déplacement qui a fait tomber l'interdit du 700.
 
-Une zone par cellule, jamais deux rangées pour une seule carte : la cellule du jour doit pouvoir ne faire que la hauteur de son unique révision. Elle porte donc `min-height: 0` et `align-self: start`. Au-delà de 768px elle couvre trois rangées, et sans cela une journée à deux révisions se retrouverait au sommet de huit cents pixels de vert.
-
-### Inventaire des cellules
-
-| Zone | Contenu | Comportement |
-|---|---|---|
-| `aujourdhui` | **Cellule héros, fond `--accent` plein.** Titre « 3 révisions aujourd'hui » + liste cochable directement dans la cellule | Si 0 : bascule en état vide (section 8.9) |
-| `retard` | Chiffre en `--retard-texte`, point `--retard` | **Disparaît du DOM si 0** : la grille se recompose |
-| `synthese` | Total restant, puis les 14 barres de charge sous leur intitulé | Toujours affichée |
-| `calendrier` | Mini-mois, points de densité | **≥ 768px uniquement** |
-
-Les six stats de la spec initiale sont volontairement réduites à trois chiffres visibles. Le reste vit dans la fiche d'un sujet et dans le suivi.
-
-Sous 480px, la cellule héros n'affiche que **3 items + « Tout voir »** : un titre et une liste complète ne tiennent pas dans une cellule à 320px. Le grand chiffre de 64px a disparu. La question du jour est une phrase, « 3 révisions aujourd'hui », et c'est le fond `--accent` plein qui porte la hiérarchie, pas la taille du texte.
+Une conséquence à ne pas perdre : la marge latérale appartient au **contenu**, plus au conteneur. La règle et les lignes réglées traversent le papier d'un bord à l'autre, et ce sont leurs contenus qui se retirent de `--marge-page`. Un filet qui s'arrête à seize pixels du bord ressemble à une carte sans en être une.
 
 ### 7.3 La pile du bas — source n°1 de chevauchement
 
@@ -373,29 +388,58 @@ Quatre éléments se disputent le bas de l'écran : la barre de navigation, le F
 
 | Piège | Règle |
 |---|---|
-| Un titre long élargit sa cellule et casse la grille | `min-width: 0` sur **tout** enfant de grid ou de flex contenant du texte. C'est le bug n°1 des bento. |
+| Un titre long élargit son conteneur et pousse la page | `min-width: 0` sur **tout** enfant de grid ou de flex contenant du texte. C'est le bug n°1 des mises en page en flex. |
 | Le titre écrase la coche ou le chip de catégorie | Titre : `flex: 1; min-width: 0`. Coche et chip : `flex-shrink: 0`. |
 | Un mot long déborde de la carte | `overflow-wrap: anywhere` sur tout texte saisi par l'utilisateur, plus `-webkit-line-clamp: 2` sur les titres de liste |
 | Les libellés de la frise se chevauchent (J+1 / J+2) | Libellés masqués sous 480px, et affichés uniquement si le segment mesure plus de 32px |
 | Le calendrier déborde à 320px | 7 × 44px = 308px : sous 380px la grille annule la marge de page et utilise `repeat(7, 1fr)` + `aspect-ratio: 1` |
 | iOS zoome au focus d'un champ | `font-size: 16px` minimum sur `input`, `select`, `textarea` : c'est le rôle de `--t-champ` |
 | Marges qui s'additionnent ou fusionnent | **Aucun composant ne porte de marge externe.** L'espacement vient exclusivement du `gap` du conteneur et de son `padding`. |
-| Paysage mobile écrasé | `@media (min-height: 560px)` pour agrandir la cellule héros, jamais l'inverse |
+| Paysage mobile écrasé | `@media (min-height: 560px)` pour aérer, jamais l'inverse |
 | Double barre de défilement | Un seul conteneur à défilement **vertical** par écran. Le défilement **horizontal** appartient au tableau de suivi (section 8.13), et à lui seul, jamais à la page. |
+
+---
+
+### 7.5 Le bureau
+
+**Mobile first ne veut pas dire mobile étiré.** Jusqu'ici, un écran de trente pouces recevait la mise en page d'un téléphone, en plus large : une barre de navigation collée au bas, un bouton flottant dans un coin, et une colonne unique. Trois patrons tactiles servis à une souris.
+
+**Au-delà de 1024 px, la barre du bas devient un rail à gauche.** Le seuil est celui de la souris, pas celui de la place : une tablette en portrait se tient encore à deux mains, et son pouce arrive en bas — elle garde donc la barre. Le rail met les trois vues là où la lecture commence, garde leurs libellés, et rend au contenu la hauteur que la barre prenait.
+
+Rien ne change dans le balisage : la navigation est déjà une liste de trois liens, c'est sa mise en page qui change. Le signe passe à gauche du mot, la part cesse de s'étirer, et **l'état actif gagne une surface** (`--accent-doux`) : en bas, la part active était la seule des trois à porter une couleur ; dans une colonne, elle est une ligne parmi d'autres, et la couleur seule ne la désigne plus assez.
+
+**Le logotype passe en tête du rail** — c'est là que commence la lecture, et l'en-tête n'y garde que le retour et les deux signes. Le choix se fait dans le Layout, en un seul endroit, plutôt qu'en rendant la marque deux fois pour en masquer une par media query.
+
+**Le rail prend sa place sur la coque**, pas sur chaque écran : la colonne de contenu se centre alors dans ce qui reste, au lieu d'être poussée à droite d'un espace qu'elle continuerait de compter. Le rail lui-même est `fixed` : il ne connaît pas ce décalage et se pose dans la réserve qu'il vient d'ouvrir.
+
+**« Aujourd'hui » passe à deux colonnes.** À gauche ce qui répond — le compte, la règle des quinze jours ; à droite ce qu'on fait — la liste du jour, ce qui a été revu, ce qui vient ensuite. En une seule colonne sur un écran large, la liste tombait sous la ligne de flottaison alors qu'il restait la moitié de l'écran à sa droite, et cocher demandait de faire défiler ce qu'on venait de lire.
+
+La colonne de gauche est `sticky` : la règle reste lisible pendant qu'on parcourt une longue liste, ce qui est exactement ce qu'on lui demande — situer ce qu'on coche dans les quinze jours qui viennent.
+
+Deux pièges, tous deux réels :
+
+1. La colonne de droite traverse toute la grille (`grid-row: 1 / -1`) pour commencer en haut, à la même ligne que le compte. Sans `grid-template-rows: auto auto 1fr`, elle étirait la première rangée à sa propre hauteur, et la règle descendait de deux cents pixels sous le compte qu'elle doit suivre.
+2. Les écrans en colonne traversent le papier par une marge négative ; en grille, cette marge n'a plus de sens et `margin-inline` revient à zéro.
+
+**La colonne s'élargit à 1040 px** au bureau, pour que chacune des deux garde sa largeur de lecture. Le bouton flottant, lui, suit la colonne à toutes les largeurs.
 
 ---
 
 ## 8. Composants
 
-### 8.1 Cellule bento
+### 8.1 Liste réglée
+
+Le composant de liste du projet, depuis que la carte a disparu (section 7.2).
 
 ```
-.cellule            fond --surface, 1px --trait, --r-carte, padding --e-4
-.cellule--accent    fond --accent, texte --surface, pas de bordure
-.cellule--action    cliquable : :hover → fond #F3F1EA, :active → scale(0.995)
+.liste-reglee       colonne ; chaque enfant porte un filet 1px --trait en bas
 ```
 
-Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le chiffre d'abord, parce que c'est ce qu'on vient chercher.
+Des lignes séparées par un filet, pas des cartes. Une carte par révision mettait autant de bordures que d'items sur un écran qui n'en demande qu'une : la liste est **un seul objet**, réglé comme une page de cahier, et c'est le filet qui sépare — le seul mécanisme de séparation du projet (section 5).
+
+Le filet est porté par l'enfant et non par le conteneur : une ligne qui sort de la liste au moment d'être validée emporte son trait avec elle, sans laisser un filet orphelin le temps de l'animation.
+
+Les lignes traversent le papier d'un bord à l'autre ; c'est leur contenu qui se retire de `--marge-page`.
 
 ### 8.2 Ligne de révision (le composant le plus important de l'app)
 
@@ -408,12 +452,15 @@ Structure interne, toujours dans cet ordre : chiffre → label → contenu. Le c
 ```
 
 - Cible de validation : **44 × 44px minimum**, séparée de la zone qui ouvre la fiche.
-- Case : cercle 20px, bordure 1,5px. Coché : fond `--fait`, coche `--surface`.
-- Ligne de métadonnées : catégorie en `--encre-2` + frise miniature.
+- Case : cercle 24px, bordure 1,5px. Coché : fond `--fait`, coche `--surface`.
+- Sur la **liste du jour** (variante `--passage`), le cercle passe à `--cercle-passage` (26px) et sa bordure à `--accent` : c'est le geste central de l'application, sa cible ne se voit pas, et seul le cercle dit où viser. La cible garde ses 44px et se replie dans la hauteur de la ligne au lieu de l'étirer.
+- Ligne de métadonnées : catégorie en `--encre-2` + frise miniature. Sur la liste du jour, la chip encadrée cède la place à une pastille suivie de son nom — une bordure de moins sur une ligne qui en porte déjà une — et « 3ᵉ passage sur 5 » dit où en est le programme. Le décalage `J+n` tient sa propre colonne au bout de la ligne, à chasse fixe : dans la méta, il se serait aligné sur le texte qui le précède et aurait changé de place d'une ligne à l'autre.
 - État en retard : mention « il y a 3 jours » en `--retard-texte`, et rien d'autre. **Aucune bande de couleur en bord de ligne** : elle alourdit la liste sans rien dire que la mention ne dise déjà, et la section 1 demande que le retard n'accuse pas.
 - Validation : mise à jour optimiste immédiate, ligne barrée 200ms, puis retrait de la liste. Toast avec « Annuler ».
 
-Classes : `.ligne-revision`, `.ligne-revision--faite`, `.ligne-revision--compact`, `.ligne-revision__case`, `.ligne-revision__cercle`, `.ligne-revision__coche`.
+Classes : `.ligne-revision`, `.ligne-revision--faite`, `.ligne-revision--compact`, `.ligne-revision--passage`, `.ligne-revision__case`, `.ligne-revision__cercle`, `.ligne-revision__coche`, `.ligne-revision__decalage`.
+
+**Une échéance à venir n'est pas une ligne de révision** (`.ligne-echeance`) : la date d'abord, à chasse fixe, puis le sujet, puis sa catégorie — et aucune case. « Ensuite » se lit, il ne s'actionne pas : cocher y solderait une échéance de la semaine prochaine d'un geste de trop. La rangée ouvre la fiche, et « Tout voir » mène à la liste complète, qui coche.
 
 ### 8.3 Frise
 
@@ -479,13 +526,43 @@ Deux règles tiennent le modèle :
 
 Un rythme venu d'un import peut porter un écart absent de l'échelle : sa graduation vient se ranger à sa place plutôt que de le rendre immodifiable.
 
-### 8.8 Barres de charge
+### 8.8 La règle
 
-14 barres, largeur `1fr` chacune, gap 3px, `border-radius: 2px`, hauteur proportionnelle au nombre de révisions (min 3px pour un jour vide). Opacité `--accent` de 0,25 à 1 selon la densité. La barre du jour porte un trait `--encre` de 2px à sa base : sa hauteur peut être celle d'un jour vide.
+**C'est la structure de l'écran « Aujourd'hui », pas une illustration posée dessus.** Elle remplace à elle seule les trois blocs qui se disputaient la même réponse : la cellule du jour, la carte « en retard » et les barres de charge.
 
-La hauteur ne porte jamais l'information seule : les barres forment une `<ul>` dont chaque `<li>` contient un texte `.invisible`, « aujourd'hui, 3 révisions », « ven. 7 août, aucune révision ». Sous l'axe, trois repères seulement — « Auj. », la date médiane, la dernière —, calés par `space-between` sur la première et la dernière barre : quatorze dates tiendraient sur seize pixels chacune à 320px.
+Une bande pleine largeur, entre deux filets `--trait`, sur `--surface`. Elle traverse l'écran au lieu de s'y loger : c'est une règle graduée, et une règle ne s'arrête pas au bord d'une carte.
 
-À zéro sur les quatorze jours, les barres cèdent la place à une phrase.
+**Quatorze cellules `flex: 1 1 0`**, une par jour à partir d'aujourd'hui. Deux semaines pleines, donc le même jour de la semaine aux deux bouts, et une cellule qui reste au-dessus de 20px à 320px.
+
+Un axe de 1px `--encre` traverse la bande à `--regle-base` du bas. Les graduations montent depuis lui, les dates se posent dessous ; la hauteur totale est dérivée de ces deux bandes, jamais mesurée à part.
+
+**Quatre paliers de hauteur, pas une échelle continue :**
+
+| Charge | Hauteur | Couleur |
+|---|---|---|
+| 0 | `--regle-vide` (6px) | `--trait` |
+| 1 | `--regle-faible` (12px) | `--encre-2` |
+| 2 | `--regle-moyen` (18px) | `--encre-2` |
+| 3 et plus | `--regle-fort` (22px) | `--encre` |
+| aujourd'hui | `--regle-jour` (24px), épaisseur `--regle-trait-jour` | `--accent` |
+
+Une hauteur proportionnelle dirait « deux fois plus » là où l'œil ne lit qu'« un peu plus », et se réétalonnerait à chaque changement du maximum : la même journée à trois révisions monterait ou descendrait selon ce qui l'entoure. Quatre paliers fixes gardent la même journée à la même hauteur d'un jour à l'autre. Au-delà de trois, ce qui compte n'est plus le compte exact mais le fait que la journée est chargée — et le nombre reste écrit pour qui veut le lire.
+
+**Une journée vide garde sa graduation.** Sans elle, la règle deviendrait une suite de bâtons isolés dont on ne saurait plus compter les jours qui les séparent.
+
+**Le nombre s'écrit au-dessus de sa graduation, centré dans sa cellule.** Jamais à côté : à côté, deux journées voisines et chargées donneraient quatre nombres sur une ligne sans qu'on sache lequel va avec lequel.
+
+**Trois repères de date sous l'axe** — aujourd'hui, le milieu, le dernier jour —, chacun **centré dans sa cellule**, une rangée de cellules vides servant de gabarit. Répartis en `space-between`, ils se caleraient sur les bords de la règle et ne désigneraient plus aucune graduation. Trois et pas quatorze : à 320px, quatorze dates disposeraient de vingt pixels chacune.
+
+**Aujourd'hui porte trois signaux, pas un** : la seule graduation en `--accent`, la seule plus épaisse, la seule qui dépasse les autres. Un jour qui doit se trouver sans être cherché.
+
+**Le retard suit la règle**, sur une ligne en `--retard-texte` précédée d'une pastille : « 1 révision en retard — la rattraper ». Il se constate et propose le geste qui le solde ; il n'accuse pas (section 1). La pastille redouble le texte, elle ne le remplace pas.
+
+**La couleur ne porte rien seule** : la charge se lit à la hauteur, s'écrit en chiffres au-dessus, et chaque jour est un `<li>` dont le texte `.invisible` donne sa date et son effectif en toutes lettres — « aujourd'hui, 3 révisions », « ven. 7 août, aucune révision ».
+
+**Animation** : la graduation du jour se dresse une fois à l'ouverture (`--duree-regle`, `scaleY`), et rien ne la rejoue. C'est l'animation n°2 de la section 6.
+
+**La règle n'est pas la frise.** La frise porte un axe en racine carrée où l'abscisse est une échéance et l'écart entre deux graduations vaut l'écart réel entre deux dates (section 2). La règle porte un axe calendaire à pas constant où l'ordonnée est un effectif. Les deux viennent du même objet et ne se lisent pas pareil : fondre les deux géométries dans un composant coûterait à la frise ce qui en fait la signature. Elles vivent dans deux modules, `lib/frise.ts` et `lib/regle.ts`, et dans deux composants.
 
 ### 8.9 États vides
 
@@ -496,7 +573,17 @@ Aucune révision prévue aujourd'hui
 Prochaine révision : jeu. 6 août, 3 sujets.
 ```
 
-Il reste dans la cellule héros, fond `--accent` plein. La deuxième ligne est une information utile, pas un encouragement. Aucune illustration, aucun emoji.
+**L'écran répond par un chiffre, et il est grand.** Le compte de ce qu'il reste à revoir aujourd'hui s'écrit en `--t-compte`, au-dessus de son libellé : c'est ce qu'on vient chercher, et une phrase qui l'écrit en toutes lettres le fait lire au lieu de le faire voir. C'est le principe que portait le grand chiffre du bento — chiffre d'abord, label ensuite —, rendu à l'écran qui l'avait perdu avec lui.
+
+Il est dans la police des titres et non dans celle des chiffres. La chasse fixe sert à ce qui se lit en colonne (section 4) ; un chiffre seul de 56 px ne se lit pas en colonne, il se regarde — et à cette taille, la pile monospace du système imposerait son dessin, un zéro barré sur l'un et ouvert sur l'autre, à la première chose vue de l'application. `tabular-nums` reste, hérité de son `<output>` : c'est lui qui garde la même largeur entre « 1 » et « 2 », et empêche le libellé de bouger dessous quand le compte descend. L'`<output>` porte aussi une région vive, ce que la section 10 demande d'un compteur qui change.
+
+**L'en-tête réserve sa hauteur** (`--h-reponse`), et c'est la correction d'un vrai défaut : l'écran sautait au moment précis où l'on coche. Le libellé passait d'une ligne à deux en changeant d'état, la ligne de suite apparaissait avec lui, et trois objets se déplaçaient sous le doigt qui venait de valider — le geste central de l'application. La réserve couvre le cas le plus haut mesuré à 320 px, la largeur qui décide de tout, et elle est dérivée de ses parts plutôt que mesurée en dur.
+
+C'est aussi pourquoi **les libellés d'état sont courts** — « Tout est terminé. », « Aucune révision prévue. » : ils tiennent tous sur une ligne à 320 px, et la réserve n'a pas à prévoir un repli qui n'arrive jamais. « pour aujourd'hui » disparaît sans rien coûter : le sur-titre date déjà l'écran, et le compte à zéro est juste au-dessus.
+
+Le libellé s'écrit sous le compte, à la place de la phrase qu'il remplace — il n'y a plus de cellule héros à faire basculer (section 7.2). La deuxième ligne est une information utile, pas un encouragement, et elle n'apparaît que là : une journée qui a encore des révisions n'a pas besoin qu'on lui annonce la suivante. Aucune illustration, aucun emoji.
+
+**Une journée bouclée ne se solde pas sur un écran vide.** Ce qui vient d'être coché reste sous la main, sous « revu aujourd'hui », chaque ligne barrée gardant son « Annuler ». Le « Annuler » du toast expire au bout de cinq secondes, celui-ci dure autant que la journée.
 
 Une journée bouclée n'est pas une journée vide, et les deux ne se disent pas pareil : **« Tout est terminé pour aujourd'hui »** quand quelque chose était prévu, **« Aucune révision prévue aujourd'hui »** quand rien ne l'était. Sans rien à annoncer non plus, la seconde ligne devient « Les prochaines révisions apparaîtront ici. »
 
@@ -523,7 +610,25 @@ La première fois qu'un recalage déplace des échéances, la seconde ligne dit 
 
 ### 8.11 Calendrier
 
-Cases de 44px minimum : la case entière, pas le chiffre. Densité indiquée par 1 à 3 points de 4px sous le numéro (jamais plus de 3, même à 12 révisions), et sous eux le reste du compte : « +4 » en `--t-xs` `--encre-2` pour un jour à sept révisions. Trois points ne doivent pas laisser croire qu'il y a trois révisions. Le bloc points + reste garde sa hauteur qu'il soit plein ou vide, pour que les chiffres du mois tiennent tous la même ligne.
+**Une grille réglée, sans carte.** Six semaines de cases de `--h-case-jour`, séparées par un filet. Une grille porte déjà ses propres lignes : l'encadrer, c'était poser un second cadre autour d'un objet qui en est fait, et six semaines espacées flottaient là où six semaines réglées se lisent ligne à ligne, comme un agenda de papier.
+
+**Un trait vertical par révision** sous le numéro, `--trait-jour-large` de large — la largeur d'une graduation de la règle. C'est le même objet que la frise et la règle, et une hauteur se compare d'un regard là où trois diamètres identiques ne disent rien.
+
+| État | Hauteur | Couleur |
+|---|---|---|
+| à faire | `--trait-jour` | teinte de la catégorie, `--accent` sans catégorie |
+| journée soldée | `--trait-jour` | `--fait` |
+| en retard | `--trait-jour-retard` | `--retard` |
+
+Le retard dépasse : c'est le seul état du calendrier qui demande quelque chose, et il doit se voir en balayant le mois sans lire les nombres. Les traits sont alignés par le bas — c'est la hauteur qui porte l'information, et des traits centrés se compareraient par leurs deux bouts.
+
+Trois traits au plus, comme les points d'avant, et le reste du compte s'écrit sous eux : « +4 » pour un jour à sept révisions. Trois traits ne doivent pas laisser croire qu'il y a trois révisions.
+
+**Une phrase sous la grille dit ce qu'ils veulent dire.** Une hauteur et une couleur ne se devinent pas ; elles s'apprennent en une phrase, et cette phrase doit être là où on regarde, pas dans l'aide.
+
+**Aujourd'hui : fond `--accent-doux`, numéro `--accent` en 600.** C'était un anneau, qui devait cohabiter avec le disque plein du jour sélectionné. Ce second état a disparu avec la feuille : il n'y a plus qu'un état à marquer, et une surface douce se repère mieux qu'un contour dans une grille de quarante-deux cases.
+
+**L'en-tête** : deux chevrons de `--cible`, le mois en `--t-section` 700 et l'année en chasse fixe `--encre-2` à côté. On cherche « août », on vérifie « 2026 ».
 
 Chaque point prend la teinte de sa catégorie, comme la chip et la pastille (section 3 bis). C'est le seul endroit où deux révisions d'un même jour se distinguaient d'un coup d'œil. Repli sur `--accent` pour un sujet sans catégorie. Journée soldée : les points passent en `--fait`, un état l'emportant toujours sur une identité.
 
@@ -533,7 +638,17 @@ Deux états, deux moyens : **aujourd'hui** se marque d'un anneau `--accent`, le 
 
 Clavier : un seul jour tabulable, les flèches déplacent le focus d'un jour ou d'une semaine, Origine et Fin bornent la semaine, Page préc./suiv. changent de mois. Un jour d'un mois voisin reste cliquable et cale le calendrier sur son mois.
 
-**Feuille du jour** (`.feuille`) : `<dialog>` ancré en bas, coins hauts en `--r-carte`, poignée de 32×4px centrée, `::backdrop` à 20 % de `--encre` pour laisser voir le mois. Hauteur suivant le contenu, plafonnée à 78dvh ; seule la liste défile. Quatre sorties : le bouton — un libellé `--t-sm` en `--encre-2`, pas une action —, Échap, le fond, et le glissement vers le bas depuis l'en-tête. Le focus entre dans la feuille à l'ouverture et revient au jour consulté à la fermeture.
+**Ouvrir un jour ouvre une page**, `/jour/:date`, et non plus une feuille glissante.
+
+C'est une décision produit, pas une préférence de mise en page. Une feuille n'a pas d'adresse : on ne peut ni la partager, ni la poser sur un écran d'accueil, ni y revenir par le retour arrière du navigateur. Elle se referme d'un glissement du pouce, ce qui est exactement le geste qu'on fait en parcourant une liste. Et changer de jour y demandait de la refermer, de viser une autre case et de la rouvrir.
+
+La page : un retour vers le calendrier, le jour en titre, « 2 révisions · 0 faite » sous lui, la liste réglée, puis deux gestes — « Tout marquer comme revu » et « Reporter à demain ». Deux chevrons passent au jour voisin ; ils vivent avec le titre et non dans l'en-tête de l'application, qui porte déjà le retour — trois flèches sur une même rangée, dont une seule sort de la page, ne se distingueraient pas.
+
+**Les gestes groupés ne sont pas des boucles.** Chaque validation en retard recale les échéances suivantes du même sujet : deux validations parties du même état s'écraseraient, et le recalage de la première disparaîtrait. La cascade vit dans `lib/recalage.ts` (`validerPlusieurs`, `reporterPlusieurs`), avec ses tests, et le contexte n'écrit qu'une fois par sujet touché. Un seul toast suit le geste, et il dit **combien** : « Révision enregistrée » après avoir coché toute une journée laisserait croire qu'une seule l'a été. Son « Annuler » restaure tous les sujets touchés, jamais la moitié.
+
+**`FeuilleBas` reste** — c'est le panneau d'une cellule du tableau de suivi qui s'en sert (section 8.13). C'est la feuille *du jour* qui disparaît, pas le composant.
+
+Ce qu'était la feuille du jour, pour mémoire : `<dialog>` ancré en bas, poignée centrée, `::backdrop` à 20 % de `--encre`, quatre sorties dont le glissement. Son animation de translation était la deuxième des trois autorisées ; c'est la graduation du jour de la règle qui a pris sa place (section 6).
 
 **Où le focus entre, au juste.** Une feuille qu'on **lit** vise son corps : l'anneau ne doit pas se poser sur « Fermer », qui est une sortie et non une action. L'argument tombe pour une feuille qui n'existe que pour qu'on y **écrive** : l'y laisser imposerait un geste de plus avant d'atteindre le premier champ. D'où `cibleFocus`, que l'appelant fournit ou non. La visée a lieu après `showModal()` : le `<dialog>` est monté bien avant de s'ouvrir, `autoFocus` y aurait tiré à blanc.
 
@@ -556,6 +671,12 @@ Trois sorties, toutes non destructrices : le bouton « Annuler », Échap et un 
 ---
 
 ### 8.13 Tableau de suivi
+
+**L'écran commence par ses données.** Le titre est au cran des trois vues avec le compte de ce qu'il y a à suivre, les deux réglages tiennent sur une rangée sans libellé flottant — le champ affiche « Toutes les catégories », qui dit ce qu'il règle —, et la légende passe **sous** les tableaux. Empilés, titre, deux réglages étiquetés et légende repliée occupaient 385 px avant la première cellule, sur l'écran dont c'est le seul objet. Une légende se cherche quand une forme résiste, c'est-à-dire après l'avoir vue.
+
+**La bascule montre ce qu'elle donne** : « R1–R5 » et « J+n » sont les en-têtes qu'on obtiendra. « Compact » et « Intervalles » demandaient d'essayer pour savoir.
+
+**Plus de carte autour d'un groupe** : un filet en tête et le titre de la catégorie. Une carte par catégorie mettait un cadre autour de chaque tableau, et un tableau porte déjà ses lignes — deux grilles emboîtées dont l'une ne dit rien. Les en-têtes de colonnes passent en chasse fixe : « R1 » à « R5 » et les « J+n » sont des repères qui se lisent en colonne.
 
 **C'est un tableau, et il le reste sur un téléphone.** Le replier en cartes sous 480px ferait perdre exactement ce qu'on vient y chercher : comparer les sujets verticalement, les étapes horizontalement, et voir les trous. La réponse au petit écran n'est pas de supprimer le défilement horizontal, c'est de le rendre lisible.
 
@@ -745,7 +866,7 @@ Le « Annuler » d'un formulaire emprunte le même chemin : un formulaire abando
 
 **Deux boutons, deux endroits, et la différence est le sujet.**
 
-L'export de **tous** les sujets vit dans les Réglages, sous son propre titre, à côté de la sauvegarde JSON : c'est la même question, « comment je sors mes données d'ici ? », et la réponse n'est pas la même, ce qui mérite deux blocs plutôt qu'un. La vue Calendrier répond à « quand ? » ; ce n'est pas un écran d'outils, et le bento n'est pas davantage l'endroit d'un bouton de fichier.
+L'export de **tous** les sujets vit dans les Réglages, sous son propre titre, à côté de la sauvegarde JSON : c'est la même question, « comment je sors mes données d'ici ? », et la réponse n'est pas la même, ce qui mérite deux blocs plutôt qu'un. La vue Calendrier répond à « quand ? » ; ce n'est pas un écran d'outils, et le tableau de bord n'est pas davantage l'endroit d'un bouton de fichier.
 
 L'export d'**un** sujet vit sur sa fiche, dans le bloc Actions, entre « Dupliquer » et « Archiver » : c'est là qu'on l'a en tête, et c'est là que sont déjà ses autres verbes. Il porte le signe du calendrier — pas un dessin de plus — et son mot, « Exporter (.ics) ».
 
@@ -772,6 +893,136 @@ Chacun est une **bascule** : le gabarit de radios natifs habillés en segments q
 **Chaque langue se nomme dans sa propre langue** : « Français », « English ». Quelqu'un qui ouvre l'application dans une langue qu'il ne lit pas doit pouvoir y reconnaître la sienne.
 
 Ni l'un ni l'autre n'appartient aux données : ils ne s'exportent pas, ne s'importent pas, ne se synchronisent pas. Un fichier de sauvegarde décrit des révisions, pas l'écran sur lequel on les lit. Ils vivent dans `localStorage`, et une écriture qui échoue n'est pas une erreur : en navigation privée l'application marche, elle oublie simplement le choix d'une visite à l'autre. Les deux blocs le disent.
+
+---
+
+### 8.22 La création, en trois pages
+
+**Une question par écran, et rien d'écrit avant la dernière.**
+
+Le formulaire d'un seul écran demandait quatre choses à la fois — un titre, une catégorie, une date, un programme — à quelqu'un qui, la première fois, n'en connaît aucune. Trois pages posent les questions dans l'ordre où elles se répondent, et chacune tient dans un écran sans défilement.
+
+Adresses : `/nouveau/titre`, `/nouveau/categorie`, `/nouveau/rythme`. `/nouveau` reste valide et ouvre la première — le bouton « + » y mène, et des raccourcis d'écran d'accueil peuvent y pointer.
+
+| Étape | Question | Sortie | Action |
+|---|---|---|---|
+| 1 | Qu'est-ce que vous voulez revoir ? | « Plus tard », vers Aujourd'hui | Continuer |
+| 2 | Dans quelle catégorie ? | « Passer », vers l'étape 3 | Continuer |
+| 3 | À quel rythme ? | — | Créer le sujet |
+
+**La deuxième a une sortie parce que la catégorie est facultative** : un sujet sans catégorie est un état normal, pas un oubli à réparer. « Passer » mène à l'étape suivante et non hors du parcours — sauter une question n'est pas abandonner. La troisième n'a pas de sortie : il n'y a plus rien à sauter, et un « Passer » y voudrait dire « créer », ce que le bouton dit déjà. L'action reste à droite dans les deux cas, pour ne pas changer de place d'un écran à l'autre du même parcours.
+
+**Trois segments de 2px** en haut, pas une barre de progression : on ne mesure pas un avancement en pourcentage quand il y a trois questions, on les compte. Le compte est aussi écrit dans l'en-tête, à la place de l'aide et des réglages — ouvrir les réglages au milieu d'une saisie abandonnerait le parcours, et le retour de gauche suffit à en sortir.
+
+**Le brouillon vit dans le `sessionStorage`**, pas dans un contexte React. Ces pages ont des adresses, et une adresse se recharge : un onglet rafraîchi au milieu de l'étape 2 perdrait le titre saisi à l'étape 1 sans que rien ne l'annonce. Il meurt avec l'onglet — la durée de vie exacte d'un brouillon, et la raison pour laquelle ce n'est pas `localStorage` : un sujet abandonné il y a trois semaines n'a pas à ressurgir dans un formulaire vide. La validation de ce qu'on en relit vit dans `lib/brouillon.ts`, avec ses tests : ce qui sort d'un stockage est une donnée extérieure.
+
+**L'étape 3 se garde elle-même.** Ouverte sans titre — un favori, un onglet restauré —, elle renvoie à la question qui manque plutôt que d'offrir un bouton qui échouerait.
+
+**Ce qui n'est pas passé aux trois pages** : la modification d'un sujet et la duplication gardent le formulaire d'un seul écran. Dérouler trois pages pour changer un titre serait une régression, et une duplication arrive déjà remplie.
+
+**La barre d'action est fixe, et la barre du bas s'efface** (section 7.3). La sortie est un lien souligné à gauche, jamais un bouton gris : sortir doit être aussi lisible qu'avancer, et une sortie qu'on ne trouve pas est une impasse.
+
+---
+
+### 8.23 Les états d'un écran
+
+Deux, parce qu'il n'y en a que deux : la lecture est en cours, ou elle a échoué. Il n'y a ni réseau, ni requête à retenter en boucle, ni chargement progressif — la base est locale et répond en quelques dizaines de millisecondes.
+
+**Le gabarit d'attente** (`.gabarit`) : des blocs `--surface-survol` arrondis à `--r-gabarit`, à la forme de l'écran — un sur-titre, un titre, la règle, des lignes. Il réserve la place, et la page ne saute pas quand les données arrivent.
+
+Pas de tourniquet. Une roue n'aurait le temps que d'apparaître, et sa rotation dirait « c'est long » là où il ne se passe rien. Pas de pouls non plus : ce serait une quatrième animation, et la section 6 en autorise trois.
+
+Il est entièrement masqué aux lecteurs d'écran — ce sont des rectangles, ils n'ont rien à dire. C'est la région qui l'entoure qui porte `aria-busy` et le mot « Chargement ».
+
+**L'erreur de lecture** (`.erreur`) : un encadré `--trait-alerte` en `--retard`, le message de `i18n.erreurs.lecture`, et « Réessayer ». Elle **prend la place du contenu** au lieu de se glisser en bannière au-dessus de lui : sans données, l'écran qui suivrait serait vide, et un tableau de bord à zéro se lit « vous n'avez rien » et non « je n'ai pas pu lire ».
+
+Le message dit trois choses, dans cet ordre : ce qui s'est passé, que rien n'est perdu, quoi faire. La deuxième est la plus importante — les données sont locales, et « impossible de lire » se lit sinon comme « tout a disparu ». « Réessayer » rejoue la lecture initiale : un stockage indisponible ne l'est pas toujours pour toujours, et proposer de réessayer coûte moins qu'expliquer comment recharger une page.
+
+**Ce que ces états ne couvrent pas**, et qui vit ailleurs : l'état vide d'un écran (section 8.9), la mise à jour du Service Worker (section 8.10), et l'adresse inconnue, qui est une page — « Cette adresse ne correspond à aucune page de Revoir », avec un retour vers Aujourd'hui, jamais une impasse.
+
+---
+
+### 8.24 Le jeu d'exemple
+
+**Un écran vide ne montre rien de ce que l'application sait faire** : pas de règle peuplée, pas de retard, pas de recalage, pas de tableau de suivi lisible. Créer quatre sujets à la main pour voir à quoi ça ressemble est un prix que personne ne paie avant d'avoir décidé.
+
+Quatre sujets, et pas un de plus, choisis pour couvrir ce qu'un écran vide ne peut pas montrer : une révision en retard, une révision du jour, un programme bien entamé, un sujet qui vient de commencer. Quatre domaines différents aussi — l'application n'est pas un outil scolaire.
+
+**Ce ne sont pas des données de démonstration.** Il n'y a ni mode démo, ni bandeau permanent, ni sujets en lecture seule : ce sont des sujets ordinaires, dans la base ordinaire, qui se cochent, se modifient et se suppriment comme les autres. Seul l'appareil se souvient de les avoir demandés, et retient leurs identifiants pour pouvoir les retirer d'un geste depuis les réglages.
+
+**Les identifiants, pas les titres.** Un sujet d'exemple se renomme : « Tout effacer » doit retrouver celui qu'on a rebaptisé, et ne pas emporter un sujet à soi qui porterait par hasard le même nom.
+
+**Il ne crée aucune catégorie**, il se rattache aux six livrées — en les cherchant **par leur teinte** et non par leur nom. Le nom suit la langue du jour où la catégorie a été créée et a pu être modifié depuis ; chercher « Études » dans une base semée en anglais ne trouverait rien, et les quatre sujets arriveraient sans catégorie. Le nom reste en repli. Aucune catégorie ne survit à l'effacement, puisqu'aucune n'a été ajoutée.
+
+**Les révisions déjà faites sont datées du jour de leur échéance**, pas d'aujourd'hui : un jeu où tout aurait été coché le même jour dessinerait une frise que le produit ne produit jamais.
+
+Il se propose à deux endroits, et seulement là : au bout de la présentation, et sur la page de premier usage. Jamais à qui en a déjà un — le charger deux fois donnerait huit sujets et un « Tout effacer » qui n'en retirerait que quatre.
+
+### 8.25 La présentation, en trois écrans
+
+Trois écrans, à `/bienvenue` : la question à laquelle l'application répond, pourquoi les écarts grandissent, ce qui se passe quand on coche en retard. Un par idée, et rien d'autre sur l'écran.
+
+**La sortie est aussi lisible que l'entrée.** « Passer » est écrit en `--t-base` souligné, en `--encre`, à droite de l'en-tête — pas en gris pâle dans un coin. Une présentation dont on ne trouve pas la sortie n'est plus une présentation, c'est un péage.
+
+Trois graduations de `--graduation-etape` comptent les écrans, celle de l'écran courant en `--accent`, et « n / 3 » à côté en chiffres. On compte trois écrans, on ne mesure pas un pourcentage.
+
+**Le deuxième écran trace la frise** — `--duree-trace`, une fois, jamais rejouée : c'est la troisième des animations autorisées (section 6). C'est le seul écran qui ait quelque chose à démontrer ; la remontrer sur les deux autres ferait d'une démonstration une décoration. Le pied dit ce qu'on est en train de faire : « Trois écrans, dix secondes. Vous pourrez les relire depuis l'aide. »
+
+**La coque s'efface entièrement** : ni en-tête, ni barre du bas, ni bouton flottant. Ce n'est pas une page de l'application, c'est ce qu'on lit avant d'y entrer — un retour, un « + » et trois onglets par-dessus offriraient cinq sorties à un écran qui en a déjà deux.
+
+**Elle ne s'impose pas.** Elle ne s'ouvre pas d'elle-même au premier lancement : la page de premier usage reste la page de présentation, à la racine, parce que c'est elle qu'un lien partagé ouvre (section 8.17). La présentation s'atteint depuis cette page et depuis l'aide, et l'appareil retient qu'on l'a vue.
+
+**Les libellés de la frise sont visibles à toutes les largeurs** depuis qu'elle sert ici. Ils étaient masqués sous 480px, où J+1 et J+3 se chevauchent — mais c'est précisément là que la frise est la signature, et une signature muette ne signe rien. Le chevauchement se règle où il se mesure : dans le composant, qui retire un libellé dont le segment n'atteint pas 32 px réels. Une media query ne pouvait pas le faire, la largeur d'un segment dépendant de son poids et non de celle de l'écran.
+
+---
+
+### 8.26 Les écrans de gestion
+
+**Une liste, pas une pile de cartes.**
+
+Les réglages empilaient sept cartes — apparence, langue, sauvegarde, export calendrier, catégories, programmes, archives, à propos — qu'il fallait toutes parcourir pour en trouver une. On ne vient pas ici faire le tour du propriétaire : on vient chercher un réglage précis.
+
+Ce qui se règle en un geste reste sur l'écran, en bascule : l'apparence et la langue, les deux seuls réglages qu'on cherche sans savoir où ils sont. Une rangée qui mènerait à une page pour trois options serait un détour.
+
+Le reste devient des **rangées de navigation** de `--h-rangee-nav`, vers Catégories, Programmes, Sujets archivés et Sauvegarde. Chaque rangée dit ce qu'on y trouvera — « Sujets archivés · aucun » évite une visite pour rien —, et porte un chevron : sans lui, un nom suivi d'un compte se lit comme une ligne de tableau, pas comme un lien.
+
+« À propos » se réduit à un paragraphe et à la ligne de licence. Il occupait une carte entière pour dire deux choses, dont l'une — l'effacement des données du site par le navigateur — mérite d'être lue et se perdait au milieu de l'autre.
+
+**Les catégories deviennent des rangées** de `--h-categorie`, séparées par un filet. « Modifier » y est toujours ; **« Supprimer » n'apparaît que sur une catégorie sans sujet**. Supprimer une catégorie portée reste possible et sans danger — ses sujets rejoignent « Sans catégorie » (section 8.15) — mais ce n'est pas le même geste : il en touche d'autres, il se confirme, et il n'a rien à faire au même niveau qu'un renommage sur une rangée qu'on parcourt du pouce.
+
+**Le compositeur de rythme s'ouvre sur sa question** — « Quand la révision revient-elle ? » — et non sur son propre nom. Le champ « Nom du programme » passe **en dernier** : on nomme un rythme qu'on vient de composer, et ouvrir sur un champ de nom demande de baptiser quelque chose qui n'existe pas encore. Les graduations gardent leurs trois états (section 8.7) : retenue en `--accent` sur `--accent-doux`, disponible en bordure pleine, indisponible en bordure pointillée avec la phrase qui dit pourquoi.
+
+**Créer quelque chose au milieu d'une autre tâche ne doit pas interrompre cette tâche.** La règle vaut pour les deux écrans de création qu'un parcours peut ouvrir : « Nouvelle catégorie » depuis la deuxième question, « Composer un rythme » depuis la troisième. Chacun ramène d'où il vient, et y ramène **avec ce qu'il vient de créer** — sans l'identifiant, il faudrait retrouver dans une liste ce qu'on venait justement de construire pour ce sujet-là.
+
+Le chemin de retour voyage dans l'état d'historique, et se relit comme une donnée extérieure (`lib/navigation.ts`, testé) : seule une adresse **interne** est acceptée. `//exemple.com` et `https://exemple.com` passent pour des chemins auprès d'un routeur qui ne regarderait que le premier caractère, et feraient sortir l'application d'elle-même après une création.
+
+Ouverts depuis leur propre liste, ces écrans y retournent : c'est le repli, jamais le chemin principal.
+
+### 8.27 Sauvegarde et export
+
+Trois gestes, une seule question : « comment je sors mes données d'ici ? ». Ils vivaient dans deux cartes des réglages ; ils ont maintenant leur écran, parce qu'on n'y vient pas par hasard et qu'un import a besoin de place pour dire ce qu'il fait.
+
+L'export JSON est le geste principal — c'est le seul qui revienne. L'import est discret. L'export `.ics` est une copie qui part et ne rentre pas, et il le dit.
+
+**Un import refusé s'écrit dans un encadré, pas dans un bandeau.** Il porte le message exact du validateur — « Sujet 3 : catégorie inconnue. » — et surtout le fait que **rien n'a été écrit**. C'est cette seconde phrase qu'on vient chercher, et un bandeau d'une ligne ne lui laissait pas la place. Un bouton « Choisir un autre fichier » suit, parce que c'est le geste suivant.
+
+L'import **remplace**, il ne fusionne pas : c'est l'une des trois actions qu'aucun geste inverse ne rebâtirait, et la seule de cet écran à demander une confirmation (section 8.12).
+
+---
+
+### 8.28 La fiche d'un sujet
+
+**Une ligne d'identité, pas trois chips** : « pastille · Études · programme Simple · départ 14/08 ». Trois encadrés côte à côte donnaient le même poids à trois choses qui n'en ont pas — un sujet n'appartient pas à son programme comme il appartient à sa catégorie. Sans catégorie, ni pastille ni séparateur orphelin.
+
+**La frise en grand, avec ses libellés**, à toutes les largeurs (section 8.25). C'est ici qu'elle se lit, et c'est ce qu'on vient voir.
+
+**La progression s'écrit** : « 2 effectuées · 3 restantes » à gauche, « 40 % » en `--accent` à droite. L'anneau conique disparaît — il demandait qu'on lise un angle pour retrouver un pourcentage écrit à côté, et un sujet à cinq révisions n'a que six états : l'arrondi d'un anneau en dit moins que le compte exact.
+
+**Les échéances sont des rangées réglées** : la case de `--cible`, le décalage en colonne à chasse fixe, la date, l'état à droite. Le décalage tient une largeur fixe — c'est ce qui aligne les `J+n` les uns sous les autres et rend le rythme du programme lisible d'un regard, sans lire les dates.
+
+**Les actions sont des liens soulignés**, la suppression en `--retard-texte`. Aucune n'est celle qu'on vient faire — on vient lire une fiche et cocher une échéance —, et cinq boutons encadrés en bas d'écran leur donnaient le poids d'un choix à faire.
+
+**Les sections n'ont plus de carte.** Leur contenu est déjà réglé ; l'encadrer, c'était mettre un cadre autour d'un objet qui en est fait.
 
 ---
 
@@ -846,13 +1097,17 @@ Une seule langue est active à la fois dans un onglet ; elle vit donc dans un mo
 
 ## 11. Interdits
 
-Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une cellule `--accent` pleine par écran · le bento ailleurs que sur le tableau de bord.
+Ombres portées · dégradés · rouge · noir pur · blanc pur · majuscules forcées dans le texte · emoji · icônes au-delà des 9 nécessaires (plus, calendrier, coche, chevron, archive, corbeille, réglages, jour, suivi, en SVG inline, aucune librairie) · Shadcn/UI · Lucide · toute animation hors des trois autorisées · plus d'une surface `--accent` pleine par écran · le bento, qui n'existe plus (section 7.2).
 
 Le « ? » de l'aide (section 8.16) n'entame pas le compte : c'est une lettre cerclée, pas un signe dessiné. La règle vise les dessins qu'il faut apprendre à lire, et l'alphabet n'en fait pas partie.
 
-**Deux interdits sont tombés, et il faut dire pourquoi.**
+**Quatre interdits sont tombés, et il faut dire pourquoi.**
 
 Le **thème sombre** était interdit pour une bonne raison — une palette de huit valeurs se double, se remesure et se maintient en double — et pour une mauvaise : l'application s'installe et s'ouvre le soir, sur un appareil que son propriétaire a déjà réglé en sombre, et lui répondre par un écran crème est une décision prise à sa place. Il est donc autorisé sous les conditions de la section 3 ter : deux apparences seulement, contrastes remesurés, et la même palette de huit valeurs, pas une de plus.
+
+La **graisse 700** entre, pour les titres et le logotype seuls (section 4). L'interdit tenait tant que la voix de l'écran était portée par une cellule pleine `--accent` : le titre n'avait pas à crier, la couleur le faisait pour lui. La refonte retire cette cellule et fait porter la hiérarchie à un seul titre, à 34 px resserré ; à ce format, le 600 d'Arial rend un titre mou, qui ne dit pas qu'il est le premier objet de l'écran. Le 700 ne va nulle part ailleurs : ni bouton, ni label, ni métadonnée.
+
+Les **majuscules forcées** entrent au logotype et aux sur-titres, et nulle part ailleurs (section 4). La raison de l'interdit — le français accentué en capitales se lit mal — vaut pour du texte : elle ne vaut pas pour un mot de six lettres sans accent, ni pour une étiquette de section de 12 px ouverte à 0,14 em qui ne porte aucune information absente de ce qu'elle surmonte. Dans le texte, la casse forcée reste un défaut.
 
 Les **icônes** passent de sept à neuf, et pas d'une de plus. Les deux ajoutées — jour et suivi — servent la barre du bas, où les trois vues portent leur signe au-dessus de leur mot (section 8.18). Elles ne remplacent aucun libellé : le mot reste écrit sous chacune. Ce qui n'est toujours pas dans la liste s'écrit en toutes lettres.
 
@@ -883,8 +1138,16 @@ Une seule dépendance d'interface, et elle est *headless* : `@tanstack/react-tab
   --fait-texte: #4F6E50;
 
   /* Typographie */
-  --police-titre: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --police-titre: Arial, Helvetica, sans-serif;
+  --police-ui: Arial, Helvetica, sans-serif;
+  --police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --t-ecran: 34px;
+  --t-page: 30px;
+  --t-section: 22px;
+  --t-marque: 14px;
+  --chasse-titre: -0.035em;
+  --chasse-surtitre: 0.14em;
+  --chasse-marque: 0.24em;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;

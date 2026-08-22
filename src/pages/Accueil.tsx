@@ -24,13 +24,15 @@ import { useTextes } from '../state/usePreferences'
 import { propositionsCategories } from '../lib/categories'
 import { SCHEDULES, reviewsDepuisOffsets } from '../lib/schedules'
 import { Frise } from '../components/Frise'
-import { LienBouton } from '../components/Bouton'
+import { Bouton, LienBouton } from '../components/Bouton'
+import { useJeuExemple } from '../state/useJeuExemple'
 
 /** Le programme « Simple » : celui que le formulaire propose d'abord. */
 const DEMONSTRATION = SCHEDULES[0]
 
 
 export function Accueil() {
+  const { charger, charge } = useJeuExemple()
   const t = useTextes()
   useTitrePage(t.dashboard.titre)
   const aujourdhui = useAujourdhui()
@@ -86,7 +88,19 @@ export function Accueil() {
         <LienBouton vers="/nouveau" variante="primaire">
           {t.accueil.creerSujet}
         </LienBouton>
-        <LienBouton vers="/aide" variante="texte">
+        {/*
+          Deux façons d'entrer sans rien décider : lire la présentation, ou
+          charger de quoi regarder. Un écran vide ne montre ni règle peuplée,
+          ni retard, ni recalage — et créer quatre sujets à la main pour voir à
+          quoi ça ressemble est un prix que personne ne paie avant d'avoir
+          choisi (section 8.24).
+        */}
+        {!charge && (
+          <Bouton variante="discret" onClick={() => void charger()}>
+            {t.exemple.charger}
+          </Bouton>
+        )}
+        <LienBouton vers="/bienvenue" variante="texte">
           {t.accueil.commentCaMarche}
         </LienBouton>
       </div>

@@ -7,14 +7,22 @@ import { ToastProvider } from './state/ToastContext'
 import { Layout } from './components/Layout'
 import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/CalendarPage'
+import { JourPage } from './pages/JourPage'
 import { SujetDetail } from './pages/SujetDetail'
 import { SujetForm } from './pages/SujetForm'
+import { NouveauTitre } from './pages/NouveauTitre'
+import { NouveauCategorie } from './pages/NouveauCategorie'
+import { NouveauRythme } from './pages/NouveauRythme'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { CategorieForm } from './pages/CategorieForm'
 import { ProgrammeForm } from './pages/ProgrammeForm'
 import { ReviewList } from './pages/ReviewList'
 import { Settings } from './pages/Settings'
+import { Sauvegarde } from './pages/Sauvegarde'
+import { Archives } from './pages/Archives'
+import { ProgrammesPage } from './pages/ProgrammesPage'
 import { Aide } from './pages/Aide'
+import { Bienvenue } from './pages/Bienvenue'
 import { Suivi } from './pages/Suivi'
 import { NotFound } from './pages/NotFound'
 
@@ -48,12 +56,42 @@ export function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/revisions/:filtre" element={<ReviewList />} />
                 <Route path="/calendrier" element={<CalendarPage />} />
+                {/*
+                  Le jour est une page, plus une feuille (section 8.11) : il a
+                  une adresse, donc un lien à poser et un retour arrière qui
+                  fonctionne.
+                */}
+                <Route path="/jour/:date" element={<JourPage />} />
                 <Route path="/suivi" element={<Suivi />} />
-                <Route path="/nouveau" element={<SujetForm mode="create" />} />
+                {/*
+                  La création est une suite de pages, une question par écran
+                  (section 8.22). `/nouveau` reste une adresse valide — le
+                  bouton « + » y mène, et des raccourcis peuvent y pointer —
+                  mais elle n'affiche plus rien : elle ouvre la première
+                  question.
+                */}
+                <Route path="/nouveau" element={<Navigate to="/nouveau/titre" replace />} />
+                <Route path="/nouveau/titre" element={<NouveauTitre />} />
+                <Route path="/nouveau/categorie" element={<NouveauCategorie />} />
+                <Route path="/nouveau/rythme" element={<NouveauRythme />} />
                 <Route path="/sujet/:id" element={<SujetDetail />} />
                 <Route path="/sujet/:id/modifier" element={<SujetForm mode="edit" />} />
+                {/*
+                  Les réglages sont une liste, et ce qu'elle liste a une page
+                  (section 8.26) : on vient y chercher un réglage précis, pas
+                  faire le tour du propriétaire.
+                */}
                 <Route path="/reglages" element={<Settings />} />
+                <Route path="/reglages/sauvegarde" element={<Sauvegarde />} />
+                <Route path="/reglages/archives" element={<Archives />} />
+                <Route path="/programmes" element={<ProgrammesPage />} />
                 <Route path="/aide" element={<Aide />} />
+                {/*
+                  La présentation en trois écrans (section 8.25). Elle a une
+                  adresse parce qu'on y revient : depuis l'aide, et depuis la
+                  page de premier usage.
+                */}
+                <Route path="/bienvenue" element={<Bienvenue />} />
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/categories/nouvelle" element={<CategorieForm mode="create" />} />
                 <Route

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
@@ -17,8 +17,10 @@ import {
   reviewsDepuisOffsets,
 } from '../lib/schedules'
 import { todayKey } from '../lib/dates'
+import { cheminInterne } from '../lib/navigation'
 import { Champ, GroupeChamp } from '../components/Champ'
 import { Bouton } from '../components/Bouton'
+import { BarreAction } from '../components/BarreAction'
 import { Frise } from '../components/Frise'
 
 /** Le rythme proposé d'emblée : celui de « Simple ». */
@@ -43,6 +45,17 @@ const RYTHME_INITIAL = SCHEDULES[0].offsets
 export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { state } = useLocation()
+  /*
+   * D'où l'on vient, quand ce n'est pas de la liste des rythmes.
+   *
+   * Composer un rythme au milieu de la création d'un sujet ne doit pas
+   * interrompre cette création : on y retourne, et on y retourne avec le
+   * rythme qu'on vient de composer. Sans lui, il faudrait le retrouver dans la
+   * liste et le désigner à nouveau — alors qu'on venait justement de le
+   * construire pour ce sujet-là.
+   */
+  const [retourVers] = useState(() => cheminInterne(state))
   const { programmes, creerProgramme, modifierProgramme, compterUsages, loading } =
     useDonnees()
   const revenir = useRetour()
@@ -126,10 +139,14 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
     try {
       if (mode === 'edit' && existant) {
         await modifierProgramme(existant.id, nom, rythmeFige ? existant.offsets : jours)
+        navigate('/programmes', { replace: true })
       } else {
-        await creerProgramme(nom, jours)
+        const cree = await creerProgramme(nom, jours)
+        navigate(retourVers ?? '/programmes', {
+          replace: true,
+          state: retourVers === null ? undefined : { programmeCree: cree.id },
+        })
       }
-      navigate('/reglages', { replace: true })
     } finally {
       setEnregistrement(false)
     }
@@ -137,20 +154,20 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">{titre}</h1>
+      {/*
+        La question en titre, pas le nom de l'écran. « Composer un rythme » dit
+        ce qu'on fait ; « Quand la révision revient-elle ? » dit à quoi on
+        répond, et c'est ce qu'on a besoin de lire pour toucher la première
+        graduation.
+      */}
+      <div className="page__entete">
+        <h1 className="titre-page">
+          {rythmeFige ? titre : t.programmeForm.question}
+        </h1>
+        {!rythmeFige && <p className="page__intro">{t.programmeForm.aideQuestion}</p>}
+      </div>
 
-      <form className="formulaire" onSubmit={soumettre} noValidate>
-        <Champ
-          label={t.programmeForm.champNom}
-          type="text"
-          value={nom}
-          maxLength={40}
-          autoComplete="off"
-          onChange={(event) => setNom(event.target.value)}
-          erreur={soumis ? erreurNom : null}
-          aide={t.programmeForm.aideNom}
-        />
-
+      <form className="formulaire formulaire--barre" onSubmit={soumettre} noValidate>
         {rythmeFige ? (
           <GroupeChamp legende={t.programmeForm.rythme}>
             <div className="rythme__apercu">
@@ -189,8 +206,7 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
             </GroupeChamp>
 
             <fieldset className="champ">
-              <legend className="champ__label">{t.programmeForm.question}</legend>
-              <p className="champ__aide">{t.programmeForm.aideQuestion}</p>
+              <legend className="invisible">{t.programmeForm.question}</legend>
               <div className="jours">
                 {graduations.map((jour) => {
                   const retenu = jours.includes(jour)
@@ -248,14 +264,30 @@ export function ProgrammeForm({ mode }: { mode: 'create' | 'edit' }) {
           </>
         )}
 
-        <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={revenir}>
-            {t.commun.annuler}
-          </Bouton>
-          <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit' ? t.commun.enregistrer : t.programmeForm.creer}
-          </Bouton>
-        </div>
+        {/*
+          Le nom en dernier, et pas en premier : on nomme un rythme qu'on vient
+          de composer. Ouvrir sur un champ « Nom du programme » demande de
+          baptiser quelque chose qui n'existe pas encore.
+        */}
+        <Champ
+          label={t.programmeForm.champNom}
+          type="text"
+          value={nom}
+          maxLength={40}
+          autoComplete="off"
+          onChange={(event) => setNom(event.target.value)}
+          erreur={soumis ? erreurNom : null}
+          aide={t.programmeForm.aideNom}
+        />
+
+        <BarreAction
+          sortie={{ libelle: t.commun.annuler, onClick: revenir }}
+          action={{
+            libelle: mode === 'edit' ? t.commun.enregistrer : t.programmeForm.creer,
+            type: 'submit',
+            desactivee: enregistrement,
+          }}
+        />
       </form>
     </>
   )

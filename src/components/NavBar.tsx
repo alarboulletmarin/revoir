@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import type { ComponentType, SVGProps } from 'react'
 import { IconeCalendrier, IconeJour, IconeSuivi } from './Icons'
+import { Marque } from './Marque'
 import { useTextes } from '../state/usePreferences'
 
 /**
@@ -33,11 +34,23 @@ const LIENS: {
   { vers: '/suivi', cle: 'suivi', Signe: IconeSuivi },
 ]
 
-export function NavBar() {
+/**
+ * @param marque affiche le logotype en tête du rail. Vrai au bureau seulement,
+ *   où la navigation passe à gauche (section 7.5) : la marque y reprend la
+ *   place qu'elle occupe en haut de l'en-tête sur un téléphone. Elle n'est
+ *   jamais rendue deux fois — c'est le Layout qui décide, pas le CSS.
+ */
+export function NavBar({ marque = false }: { marque?: boolean }) {
   const t = useTextes()
 
   return (
     <nav className="nav" aria-label={t.coque.navigationPrincipale}>
+      {marque && (
+        <Link to="/" className="appli__marque nav__marque">
+          <Marque className="appli__signe" />
+          Revoir
+        </Link>
+      )}
       <ul className="nav__liste">
         {LIENS.map(({ vers, cle, Signe }) => (
           <li key={vers} className="nav__element">

@@ -168,6 +168,19 @@ export function propositionsCategories(): { name: string; tint: TeinteNommee }[]
  * « Ajouter les catégories proposées » de l'écran des catégories, qui rattrape
  * les installations antérieures — la même liste, jamais deux.
  */
+/**
+ * La teinte qu'une catégorie livrée reçoit à sa création.
+ *
+ * Elle sert à **retrouver** une de ces six sans passer par son nom : le nom
+ * suit la langue du jour où elle a été créée, et il a pu être modifié depuis.
+ * La teinte, elle, est fixe et distincte d'une proposition à l'autre.
+ */
+export function teinteProposee(cle: CleProposee): TeinteNommee {
+  return CLES_PROPOSEES.find((proposition) => proposition.cle === cle)!.tint
+}
+
+export type CleProposee = (typeof CLES_PROPOSEES)[number]['cle']
+
 export function categoriesProposees(
   maintenant: string,
   nouvelId: NouvelId = newId,

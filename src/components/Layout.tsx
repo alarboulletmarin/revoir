@@ -6,9 +6,11 @@ import { NavBar } from './NavBar'
 import { IconeChevron, IconePlus, IconeReglages } from './Icons'
 import { Marque } from './Marque'
 import { UpdatePrompt } from './UpdatePrompt'
+import { ErreurLecture } from './Etats'
 import { useDonnees } from '../state/useDonnees'
 import { useTextes } from '../state/usePreferences'
 import { estRacine, useRetour } from '../state/useRetour'
+import { useMediaQuery } from '../state/useMediaQuery'
 
 /**
  * Le bouton « + » n'a pas de sens sur les écrans de saisie eux-mêmes.
@@ -17,7 +19,56 @@ import { estRacine, useRetour } from '../state/useRetour'
  * seule des deux formes laisserait le bouton flotter sur un formulaire.
  */
 function fabVisible(pathname: string): boolean {
-  return !/\/(nouveau|nouvelle|modifier)$/.test(pathname)
+  return (
+    !/\/(nouveau|nouvelle|modifier)$/.test(pathname) &&
+    !porteBarreAction(pathname) &&
+    !estPresentation(pathname)
+  )
+}
+
+/**
+ * La présentation occupe l'écran entier : ni en-tête, ni barre du bas, ni
+ * bouton flottant.
+ *
+ * Elle n'est pas une page de l'application, elle est ce qu'on lit avant d'y
+ * entrer. Un retour vers Aujourd'hui, un « + » et trois onglets par-dessus
+ * inviteraient à en sortir par cinq chemins différents, alors qu'elle en offre
+ * déjà deux — « Passer » en haut, « Continuer » en bas.
+ */
+function estPresentation(pathname: string): boolean {
+  return pathname === '/bienvenue'
+}
+
+/** Les trois questions de la création, dans l'ordre où elles se posent. */
+const ETAPES = ['/nouveau/titre', '/nouveau/categorie', '/nouveau/rythme']
+
+/**
+ * Les écrans qui portent une barre d'action fixe (section 8.22).
+ *
+ * La barre du bas s'y efface : deux barres empilées, ce sont cent vingt pixels
+ * de chrome sous le pouce et deux réponses à « comment je sors d'ici ? ». Ces
+ * écrans sont des tâches à terminer, pas des vues à quitter — ils ont un
+ * retour en haut et une sortie écrite en bas à gauche.
+ */
+function porteBarreAction(pathname: string): boolean {
+  return (
+    etapeCreation(pathname) !== null ||
+    /^\/categories\/(nouvelle|[^/]+\/modifier)$/.test(pathname) ||
+    /^\/programmes\/(nouveau|[^/]+\/modifier)$/.test(pathname) ||
+    /^\/sujet\/[^/]+\/modifier$/.test(pathname)
+  )
+}
+
+/**
+ * Le rang de l'étape de création en cours, ou null hors du parcours.
+ *
+ * Il est lu du chemin plutôt que remonté par la page. Un contexte pour trois
+ * mots dans un en-tête coûterait un fournisseur, un abonnement et un état à
+ * synchroniser ; le chemin, lui, est déjà là et il est déjà juste.
+ */
+function etapeCreation(pathname: string): number | null {
+  const rang = ETAPES.indexOf(pathname)
+  return rang === -1 ? null : rang + 1
 }
 
 /**
@@ -50,6 +101,16 @@ export function Layout() {
   useRemonterEnHaut(pathname)
 
   const racine = estRacine(pathname)
+  const etape = etapeCreation(pathname)
+  const presentation = estPresentation(pathname)
+  /*
+   * Au bureau, la marque vit en tête du rail : c'est là que commence la
+   * lecture, et l'en-tête n'y garde que le retour et les deux signes. Le choix
+   * se fait ici, en un seul endroit, plutôt qu'en rendant le logotype deux
+   * fois pour en masquer un par media query.
+   */
+  const bureau = useMediaQuery('(min-width: 1024px)')
+  const barreAction = porteBarreAction(pathname)
 
   return (
     <div className="appli">
@@ -57,6 +118,7 @@ export function Layout() {
         {t.coque.sautContenu}
       </a>
 
+      {!presentation && (
       <header className="appli__entete">
         {/*
           Une seule chose à gauche : la marque sur une vue, le retour partout
@@ -67,10 +129,12 @@ export function Layout() {
         */}
         <div className="appli__barre">
           {racine ? (
-            <Link to="/" className="appli__marque">
-              <Marque className="appli__signe" />
-              Revoir
-            </Link>
+            bureau ? null : (
+              <Link to="/" className="appli__marque">
+                <Marque className="appli__signe" />
+                Revoir
+              </Link>
+            )
           ) : (
             <button type="button" className="appli__retour" onClick={revenir}>
               <IconeChevron
@@ -94,46 +158,64 @@ export function Layout() {
           Les deux seuls liens de l'app réduits à un signe. Le mot reste lu par
           les lecteurs d'écran et s'affiche au survol : un signe sans nom n'est
           pas un signe, c'est une devinette.
+
+          Pendant la création, ils cèdent tous deux la place au compteur
+          d'étape. Ce ne sont pas des sorties de secours : ouvrir les réglages
+          au milieu d'une saisie abandonnerait le parcours, et le retour de
+          gauche suffit à en sortir.
         */}
-        <div className="appli__outils">
-          {/*
-            Un point d'interrogation composé, pas une dixième icône : la
-            section 11 arrête la liste des signes dessinés, et un « ? » est une
-            lettre. Il dit déjà ce qu'aucun dessin ne dirait mieux.
-          */}
-          <NavLink
-            to="/aide"
-            aria-label={t.coque.aide}
-            title={t.coque.aide}
-            className={({ isActive }) =>
-              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
-            }
-          >
-            <span className="appli__aide" aria-hidden="true">
-              ?
-            </span>
-          </NavLink>
-
-          <NavLink
-            to="/reglages"
-            aria-label={t.coque.reglages}
-            title={t.coque.reglages}
-            className={({ isActive }) =>
-              isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
-            }
-          >
-            <IconeReglages width="20" height="20" />
-          </NavLink>
-        </div>
-      </header>
-
-      <main className="page" id="contenu">
-        {error && (
-          <p className="banniere banniere--retard" role="status">
-            {error}
+        {etape !== null ? (
+          <p className="appli__etape chiffres">
+            {t.creation.etape(etape, ETAPES.length)}
           </p>
+        ) : (
+          <div className="appli__outils">
+            {/*
+              Un point d'interrogation composé, pas une dixième icône : la
+              section 11 arrête la liste des signes dessinés, et un « ? » est
+              une lettre. Il dit déjà ce qu'aucun dessin ne dirait mieux.
+            */}
+            <NavLink
+              to="/aide"
+              aria-label={t.coque.aide}
+              title={t.coque.aide}
+              className={({ isActive }) =>
+                isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+              }
+            >
+              <span className="appli__aide" aria-hidden="true">
+                ?
+              </span>
+            </NavLink>
+
+            <NavLink
+              to="/reglages"
+              aria-label={t.coque.reglages}
+              title={t.coque.reglages}
+              className={({ isActive }) =>
+                isActive ? 'appli__outil appli__outil--actif' : 'appli__outil'
+              }
+            >
+              <IconeReglages width="20" height="20" />
+            </NavLink>
+          </div>
         )}
-        <Outlet />
+      </header>
+      )}
+
+      {/*
+        La présentation n'a ni barre du bas ni bouton flottant : la purge que
+        la page réserve pour eux y laisserait cent cinquante pixels de vide
+        sous le pied de page.
+      */}
+      <main className={presentation ? 'page page--plein' : 'page'} id="contenu">
+        {/*
+          Une erreur de lecture n'est pas une remarque en marge : sans données,
+          l'écran qui suivrait serait vide, et un tableau de bord à zéro se lit
+          « vous n'avez rien » et non « je n'ai pas pu lire ». Elle prend donc
+          la place du contenu, et propose de réessayer (section 8.23).
+        */}
+        {error !== null ? <ErreurLecture message={error} /> : <Outlet />}
       </main>
 
       {fabVisible(pathname) && (
@@ -142,7 +224,13 @@ export function Layout() {
         </Link>
       )}
 
-      <NavBar />
+      {/*
+        La barre du bas s'efface là où une barre d'action fixe prend le relais
+        (section 7.3). Les trois vues ne changent ni de nombre, ni d'ordre, ni
+        de comportement : elles ne s'empilent simplement pas sous une seconde
+        barre, ce qui coûterait cent vingt pixels de chrome sous le pouce.
+      */}
+      {!barreAction && !presentation && <NavBar marque={bureau} />}
 
       <UpdatePrompt />
     </div>

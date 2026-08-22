@@ -14,6 +14,20 @@ import type { Dictionnaire } from '.'
 
 const s = (nombre: number) => (nombre === 1 ? '' : 's')
 
+/**
+ * English ordinals: 1st, 2nd, 3rd, then th — with the teens as the exception
+ * they always are (11th, 12th, 13th).
+ */
+const ordinal = (nombre: number) => {
+  const dizaine = nombre % 100
+  if (dizaine >= 11 && dizaine <= 13) return `${nombre}th`
+  const unite = nombre % 10
+  if (unite === 1) return `${nombre}st`
+  if (unite === 2) return `${nombre}nd`
+  if (unite === 3) return `${nombre}rd`
+  return `${nombre}th`
+}
+
 export const en: Dictionnaire = {
   nom: 'English',
   etiquette: 'en',
@@ -23,10 +37,14 @@ export const en: Dictionnaire = {
     long: 'MMMM d, yyyy',
     /** « Sat, Mar 14 » */
     court: 'EEE, MMM d',
+    /** « Friday, August 21 » */
+    jourLong: 'EEEE, MMMM d',
     /** « 03/14 » */
     compact: 'MM/dd',
     /** « March 2026 » */
     mois: 'MMMM yyyy',
+    moisSeul: 'MMMM',
+    annee: 'yyyy',
     /** « August 8 » */
     echeance: 'MMMM d',
     echeanceAnnee: 'MMMM d, yyyy',
@@ -44,6 +62,7 @@ export const en: Dictionnaire = {
   commun: {
     chargement: 'Loading…',
     annuler: 'Cancel',
+    reessayer: 'Try again',
     fermer: 'Close',
     supprimer: 'Delete',
     modifier: 'Edit',
@@ -126,13 +145,15 @@ export const en: Dictionnaire = {
 
   dashboard: {
     titre: 'Today',
-    aFaire: (restantes: number) => `${restantes} review${s(restantes)} today`,
-    tempsTermine: 'Everything is done for today',
-    rienDePrevu: 'No reviews scheduled today',
-    plusRien: 'Nothing left to review: the schedule resumes at the next due date.',
+    aFaire: (restantes: number) => `review${s(restantes)} today`,
+    tempsTermine: 'Everything is done.',
+    rienDePrevu: 'No reviews scheduled.',
+    ensuite: 'up next',
+    revuAujourdhui: 'reviewed today',
+    plusRien: 'The schedule resumes at the next due date.',
     aVenirIci: 'Upcoming reviews will show up here.',
     prochaine: (date: string, sujets: number) =>
-      `Next review: ${date}, ${sujets} topic${s(sujets)}.`,
+      `Next: ${date}, ${sujets} topic${s(sujets)}.`,
     enRetard: 'overdue',
     restantes: (nombre: number) => `review${s(nombre)} left`,
     charge: (jours: number) => `Load over ${jours} days`,
@@ -142,12 +163,69 @@ export const en: Dictionnaire = {
     prochainesEcheances: 'Upcoming due dates',
   },
 
+  regle: {
+    titre: 'the next two weeks',
+    intitule: (jours: number) => `Load over the next ${jours} days`,
+    retard: (nombre: number) => `${nombre} review${s(nombre)} overdue`,
+    rattraper: 'catch it up',
+    rattraperPlusieurs: 'catch them up',
+  },
+
   charge: {
     aucune: (jours: number) => `No reviews in the next ${jours} days.`,
     intitule: (jours: number) => `Load over the next ${jours} days`,
     aujourdhuiCourt: 'Today',
     jour: (quand: string, nombre: number) =>
       `${quand}, ${nombre === 0 ? 'no reviews' : `${nombre} review${s(nombre)}`}`,
+  },
+
+  exemple: {
+    sujets: {
+      derivees: 'Derivatives',
+      accords: 'Major chords',
+      vocabulaire: 'Travel vocabulary',
+      priorite: 'Right of way rules',
+    },
+    charger: 'Explore a sample set',
+    effacer: 'Clear the sample set',
+    chargeTitre: 'A sample set is loaded',
+    chargeDetail:
+      'Four sample topics, with one overdue review and a few already done. They are ordinary topics: tick them, edit them, or clear them all at once.',
+    efface: 'Sample set cleared',
+  },
+
+  bienvenue: {
+    titrePage: 'Welcome',
+    passer: 'Skip',
+    continuer: 'Continue',
+    compte: (rang: number, total: number) => `${rang} / ${total}`,
+    intitule: (rang: number, total: number) => `Introduction, screen ${rang} of ${total}`,
+    pied: 'Three screens, ten seconds. You can read them again from the help page.',
+    ecrans: [
+      {
+        surtitre: 'the question',
+        titre: 'What do I have to review today?',
+        detail:
+          'Revoir answers that one question. It keeps what you want to review and when — never what you are learning.',
+      },
+      {
+        surtitre: 'the principle',
+        titre: 'The gaps grow.',
+        detail:
+          'One day, three days, a week, two, a month. You review just before forgetting — that is all spaced repetition does, and that is what this ruler measures.',
+        legende:
+          'The gap between two graduations equals the real gap between two dates. You are not reading numbers: you are watching time stretch.',
+      },
+      {
+        surtitre: 'the gesture',
+        titre: 'You tick, the app keeps up.',
+        detail:
+          'One tap, no confirmation, undoable for five seconds. A review ticked late shifts the following ones while keeping their gaps, rather than dropping them all on the same day.',
+      },
+    ],
+    finTitre: 'Where to start?',
+    creer: 'Create my first topic',
+    revoirPresentation: 'Read the three-screen introduction again',
   },
 
   accueil: {
@@ -184,7 +262,20 @@ export const en: Dictionnaire = {
       `Six categories are already there — ${noms}. Rename, recolour or delete them from the settings.`,
   },
 
+  jour: {
+    compte: (total: number, faites: number) =>
+      `${total} review${s(total)} · ${faites} done`,
+    precedent: 'Previous day',
+    suivant: 'Next day',
+    toutMarquer: 'Mark all as reviewed',
+    toutReporter: 'Postpone to tomorrow',
+    marquees: (nombre: number) => `${nombre} review${s(nombre)} saved`,
+    reportees: (nombre: number) => `${nombre} review${s(nombre)} postponed`,
+  },
+
   calendrier: {
+    legendeTraits:
+      'One line per review, at the height of its state: solid for what remains, short for what is done, long for overdue.',
     titre: 'Calendar',
     moisPrecedent: 'Previous month',
     moisSuivant: 'Next month',
@@ -214,8 +305,10 @@ export const en: Dictionnaire = {
     categorie: 'Category',
     toutesCategories: 'All categories',
     colonnes: 'Columns',
-    compact: 'Compact',
-    intervalles: 'Intervals',
+    compact: 'R1–R5',
+    intervalles: 'D+n',
+    compteVue: (sujets: number, categories: number) =>
+      `${sujets} topic${s(sujets)} · ${categories} categor${categories === 1 ? 'y' : 'ies'}`,
     legendeTitre: 'What do the shapes mean?',
     videTitre: 'Nothing to track yet.',
     videDetail:
@@ -278,6 +371,7 @@ export const en: Dictionnaire = {
     valider: (titre: string, decalage: string) =>
       `Mark as reviewed: ${titre}, review ${decalage}`,
     progression: (rang: number, total: number) => `Review ${rang} of ${total}`,
+    passage: (rang: number, total: number) => `${ordinal(rang)} pass of ${total}`,
     prochaine: 'Next: ',
   },
 
@@ -288,6 +382,9 @@ export const en: Dictionnaire = {
     archive: 'Archived',
     creeLe: (date: string) => `Created on ${date}`,
     programme: 'Schedule',
+    programmeNomme: (nom: string) => `${nom} schedule`,
+    departCourt: (date: string) => `started ${date}`,
+    part: (pourcent: number) => `${pourcent}%`,
     progression: (pourcent: number) => `Progress: ${pourcent}%`,
     compte: (faites: number, restantes: number) =>
       `${faites} review${s(faites)} done · ${restantes} left`,
@@ -315,6 +412,48 @@ export const en: Dictionnaire = {
       `“${titre}” and its ${revisions} reviews will be permanently deleted.`,
     toastArchive: 'Topic archived',
     toastDesarchive: 'Topic unarchived',
+  },
+
+  creation: {
+    etape: (rang: number, total: number) => `step ${rang} / ${total}`,
+    etapeIntitule: (rang: number, total: number) =>
+      `Creating a topic, step ${rang} of ${total}`,
+    plusTard: 'Later',
+    passer: 'Skip',
+    continuer: 'Continue',
+    creer: 'Create topic',
+
+    titre: {
+      question: 'What do you want to review?',
+      intro: 'A topic, not a subject. Revoir keeps its title — never its content.',
+      champ: 'Title',
+      exemple: 'Derivatives, major chords…',
+      erreur: 'A title is required — write what you want to review to continue.',
+      exemplesIntitule: 'Or start from an example',
+      exemples: ['derivatives', 'major chords', 'travel vocabulary', 'right of way rules'],
+      rassurance:
+        'Nothing is saved before the last step. You can go back at any time.',
+    },
+
+    categorie: {
+      question: 'Which category?',
+      intro: (titre: string) =>
+        `“${titre}” will join one of them. Optional: a topic without a category is a normal state.`,
+      introSansTitre: 'Optional: a topic without a category is a normal state.',
+      aucune: 'No category',
+      nouvelle: 'New category',
+      compte: (nombre: number) => (nombre === 0 ? 'none' : `${nombre} topic${s(nombre)}`),
+      note:
+        'The colour belongs to the category, not to the topic: it is set on the categories screen, and changing it changes it everywhere.',
+    },
+
+    rythme: {
+      question: 'At what pace?',
+      depart: (date: string) => `Starting today, ${date}.`,
+      composer: 'Compose a pace',
+      composerAide: 'one graduation at a time',
+      apercu: 'Generated dates · load already scheduled',
+    },
   },
 
   sujetForm: {
@@ -426,6 +565,7 @@ export const en: Dictionnaire = {
     },
     sauvegarde: {
       titre: 'Backup',
+      formats: 'JSON · ICS',
       intro:
         'Your data stays on this device. The export produces a JSON file you can keep and import again, here or on another device. Archived topics are included.',
       exporter: 'Export the data',
@@ -437,6 +577,9 @@ export const en: Dictionnaire = {
       confirmerMessage: (entrants: number, actuels: number) =>
         `Importing ${entrants} topic${s(entrants)} will replace your ${actuels} current topic${s(actuels)}.`,
       confirmerAction: 'Import',
+      rienEcrit:
+        'The file is checked field by field: nothing was written, your current data is intact.',
+      autreFichier: 'Choose another file',
     },
     calendrier: {
       titre: 'Calendar',
@@ -460,6 +603,8 @@ export const en: Dictionnaire = {
       renommer: 'Rename',
       modifier: 'Edit',
       creer: 'Create a schedule',
+      aucun: 'No pace composed yet. The three built-in schedules stay available when choosing one.',
+      compteRangee: (nombre: number) => (nombre === 0 ? '3' : `3 + ${nombre}`),
       supprime: 'Schedule deleted',
       usages: (usages: number) =>
         usages > 1
@@ -467,6 +612,7 @@ export const en: Dictionnaire = {
           : 'Followed by one topic: its reviews are already planned, the rhythm can no longer change.',
     },
     archives: {
+      aucunCourt: 'none',
       titre: 'Archived topics',
       aucun: 'No archived topics.',
       desarchiver: 'Unarchive',
@@ -485,6 +631,9 @@ export const en: Dictionnaire = {
   },
 
   aide: {
+    regleTitre: 'the ruler, in three seconds',
+    regleDetail:
+      'The vertical line is today. What sits to its left is done, what sits to its right is coming. The gap between two graduations equals the real gap between two dates.',
     titre: 'How it works',
     intro: 'Revoir answers one question: what do I have to review today?',
     vocabulaire: {

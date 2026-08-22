@@ -30,6 +30,13 @@ interface FriseProps {
   libelles?: LibellesFrise
   /** Complète l'étiquette lue par les lecteurs d'écran. */
   intitule?: string
+  /**
+   * La frise se trace une fois, de gauche à droite, à l'ouverture de l'écran
+   * (section 6, animation n°3 de l'onboarding). Réservée à la présentation :
+   * c'est là qu'il faut *montrer* que les écarts grandissent, alors qu'ailleurs
+   * la frise se lit d'un coup d'œil et n'a rien à démontrer.
+   */
+  tracee?: boolean
 }
 
 const pourcent = (valeur: number) => `${(valeur * 100).toFixed(3)}%`
@@ -41,6 +48,7 @@ export function Frise({
   variante = 'grande',
   libelles = 'aucun',
   intitule,
+  tracee = false,
 }: FriseProps) {
   const element = useRef<HTMLDivElement>(null)
   const largeur = useLargeur(element)
@@ -49,7 +57,11 @@ export function Frise({
   if (graduations.length === 0) return null
 
   const faites = graduations.filter((graduation) => graduation.faite).length
-  const classes = ['frise', variante === 'mini' ? 'frise--mini' : null]
+  const classes = [
+    'frise',
+    variante === 'mini' ? 'frise--mini' : null,
+    tracee ? 'frise--tracee' : null,
+  ]
     .filter(Boolean)
     .join(' ')
 
@@ -91,6 +103,14 @@ export function Frise({
             )
           })}
         </div>
+
+        {/*
+          Le tracé de la présentation : une bande d'un pixel qui balaie la
+          frise de gauche à droite. Une seule, posée sur toute la piste, plutôt
+          qu'une par segment — cinq bandes lancées ensemble se rempliraient en
+          parallèle et ne raconteraient rien.
+        */}
+        {tracee && <span className="frise__tracage" aria-hidden="true" />}
 
         {/* Seul élément qui dépasse la frise. */}
         {curseur !== null && (

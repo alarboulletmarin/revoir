@@ -1,307 +1,131 @@
 /*
- * Écrans : grille bento du tableau de bord, formulaire, fiche d'élément,
- * calendrier, réglages.
+ * Écrans : aujourd'hui, formulaire, fiche d'un sujet, calendrier, réglages.
  *
- * Le bento est réservé au tableau de bord (section 7.2). Les autres écrans
- * sont en colonne simple.
+ * Tous en colonne simple depuis que le bento a disparu (section 7.2). Ce qui
+ * vit ici, ce sont les mises en page d'écran ; les objets qu'elles posent
+ * vivent dans composants.css.
  */
 
-/* ============================================================ bento ===== */
+/* ==================================================== aujourd'hui ====== */
 
 /*
- * Une zone par cellule, jamais deux rangées pour une seule carte : la cellule
- * du jour doit pouvoir ne faire que la hauteur de son unique révision. Sur
- * mobile, chaque rangée se dimensionne sur son contenu.
- */
-.bento {
-  display: grid;
-  min-width: 0;
-  gap: var(--e-3);
-  /* Obligatoire : le français est plus long que l'anglais et casserait une
-     grille à hauteur fixe (section 7.2). */
-  grid-auto-rows: minmax(96px, auto);
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-areas:
-    'aujourdhui aujourdhui'
-    'retard     retard'
-    'synthese   synthese';
-}
-
-/* La cellule « retard » disparaît du DOM à zéro : la grille se recompose. */
-.bento--sans-retard {
-  grid-template-areas:
-    'aujourdhui aujourdhui'
-    'synthese   synthese';
-}
-
-/*
- * La cellule du jour n'a pas de plancher : une seule révision, une seule
- * ligne. Les autres gardent les 96px de la section 7.2, qui les empêchent de
- * se réduire à un chiffre posé sur un trait.
+ * L'écran « Aujourd'hui » — sections 8.8 et 8.9.
  *
- * `align-self: start` la dispense aussi de s'étirer : au-delà de 768px elle
- * couvre trois rangées, et sans cela quatre révisions se retrouveraient au
- * sommet de huit cents pixels de vert.
+ * Il n'y a plus de grille : une colonne, et trois objets qui se suivent —
+ * le titre, la règle, ce qu'il y a à faire. Le bento posait trois blocs de
+ * même poids côte à côte et laissait choisir lequel répondait à la question ;
+ * la réponse est maintenant la première chose écrite, en toutes lettres.
+ *
+ * L'écran ne porte pas de marge latérale : la règle et les lignes réglées
+ * traversent le papier d'un bord à l'autre, et ce sont leurs contenus qui se
+ * retirent de `--marge-page`. Un filet qui s'arrête à seize pixels du bord
+ * ressemble à une carte sans en être une.
  */
-.bento .cellule--accent {
-  min-height: 0;
-  align-self: start;
-}
-
-@media (min-width: 768px) {
-  .bento {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-areas:
-      'aujourdhui aujourdhui retard     retard'
-      'aujourdhui aujourdhui synthese   synthese'
-      'aujourdhui aujourdhui calendrier calendrier';
-  }
-
-  .bento--sans-retard {
-    grid-template-areas:
-      'aujourdhui aujourdhui synthese   synthese'
-      'aujourdhui aujourdhui calendrier calendrier';
-  }
-}
-
-/* ---------------------------------------------------- cellule héros ---- */
-
-/*
- * « 3 révisions aujourd'hui » plutôt qu'un 3 de soixante-quatre pixels suivi
- * de son étiquette. Le chiffre reste le premier mot de la phrase, mais c'est
- * le fond --accent plein qui porte la hiérarchie de l'écran (section 3) — le
- * texte n'a pas à la porter une seconde fois.
- */
-.hero__titre {
-  min-width: 0;
-  font-family: var(--police-titre);
-  font-size: var(--t-xl);
-  font-weight: 600;
-  line-height: var(--l-xl);
-  font-variant-numeric: tabular-nums;
-  text-wrap: balance;
-}
-
-.hero__liste {
+.aujourdhui {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-1);
-  padding-top: var(--e-2);
+  gap: var(--e-5);
+  margin-inline: calc(-1 * var(--marge-page));
 }
 
-.hero__pied {
+/*
+ * L'en-tête réserve sa hauteur, quel que soit ce qu'il a à dire.
+ *
+ * C'est ce qui empêche l'écran de sauter sous le doigt qui vient de cocher :
+ * le libellé passe de une à deux lignes en changeant d'état, et la ligne de
+ * suite apparaît avec lui. Le contenu s'aligne en haut ; ce qui reste est du
+ * vide qui ne bouge pas, et c'est exactement ce qu'on lui demande.
+ */
+.aujourdhui__entete {
+  display: flex;
+  min-height: var(--h-reponse);
+  min-width: 0;
+  flex-direction: column;
+  align-content: flex-start;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
+}
+
+.aujourdhui__reponse {
   display: flex;
   min-width: 0;
-  justify-content: flex-end;
-  padding-top: var(--e-1);
+  flex-direction: column;
+  gap: var(--e-2);
 }
 
-/* Sur --accent plein, --surface exige 15px minimum (section 3). */
-.hero__vide {
+/*
+ * Le compte, dans la police des titres et non dans celle des chiffres.
+ *
+ * C'en est un, pourtant. Mais la chasse fixe sert à ce qui se lit en colonne
+ * (section 4), et un chiffre seul de 56 px ne se lit pas en colonne : il se
+ * regarde. À cette taille, la pile monospace du système impose en plus son
+ * dessin — un zéro barré sur l'un, ouvert sur l'autre —, ce qui donnerait à la
+ * première chose vue de l'application une allure différente d'un appareil à
+ * l'autre.
+ *
+ * `tabular-nums` reste, hérité de l'`<output>` : c'est lui qui garde au
+ * chiffre la même largeur entre « 1 » et « 2 », et empêche le libellé de
+ * bouger dessous quand le compte descend.
+ */
+.aujourdhui__compte {
   min-width: 0;
-  color: var(--surface);
+  font-family: var(--police-titre);
+  font-size: var(--t-compte);
+  font-weight: 700;
+  line-height: var(--l-compte);
+  letter-spacing: var(--chasse-titre);
+}
+
+.aujourdhui__libelle {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  line-height: var(--l-lg);
+  letter-spacing: var(--chasse-titre);
+  text-wrap: balance;
+}
+
+/*
+ * La seconde ligne d'une journée bouclée : une information, pas un
+ * encouragement (section 8.9). Elle ne s'affiche que là — une journée qui a
+ * encore des révisions n'a pas besoin qu'on lui annonce la suivante.
+ */
+.aujourdhui__suite {
+  min-width: 0;
+  color: var(--encre-2);
   font-size: var(--t-base);
   line-height: var(--l-base);
 }
 
-.cellule--accent .ligne-revision__titre,
-.cellule--accent .ligne-revision__date {
-  color: var(--surface);
-}
-
-.cellule--accent .ligne-revision__meta {
-  color: var(--surface);
-}
-
-/* Tout le jeu de couleurs de la case bascule d'un bloc (voir composants.css). */
-.cellule--accent .ligne-revision {
-  --cercle-trait: var(--surface);
-  --cercle-survol: var(--surface);
-  --cercle-fait: var(--surface);
-  --coche-couleur: var(--accent);
-}
-
-/* Paysage mobile : on agrandit, jamais l'inverse (section 7.4). */
-@media (min-height: 560px) {
-  .hero__liste {
-    gap: var(--e-2);
-  }
-}
-
-/* -------------------------------------------------- cellule retard ----- */
-
-.retard__valeur {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--e-2);
-  color: var(--retard-texte);
-}
-
-/* --retard n'est jamais utilisé en texte : ici c'est une pastille. */
-.retard__point {
-  width: var(--e-2);
-  height: var(--e-2);
-  flex-shrink: 0;
-  border-radius: var(--r-pilule);
-  background-color: var(--retard);
-}
-
-/* ------------------------------------------------ cellule synthèse ----- */
-
 /*
- * Le titre de la seconde moitié de la cellule. Il double le rôle de
- * `.cellule__label`, mais plus bas : la carte porte deux informations, et la
- * seconde a droit à son nom.
+ * Ce qu'on fait, par opposition à ce qui répond. Sur un téléphone, il ne fait
+ * que reprendre l'espacement de son parent : c'est au bureau qu'il devient une
+ * colonne (section 7.5).
  */
-.synthese__intitule {
-  min-width: 0;
-  padding-top: var(--e-2);
-  color: var(--encre-2);
-  font-size: var(--t-sm);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: var(--l-sm);
-}
-
-/*
- * Le seul `conic-gradient` du projet, prescrit par la section 7.2. Les arrêts
- * sont francs : c'est un arc, pas un dégradé.
- */
-.anneau {
-  position: relative;
-  width: var(--e-7);
-  height: var(--e-7);
-  flex-shrink: 0;
-  border-radius: var(--r-pilule);
-  background: conic-gradient(
-    var(--accent) calc(var(--part) * 1turn),
-    var(--trait) 0
-  );
-}
-
-.anneau::after {
-  content: '';
-  position: absolute;
-  inset: var(--e-2);
-  border-radius: var(--r-pilule);
-  background-color: var(--surface);
-}
-
-/* ------------------------------------------------- barres de charge ---- */
-
-.charge {
+.aujourdhui__travail {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-1);
+  gap: var(--e-5);
 }
 
-.charge__barres {
+.aujourdhui__section {
   display: flex;
   min-width: 0;
-  align-items: flex-end;
-  gap: var(--charge-gap);
-  height: var(--e-7);
-}
-
-.charge__jour {
-  display: flex;
-  min-width: 0;
-  height: 100%;
-  flex: 1 1 0;
   flex-direction: column;
-  justify-content: flex-end;
-}
-
-.charge__barre {
-  width: 100%;
-  min-height: var(--charge-plancher);
-  border-radius: var(--charge-rayon);
-  background-color: var(--accent);
-}
-
-/*
- * Aujourd'hui est toujours la première barre. Elle porte son nom sous l'axe ;
- * ce trait d'--encre à sa base le confirme sans dépendre de sa hauteur, qui
- * peut être celle d'un jour vide.
- */
-.charge__barre--jour {
-  border-bottom: 2px solid var(--encre);
-}
-
-/*
- * Trois repères seulement, aux deux bords et au milieu : `space-between` les
- * cale sur la première et la dernière barre sans avoir à mesurer quoi que ce
- * soit.
- */
-.charge__reperes {
-  display: flex;
-  min-width: 0;
-  justify-content: space-between;
   gap: var(--e-2);
 }
 
-.charge__repere {
-  min-width: 0;
-  color: var(--encre-2);
-  font-size: var(--t-xs);
-  line-height: var(--l-xs);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.aujourdhui__section .surtitre {
+  padding-inline: var(--marge-page);
 }
 
-.charge__repere--jour {
-  color: var(--encre);
-  font-weight: 500;
+.aujourdhui__pied {
+  padding-inline: var(--marge-page);
 }
 
-/* ------------------------------------------------- mini-calendrier ----- */
-
-/* Sa cellule n'est montée qu'au-delà de 768px (section 7.2). */
-.mini-mois {
-  display: grid;
-  min-width: 0;
-  gap: var(--e-1);
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.mini-mois__jour {
-  display: flex;
-  min-width: 0;
-  aspect-ratio: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  border-radius: var(--r-pilule);
-  color: var(--encre-2);
-  font-size: var(--t-xs);
-  font-variant-numeric: tabular-nums;
-}
-
-.mini-mois__jour--hors {
-  opacity: 0.4;
-}
-
-.mini-mois__jour--aujourdhui {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-}
-
-.mini-mois__points {
-  display: flex;
-  gap: 1px;
-  height: var(--charge-plancher);
-}
-
-.mini-mois__point {
-  width: var(--charge-plancher);
-  height: var(--charge-plancher);
-  border-radius: var(--r-pilule);
-  background-color: var(--accent);
-}
 
 /* ================================================ listes de révisions == */
 
@@ -341,6 +165,617 @@
   letter-spacing: 0.02em;
   line-height: var(--l-sm);
   font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================ création en trois pages == */
+
+/*
+ * Une question par écran — section 8.22.
+ *
+ * La page réserve en bas la hauteur de sa barre d'action : celle-ci est fixe,
+ * et sans cette purge le dernier élément du contenu finirait dessous. Elle
+ * remplace la purge de la barre du bas, qui ne s'affiche pas ici.
+ */
+.etape {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-4);
+  padding-bottom: var(--purge-action);
+}
+
+/*
+ * Trois segments, pas une barre continue : on ne mesure pas une progression en
+ * pourcentage quand il y a trois questions, on les compte. Le segment franchi
+ * passe à l'encre ; les autres restent au trait, et le contraste entre les
+ * deux ne dépend pas de la teinte.
+ */
+.etape__progression {
+  display: flex;
+  min-width: 0;
+  gap: var(--e-1);
+}
+
+.etape__segment {
+  min-width: 0;
+  flex: 1 1 0;
+  height: var(--segment-etape);
+  border-radius: var(--r-pilule);
+  background-color: var(--trait);
+}
+
+.etape__segment--fait {
+  background-color: var(--encre);
+}
+
+.etape__entete {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.etape__intro {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+.etape__corps {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.etape__lien {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+/*
+ * La barre d'action, fixe au-dessus de la marge système.
+ *
+ * Elle occupe la place de la barre du bas, qui s'efface sur ces écrans : deux
+ * barres empilées, ce sont cent vingt pixels de chrome sous le pouce et deux
+ * réponses à « comment je sors d'ici ? ». La sortie est un lien souligné, à
+ * gauche : sortir doit être aussi lisible qu'avancer.
+ */
+.barre-action {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  border-top: var(--bordure);
+  background-color: var(--papier);
+  padding: var(--e-3) var(--marge-page);
+  padding-bottom: calc(var(--e-3) + var(--bas-securise));
+}
+
+.barre-action__sortie {
+  min-height: var(--cible);
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-base);
+}
+
+.barre-action__sortie:hover {
+  color: var(--encre);
+}
+
+/*
+ * L'action principale est plus haute que la cible minimale : c'est le seul
+ * bouton de l'écran, il est à portée de pouce, et sa hauteur dit qu'il conclut
+ * la page.
+ */
+.barre-action__principale {
+  min-height: var(--h-action);
+  /*
+   * Toujours à droite, sortie ou pas. La dernière étape n'a rien à sauter et
+   * n'affiche donc pas de lien de sortie ; sans cette marge, `space-between`
+   * ramènerait l'action à gauche et le bouton changerait de place entre deux
+   * écrans du même parcours.
+   */
+  margin-left: auto;
+  flex: 0 1 auto;
+  padding-inline: var(--e-5);
+}
+
+/* -------------------------------------------------------- exemples ----- */
+
+.exemples {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.exemples__liste {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+}
+
+/*
+ * Un exemple est touchable, pas décoratif : il remplit le champ. D'où la
+ * cible, et d'où le fait qu'il ne ressemble pas à une étiquette.
+ */
+.pilule {
+  display: inline-flex;
+  min-height: var(--cible);
+  min-width: 0;
+  align-items: center;
+  border: var(--bordure);
+  border-radius: var(--r-pilule);
+  background-color: var(--surface);
+  padding-inline: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  transition: background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.pilule:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+/* ------------------------------------------------- rangées de choix ---- */
+
+.choix {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.choix > * {
+  border-bottom: var(--bordure);
+}
+
+/*
+ * Une rangée de choix : on désigne, on ne tape pas. Elle dépasse la cible
+ * minimale — c'est une liste qu'on parcourt du pouce, et 44px collés les uns
+ * aux autres se visent mal.
+ */
+.choix__rangee {
+  display: flex;
+  width: 100%;
+  min-height: var(--h-rangee);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+  text-align: left;
+}
+
+.choix__rangee:hover {
+  background-color: var(--surface-survol);
+}
+
+.choix__nom {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.choix__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+.choix__coche {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* Le rythme déplie sa frise : on choisit un rythme, pas un mot (section 8.7). */
+.choix__rythme {
+  display: flex;
+  width: 100%;
+  min-height: var(--h-rangee);
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  padding-block: var(--e-3);
+  text-align: left;
+}
+
+.choix__rythme--actif {
+  color: var(--encre);
+}
+
+/*
+ * Le nom passe avant son résumé : à 320 px, « 7 révisions · sur deux mois »
+ * ne laissait pas la place d'un nom composé, qui se tronquait en « Examen… ».
+ * Le résumé passe à la ligne plutôt que de rogner ce qu'on vient de nommer.
+ */
+.choix__entete {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e-1) var(--e-3);
+}
+
+.choix__rythme .choix__nom {
+  flex: 0 1 auto;
+}
+
+.choix__jours {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+}
+
+
+
+/*
+ * « Aujourd'hui » en deux colonnes, au bureau — section 7.5.
+ *
+ * À gauche ce qui répond — le compte, la règle des quinze jours ; à droite ce
+ * qu'on fait — la liste du jour, ce qui a été revu, ce qui vient ensuite. En
+ * une seule colonne sur un écran large, la liste tombait sous la ligne de
+ * flottaison alors qu'il restait la moitié de l'écran à sa droite, et cocher
+ * demandait de faire défiler ce qu'on venait de lire.
+ *
+ * La gouttière est un filet, pas un vide : les deux colonnes portent des
+ * objets réglés, et un simple écart les aurait laissées flotter côte à côte
+ * sans dire qu'elles se lisent ensemble.
+ */
+@media (min-width: 1024px) {
+  .aujourdhui {
+    display: grid;
+    align-items: start;
+    align-content: start;
+    gap: 0 var(--e-6);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    /*
+     * Deux rangées à la hauteur de leur contenu, puis une qui absorbe le
+     * reste. Sans elle, la colonne de droite — qui traverse toute la grille —
+     * étirait la première rangée à sa propre hauteur, et la règle descendait
+     * de deux cents pixels sous le compte qu'elle doit suivre.
+     */
+    grid-template-rows: auto auto 1fr;
+    margin-inline: 0;
+  }
+
+  /*
+   * La colonne de gauche s'arrête de défiler avec la page : la règle reste
+   * lisible pendant qu'on parcourt une longue liste, ce qui est exactement ce
+   * qu'on lui demande — situer ce qu'on coche dans les quinze jours.
+   */
+  .aujourdhui__entete,
+  .aujourdhui .regle {
+    position: sticky;
+    grid-column: 1;
+  }
+
+  .aujourdhui__entete {
+    top: var(--e-5);
+    padding-inline: 0;
+  }
+
+  .aujourdhui .regle {
+    top: calc(var(--h-reponse) + var(--e-6));
+    border-radius: var(--r-carte);
+    border-inline: var(--bordure);
+  }
+
+  .aujourdhui .regle__entete,
+  .aujourdhui .regle__retard {
+    padding-inline: var(--e-4);
+  }
+
+  .aujourdhui .regle__corps {
+    margin-inline: var(--e-4);
+  }
+
+  /*
+   * La colonne de droite occupe toute la hauteur de la grille et commence en
+   * haut, à la même ligne que le compte : c'est ce qu'on vient faire, il n'a
+   * pas à attendre que la colonne de gauche ait fini de se dérouler.
+   */
+  .aujourdhui__travail {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+
+  .aujourdhui__travail > .liste-reglee:first-child {
+    border-top: var(--bordure);
+  }
+}
+
+/* ======================================================== le jour ====== */
+
+/*
+ * La page d'un jour — section 8.11. C'était une feuille glissante.
+ *
+ * Même mise en page que l'écran « Aujourd'hui » : les lignes traversent le
+ * papier, leur contenu se retire de la marge. Les deux écrans montrent la même
+ * chose — une journée de révisions — et n'ont aucune raison de ne pas se
+ * ressembler.
+ */
+.page-jour {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-5);
+  margin-inline: calc(-1 * var(--marge-page));
+}
+
+.page-jour__entete {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-inline: var(--marge-page);
+}
+
+.page-jour__titres {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+/*
+ * « vendredi 21 août » devient « Vendredi 21 août ».
+ *
+ * En CSS et non dans le dictionnaire : le nom du jour s'écrit en minuscule en
+ * français, et ce n'est qu'ici, en tête de titre, qu'il prend une capitale. Le
+ * gabarit de date sert aussi ailleurs — au sur-titre d'« Aujourd'hui », au
+ * milieu d'une phrase — où la capitale serait une faute. `::first-letter` la
+ * pose sans toucher au texte, donc sans toucher à ce que lit un lecteur
+ * d'écran ni à ce qu'affiche `<title>`.
+ *
+ * Ciblé sur cette page seulement : la même règle sur tous les titres de page
+ * recapitaliserait un titre de sujet écrit en minuscules par son auteur.
+ */
+.page-jour__titres .titre-page::first-letter {
+  text-transform: uppercase;
+}
+
+.page-jour__compte {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/*
+ * Les deux chevrons du jour voisin. Ils vivent avec le titre et non dans
+ * l'en-tête de l'application, qui porte déjà le retour : trois flèches sur une
+ * même rangée, dont une seule sort de la page, ne se distingueraient pas.
+ */
+.page-jour__navigation {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.page-jour__chevron {
+  display: inline-flex;
+  width: var(--cible);
+  height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pilule);
+  color: var(--encre-2);
+  transition: background-color var(--duree-court) var(--courbe),
+    color var(--duree-court) var(--courbe);
+}
+
+.page-jour__chevron:hover {
+  background-color: var(--surface-survol);
+  color: var(--encre);
+}
+
+/*
+ * Les deux gestes de la journée. Ils se replient l'un sous l'autre à 320px
+ * plutôt que de rogner leurs libellés : « Tout marquer comme revu » ne se
+ * tronque pas sans devenir « Tout marquer… », qui ne dit plus rien.
+ */
+.page-jour__actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--e-2);
+  padding-inline: var(--marge-page);
+}
+
+
+/*
+ * La règle en tête de l'aide, et le lien qui rejoue la présentation.
+ * Même traversée du papier que sur « Aujourd'hui » : c'est le même objet.
+ */
+.aide__regle {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+  margin-inline: calc(-1 * var(--marge-page));
+  border-top: var(--bordure);
+  border-bottom: var(--bordure);
+  background-color: var(--surface);
+  padding: var(--e-4) var(--marge-page);
+}
+
+.aide__lien {
+  min-width: 0;
+  font-size: var(--t-base);
+  line-height: var(--l-base);
+}
+
+/* ===================================================== présentation ==== */
+
+/*
+ * Les trois écrans de la présentation — section 8.25.
+ *
+ * Contenu centré verticalement : il n'y a qu'une idée par écran, et la poser
+ * en haut d'un téléphone laisserait six cents pixels de vide dessous. La page
+ * occupe toute la hauteur disponible, barres comprises — elles s'effacent ici.
+ */
+.bienvenue {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--e-5);
+}
+
+.bienvenue__entete {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+}
+
+.bienvenue__avancement {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+/*
+ * Trois graduations, comme celles de la règle : un trait par écran, celui de
+ * l'écran courant en --accent. La même façon de compter que sur les pages de
+ * création, avec le même objet.
+ */
+.bienvenue__graduations {
+  display: flex;
+  align-items: center;
+  gap: var(--e-1);
+}
+
+.bienvenue__graduation {
+  width: var(--graduation-etape);
+  height: var(--segment-etape);
+  background-color: var(--trait);
+}
+
+.bienvenue__graduation--active {
+  background-color: var(--accent);
+}
+
+.bienvenue__compte {
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
+  letter-spacing: 0.1em;
+}
+
+/*
+ * La sortie, en 15px souligné et en pleine encre — pas en gris pâle dans un
+ * coin. Une présentation dont on ne trouve pas la sortie n'est plus une
+ * présentation, c'est un péage.
+ */
+.bienvenue__passer {
+  display: inline-flex;
+  min-height: var(--cible);
+  flex-shrink: 0;
+  align-items: center;
+  color: var(--encre);
+  font-size: var(--t-base);
+}
+
+.bienvenue__corps {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--e-6);
+}
+
+.bienvenue__texte {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+/*
+ * Le seul texte courant du projet au-dessus de --t-base. Un écran qui ne porte
+ * qu'une idée peut se lire d'un peu plus loin, et il n'a rien contre quoi se
+ * mesurer.
+ */
+.bienvenue__detail {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-champ);
+  line-height: var(--l-base);
+  text-wrap: pretty;
+}
+
+/*
+ * La démonstration traverse le papier entre deux filets, comme la règle de
+ * l'écran « Aujourd'hui » : c'est le même objet, il se pose de la même façon.
+ */
+.bienvenue__demonstration {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-4);
+  margin-inline: calc(-1 * var(--marge-page));
+  border-top: var(--bordure);
+  border-bottom: var(--bordure);
+  background-color: var(--surface);
+  padding: var(--e-5) var(--marge-page);
+}
+
+.bienvenue__legende {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  text-wrap: pretty;
+}
+
+.bienvenue__fin,
+.bienvenue__pied {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-3);
+}
+
+.bienvenue__pied .btn--primaire {
+  min-height: var(--h-action);
+  align-self: stretch;
+  padding-inline: var(--e-5);
+}
+
+.bienvenue__fin .btn {
+  min-height: var(--h-action);
+  align-self: stretch;
+  padding-inline: var(--e-5);
+}
+
+/*
+ * Un formulaire dont l'action vit dans la barre fixe du bas : il réserve sa
+ * hauteur, la barre du bas ne s'affichant pas sur ces écrans.
+ */
+.formulaire--barre {
+  padding-bottom: var(--purge-action);
 }
 
 /* ======================================================== formulaire === */
@@ -497,6 +932,56 @@
   gap: var(--e-2);
 }
 
+/*
+ * La ligne d'identité : catégorie, programme, date de départ. Une phrase, pas
+ * trois encadrés — le sujet n'appartient pas à son programme comme il
+ * appartient à sa catégorie, et trois chips donnaient le même poids aux trois.
+ */
+.fiche__identite {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-1) var(--e-2);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.fiche__separateur {
+  color: var(--trait);
+}
+
+.fiche__archive {
+  color: var(--retard-texte);
+}
+
+/*
+ * La progression, écrite. Le compte à gauche, la part à droite : on lit
+ * l'un ou l'autre selon ce qu'on cherche, jamais les deux ensemble.
+ */
+.fiche__progression {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-3);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.fiche__part {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* La suppression garde sa couleur d'avertissement, sans son cadre. */
+.fiche__supprimer {
+  color: var(--retard-texte);
+}
+
 .fiche__badges {
   display: flex;
   min-width: 0;
@@ -504,15 +989,16 @@
   gap: var(--e-2);
 }
 
+/*
+ * Une section de fiche, sans carte. Le contenu est déjà réglé — une frise, des
+ * rangées, des liens — et l'encadrer, c'était mettre un cadre autour d'un
+ * objet qui en est fait.
+ */
 .fiche__bloc {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: var(--e-3);
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-  padding: var(--e-4);
 }
 
 @media (min-width: 768px) {
@@ -528,11 +1014,24 @@
   gap: var(--e-2);
 }
 
+/*
+ * Une échéance en rangée : la case, le décalage en colonne, la date, l'état.
+ * Le décalage tient une largeur fixe et une chasse fixe — c'est ce qui aligne
+ * les J+n les uns sous les autres et rend le rythme lisible d'un regard.
+ */
 .echeance {
   display: flex;
   min-width: 0;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--e-2);
+}
+
+.echeance__decalage {
+  width: var(--cible);
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  line-height: var(--l-xs);
 }
 
 .echeance__corps {
@@ -541,6 +1040,7 @@
   flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: var(--e-2);
   padding-block: var(--e-2);
 }
@@ -595,11 +1095,12 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--e-3);
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
-  /* Même raison : à 320px, le padding de carte ne tient pas en plus. */
-  padding: var(--e-4) 0;
+  /*
+   * Plus de carte autour du mois. Une grille porte déjà ses propres lignes :
+   * l'encadrer, c'était poser un second cadre autour d'un objet qui en est
+   * fait. Le mois traverse le papier comme la règle et les listes.
+   */
+  margin-inline: calc(-1 * var(--marge-page));
 }
 
 @media (min-width: 380px) {
@@ -619,10 +1120,33 @@
 }
 
 .calendrier__mois {
+  display: flex;
   min-width: 0;
-  font-size: var(--t-md);
-  line-height: var(--l-md);
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--e-2);
+  font-family: var(--police-titre);
+  font-size: var(--t-section);
+  font-weight: 700;
+  line-height: var(--l-section);
+  letter-spacing: var(--chasse-titre);
   text-align: center;
+}
+
+.calendrier__legende {
+  min-width: 0;
+  padding-inline: var(--marge-page);
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+  text-wrap: pretty;
+}
+
+.calendrier__annee {
+  color: var(--encre-2);
+  font-size: var(--t-base);
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
 .calendrier__fleche {
@@ -642,11 +1166,18 @@
 }
 
 .calendrier__jours,
+/*
+ * Les rangées se séparent d'un filet plutôt que d'un écart : six semaines
+ * espacées flottaient, six semaines réglées se lisent ligne à ligne, comme un
+ * agenda de papier. Le filet est porté par les cases, la grille n'en ayant pas
+ * la notion.
+ */
 .calendrier__grille {
   display: grid;
   min-width: 0;
-  gap: var(--e-1) var(--calendrier-colonnes);
+  gap: 0 var(--calendrier-colonnes);
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: var(--bordure);
 }
 
 
@@ -662,15 +1193,15 @@
  */
 .calendrier__case {
   display: flex;
-  min-height: var(--cible);
+  min-height: var(--h-case-jour);
+  border-bottom: var(--bordure);
   min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--e-1);
-  border: 1px solid transparent;
-  border-radius: var(--r-pilule);
-  font-size: var(--t-sm);
+  font-family: var(--police-chiffres);
+  font-size: var(--t-base);
   font-variant-numeric: tabular-nums;
   transition: background-color var(--duree-court) var(--courbe);
 }
@@ -702,24 +1233,23 @@
  * Deux états, deux moyens : aujourd'hui se marque d'un anneau, le jour choisi
  * d'un disque plein. Quand les deux tombent ensemble, le disque garde son
  * anneau, posé un cran plus loin.
+ *//*
+ * Aujourd'hui : un fond `--accent-doux` et un numéro `--accent`.
+ *
+ * C'était un anneau, qui devait cohabiter avec le disque plein du jour
+ * sélectionné. Ce second état a disparu avec la feuille du jour, devenue une
+ * page (section 8.11) : il n'y a plus qu'un état à marquer, et une surface
+ * douce se repère mieux qu'un contour dans une grille de quarante-deux cases.
  */
 .calendrier__case--aujourdhui {
-  border-color: var(--accent);
+  background-color: var(--accent-doux);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.calendrier__case--choisi {
-  border-color: var(--accent);
-  background-color: var(--accent);
-  color: var(--surface);
-  font-weight: 500;
-}
 
-.calendrier__case--aujourdhui.calendrier__case--choisi {
-  outline: 1.5px solid var(--accent);
-  outline-offset: 2px;
-}
+
+
 
 @media (hover: hover) {
   .calendrier__case--choisi:hover {
@@ -744,10 +1274,16 @@
   gap: var(--point-jour-gap);
 }
 
-.calendrier__points {
+/*
+ * Un trait vertical par révision, à la hauteur de son état. Alignés par le
+ * bas : c'est la hauteur qui porte l'information, et des traits centrés se
+ * compareraient par leurs deux bouts au lieu d'un seul.
+ */
+.calendrier__traits {
   display: flex;
-  height: var(--point-jour);
+  height: var(--trait-jour-retard);
   flex-shrink: 0;
+  align-items: flex-end;
   gap: var(--point-jour-gap);
 }
 
@@ -757,11 +1293,10 @@
  * Repli sur --accent pour un élément sans matière — la teinte dérivée d'une
  * chaîne vide ne voudrait rien dire.
  */
-.calendrier__point {
-  width: var(--point-jour);
-  height: var(--point-jour);
+.calendrier__trait {
+  width: var(--trait-jour-large);
+  height: var(--trait-jour);
   flex-shrink: 0;
-  border-radius: var(--r-pilule);
   background-color: var(--teinte, var(--accent));
 }
 
@@ -770,8 +1305,15 @@
  * sien). Journée soldée : les points perdent leur matière et prennent le vert
  * de l'état, que l'étiquette du bouton écrit aussi en toutes lettres.
  */
-.calendrier__point--fait {
+/* Journée soldée : un état l'emporte toujours sur une identité (section 8.11). */
+.calendrier__trait--fait {
   background-color: var(--fait);
+}
+
+/* Le retard dépasse : c'est le seul état du calendrier qui demande quelque chose. */
+.calendrier__trait--retard {
+  height: var(--trait-jour-retard);
+  background-color: var(--retard);
 }
 
 /*
@@ -787,13 +1329,9 @@
 }
 
 /* Sur le disque plein, les deux repassent en clair pour rester lisibles. */
-.calendrier__case--choisi .calendrier__point {
-  background-color: var(--surface);
-}
 
-.calendrier__case--choisi .calendrier__plus {
-  color: var(--surface);
-}
+
+
 
 /* ------------------------------------------------- feuille du jour ----- */
 
@@ -1167,8 +1705,88 @@ body[data-panneau='ouvert'] {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--e-3);
+  gap: var(--e-4);
   align-items: flex-start;
+}
+
+/*
+ * Un état vide qui montre ce qui viendra plutôt qu'un écran qui constate qu'il
+ * n'y a rien (section 8.9). Encadré parce que c'est un exemple et non l'écran
+ * réel : sans cette bordure, les cinq formes passeraient pour un tableau vide.
+ */
+.etat-vide__apercu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-2);
+  border: var(--bordure);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+/* ==================================================== états d'écran ==== */
+
+/*
+ * Le gabarit d'attente — section 8.23. Pas de tourniquet : une lecture locale
+ * dure quelques dizaines de millisecondes, et une roue n'aurait le temps que
+ * d'apparaître. Pas de pouls non plus — ce serait une quatrième animation, et
+ * la section 6 en autorise trois.
+ */
+.gabarit__pile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--e-3);
+}
+
+.gabarit__bloc {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-gabarit);
+  background-color: var(--surface-survol);
+}
+
+.gabarit__bloc--surtitre {
+  width: var(--e-7);
+  height: var(--t-xs);
+}
+
+.gabarit__bloc--titre {
+  width: 70%;
+  height: var(--t-ecran);
+}
+
+.gabarit__bloc--regle {
+  height: var(--regle-hauteur);
+}
+
+.gabarit__bloc--ligne {
+  height: var(--h-rangee);
+}
+
+/*
+ * L'erreur de lecture. Elle prend la place du contenu : sans données, l'écran
+ * qui suivrait serait vide, et un tableau de bord à zéro se lit « vous n'avez
+ * rien » et non « je n'ai pas pu lire ».
+ */
+.erreur {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-4);
+  border: var(--trait-alerte) solid var(--retard);
+  border-radius: var(--r-carte);
+  background-color: var(--surface);
+  padding: var(--e-4);
+}
+
+.erreur__texte {
+  min-width: 0;
+  color: var(--retard-texte);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
 }
 
 /* ===================================================== catégories ====== */
@@ -1206,11 +1824,11 @@ body[data-panneau='ouvert'] {
 .categorie__nom {
   display: flex;
   min-width: 0;
-  align-items: baseline;
+  flex: 1 1 auto;
+  align-items: center;
   gap: var(--e-2);
-  font-size: var(--t-md);
-  font-weight: 500;
-  line-height: var(--l-md);
+  font-size: var(--t-base);
+  line-height: var(--l-base);
   overflow-wrap: anywhere;
 }
 
@@ -1223,9 +1841,60 @@ body[data-panneau='ouvert'] {
 
 .categorie__actions {
   display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+/* ============================================ rangées de navigation ==== */
+
+.rangees {
+  display: flex;
   min-width: 0;
-  flex-wrap: wrap;
-  gap: var(--e-2);
+  flex-direction: column;
+  border-top: var(--bordure);
+}
+
+.rangee-nav {
+  min-width: 0;
+  border-bottom: var(--bordure);
+}
+
+/*
+ * Une rangée qui mène ailleurs. Le chevron le dit — sans lui, un nom et un
+ * compte se lisent comme une ligne de tableau, pas comme un lien.
+ */
+.rangee-nav__lien {
+  display: flex;
+  min-height: var(--h-rangee-nav);
+  min-width: 0;
+  align-items: center;
+  gap: var(--e-3);
+}
+
+.rangee-nav__lien:hover {
+  background-color: var(--surface-survol);
+}
+
+.rangee-nav__libelle {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ce qu'on y trouvera : « aucun » évite une visite pour rien. */
+.rangee-nav__valeur {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+.rangee-nav__chevron {
+  flex-shrink: 0;
+  color: var(--encre-2);
 }
 
 /* L'aperçu des Réglages : ce qu'il y a, d'un coup d'œil. La gestion est
@@ -1248,12 +1917,7 @@ body[data-panneau='ouvert'] {
  * pas de supprimer le défilement horizontal, c'est de le rendre lisible.
  */
 
-.suivi__reglages {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--e-4);
-}
+
 
 .suivi__filtre {
   display: flex;
@@ -1277,16 +1941,52 @@ body[data-panneau='ouvert'] {
   gap: var(--e-2);
 }
 
-@media (min-width: 480px) {
-  .suivi__reglages {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
+/*
+ * Le titre de la vue et ce qu'elle suit, sur une rangée.
+ */
+.suivi__entete-vue {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-2) var(--e-3);
+}
 
+.suivi__compte {
+  flex-shrink: 0;
+  color: var(--encre-2);
+  font-size: var(--t-sm);
+  line-height: var(--l-sm);
+}
+
+/*
+ * Les deux réglages tiennent sur une rangée dès 320 px.
+ *
+ * Ils s'empilaient, chacun sous son libellé : quatre rangées de chrome avant
+ * la première cellule, sur l'écran dont c'est le seul objet. Le filtre prend
+ * la place qui reste, la bascule garde la sienne — deux mots courts qui ne
+ * doivent pas se replier.
+ */
+.suivi__reglages {
+  display: flex;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+.suivi__filtre {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.suivi__mode {
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
   .suivi__filtre {
-    min-width: 0;
-    flex: 1 1 auto;
     max-width: 320px;
   }
 
@@ -1301,21 +2001,25 @@ body[data-panneau='ouvert'] {
  * <details> natif : le pli, le clavier et l'annonce « développé / réduit »
  * sont gratuits. Le marqueur par défaut est retiré au profit du chevron.
  */
+/*
+ * Un groupe de catégorie n'est plus une carte : un filet en tête, et le titre
+ * de la catégorie. Une carte par catégorie mettait un cadre autour de chaque
+ * tableau, et un tableau porte déjà ses propres lignes — deux grilles
+ * emboîtées dont l'une ne dit rien.
+ */
 .suivi__groupe {
   min-width: 0;
-  border: var(--bordure);
-  border-radius: var(--r-carte);
-  background-color: var(--surface);
+  border-top: var(--bordure);
 }
 
 .suivi__entete-groupe {
   display: flex;
-  min-height: var(--cible);
+  min-height: var(--h-rangee);
   min-width: 0;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--e-2);
-  padding: var(--e-2) var(--e-4);
+  padding-block: var(--e-2);
   cursor: pointer;
   list-style: none;
 }
@@ -1326,7 +2030,6 @@ body[data-panneau='ouvert'] {
 
 .suivi__entete-groupe:hover {
   background-color: var(--surface-survol);
-  border-radius: var(--r-carte);
 }
 
 /*
@@ -1422,6 +2125,11 @@ body[data-panneau='ouvert'] {
   text-align: center;
 }
 
+/*
+ * Les en-têtes de colonnes en chasse fixe : « R1 » à « R5 » et les « J+n »
+ * sont des repères qui se lisent en colonne, comme tout ce qui se compte dans
+ * cette application (section 4).
+ */
 .suivi__entete {
   position: sticky;
   top: 0;
@@ -1429,9 +2137,9 @@ body[data-panneau='ouvert'] {
   min-width: var(--cible);
   padding: var(--e-2) var(--e-1);
   color: var(--encre-2);
+  font-family: var(--police-chiffres);
   font-size: var(--t-xs);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1748,9 +2456,9 @@ body[data-panneau='ouvert'] {
 /* ========================================================== accueil ==== */
 
 /*
- * L'écran de premier usage, qui est aussi la page de présentation. Colonne
- * simple : le bento reste réservé au tableau de bord (section 7.2), et il n'y
- * a de toute façon rien à mettre en grille — c'est un texte qu'on lit une fois.
+ * L'écran de premier usage, qui est aussi la page de présentation. Une
+ * colonne : il n'y a rien à mettre en grille, c'est un texte qu'on lit une
+ * fois.
  */
 .accueil {
   display: flex;
@@ -1768,15 +2476,15 @@ body[data-panneau='ouvert'] {
 
 /*
  * Le titre de l'écran est la question de l'application. `text-wrap: balance`
- * lui évite de finir sur un mot seul, et `--t-xl` le tient à la taille des
- * chiffres du bento : c'est la même voix.
+ * lui évite de finir sur un mot seul.
  */
 .accueil__titre {
   min-width: 0;
   font-family: var(--police-titre);
-  font-size: var(--t-xl);
-  font-weight: 600;
-  line-height: var(--l-xl);
+  font-size: var(--t-page);
+  font-weight: 700;
+  letter-spacing: var(--chasse-titre);
+  line-height: var(--l-page);
   text-wrap: balance;
 }
 

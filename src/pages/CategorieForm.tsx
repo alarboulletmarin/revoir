@@ -15,13 +15,14 @@
  * majuscule seraient deux couleurs pour une seule idée.
  */
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDonnees } from '../state/useDonnees'
 import { useTitrePage } from '../state/useTitrePage'
 import { useTextes } from '../state/usePreferences'
 import { useRetour } from '../state/useRetour'
 import { categorieHomonyme } from '../lib/categories'
-import { Bouton } from '../components/Bouton'
+import { cheminInterne } from '../lib/navigation'
+import { BarreAction } from '../components/BarreAction'
 import {
   ChampsCategorie,
   type BrouillonCategorie,
@@ -30,6 +31,8 @@ import {
 export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { state } = useLocation()
+  const [retourVers] = useState(() => cheminInterne(state))
   const { categories, creerCategorie, modifierCategorie, loading } = useDonnees()
   const revenir = useRetour()
   const t = useTextes()
@@ -79,10 +82,22 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
     try {
       if (mode === 'edit' && existante) {
         await modifierCategorie(existante.id, propre, brouillon.teinte)
+        navigate('/categories', { replace: true })
       } else {
-        await creerCategorie(propre, brouillon.teinte)
+        const creee = await creerCategorie(propre, brouillon.teinte)
+        /*
+         * Créer une catégorie au milieu d'une autre tâche ne doit pas
+         * interrompre cette tâche. Quand on vient d'ailleurs que de la liste —
+         * de la deuxième question de la création d'un sujet, en pratique — on
+         * y retourne, et on y retourne avec ce qu'on vient de créer : sans
+         * l'identifiant, il faudrait redésigner dans la liste la catégorie
+         * qu'on vient de nommer.
+         */
+        navigate(retourVers ?? '/categories', {
+          replace: true,
+          state: retourVers === null ? undefined : { categorieCreee: creee.id },
+        })
       }
-      navigate('/categories', { replace: true })
     } finally {
       setEnregistrement(false)
     }
@@ -90,9 +105,9 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
 
   return (
     <>
-      <h1 className="page__titre">{titre}</h1>
+      <h1 className="titre-page">{titre}</h1>
 
-      <form className="formulaire" onSubmit={soumettre} noValidate>
+      <form className="formulaire formulaire--barre" onSubmit={soumettre} noValidate>
         <ChampsCategorie
           valeur={brouillon}
           onChange={setBrouillon}
@@ -100,16 +115,15 @@ export function CategorieForm({ mode }: { mode: 'create' | 'edit' }) {
           groupeTeinte="teinte-categorie"
         />
 
-        <div className="formulaire__actions">
-          <Bouton variante="discret" onClick={revenir}>
-            {t.commun.annuler}
-          </Bouton>
-          <Bouton variante="primaire" type="submit" disabled={enregistrement}>
-            {mode === 'edit'
-              ? t.categories.modifierBouton
-              : t.categories.creerBouton}
-          </Bouton>
-        </div>
+        <BarreAction
+          sortie={{ libelle: t.commun.annuler, onClick: revenir }}
+          action={{
+            libelle:
+              mode === 'edit' ? t.categories.modifierBouton : t.categories.creerBouton,
+            type: 'submit',
+            desactivee: enregistrement,
+          }}
+        />
       </form>
     </>
   )

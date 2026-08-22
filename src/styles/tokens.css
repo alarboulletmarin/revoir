@@ -19,20 +19,35 @@
   --fait-texte: #4F6E50;
 
   /*
-   * Typographie — pile système, zéro octet téléchargé.
+   * Typographie — trois rôles, zéro octet téléchargé.
    *
    * `--police-titre` nommait « Instrument Sans » sans que personne ne la
-   * charge : ni `@font-face`, ni fichier dans `/public`, ni lien. Tous les
-   * titres tombaient donc déjà sur la pile système, et la spécification
-   * décrivait une police que l'application n'a jamais servie. Entre embarquer
-   * un woff2 et dire ce qui se passe vraiment, la section 4 tranche pour la
-   * seconde : « le design tient, il perd juste un peu de caractère ».
+   * charge : ni `@font-face`, ni fichier dans `/public`, ni lien. La question
+   * s'est reposée à la refonte, et la réponse n'a pas changé : rien n'est
+   * téléchargé, parce qu'aucun appel réseau n'a lieu à l'exécution. Le
+   * caractère vient d'ailleurs — d'Arial nommée en tête de pile, de deux
+   * graisses tenues, et de chasses réglées plutôt que laissées par défaut.
    *
-   * Les deux variables restent distinctes : les rôles n'ont pas fusionné, et
-   * une police de titres se réintroduira ici, à un seul endroit.
+   * Arial d'abord, la pile système ensuite. Ce n'est pas une police
+   * téléchargée : c'est un nom présent sur tout ce qui n'est pas Linux, et sur
+   * Linux le repli tombe sur Liberation Sans, dont les chasses sont
+   * identiques. Nommer Arial plutôt que `system-ui` évite qu'un même écran
+   * s'écrive en SF Pro sur un appareil, en Roboto sur un autre, en Segoe sur
+   * un troisième : trois dessins qui ne portent pas le même titre à −0,035 em.
+   *
+   * `--police-chiffres` est le troisième rôle, et il est nouveau. Les chiffres,
+   * les dates et les compteurs de l'application se lisent en colonne — la règle
+   * des quinze jours, les échéances d'une fiche, les comptes d'une liste — et
+   * une chasse variable les décale les uns par rapport aux autres. La pile
+   * système suffit : le dessin change d'un système à l'autre, la chasse fixe,
+   * elle, est garantie partout, et c'est elle qu'on vient chercher.
+   * `font-variant-numeric: tabular-nums` reste posé avec (section 4) : la
+   * chasse fixe aligne les colonnes, les chiffres tabulaires empêchent un
+   * compteur de sauter quand il change.
    */
-  --police-titre: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --police-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --police-titre: Arial, Helvetica, sans-serif;
+  --police-ui: Arial, Helvetica, sans-serif;
+  --police-chiffres: ui-monospace, SFMono-Regular, Menlo, monospace;
   --t-champ: 16px;
   --t-xl: 28px;
   --t-lg: 20px;
@@ -40,6 +55,45 @@
   --t-base: 15px;
   --t-sm: 13px;
   --t-xs: 12px;
+
+  /*
+   * Les trois crans de titre de la refonte, nommés par leur rôle et non par
+   * leur rang — comme `--t-champ`, qui est un plancher et pas une taille.
+   * L'échelle `xs → xl` sert le corps de texte et ne bouge pas ; ces trois-là
+   * servent la voix de l'écran, et c'est le rôle qui décide, pas la place dans
+   * une suite.
+   *
+   * `--t-ecran` ouvre une des trois vues, `--t-page` ouvre une page qui a un
+   * retour, `--t-section` titre un bloc à l'intérieur. Un écran n'en porte
+   * jamais deux du même cran : c'est ce qui rend la hiérarchie lisible sans
+   * qu'aucune règle de couleur n'ait à s'en mêler.
+   */
+  --t-ecran: 34px;
+  --t-page: 30px;
+  --t-section: 22px;
+
+  /*
+   * Le compte du jour, sur « Aujourd'hui ». Plus grand que tous les titres,
+   * et c'est voulu : c'est la réponse à la question de la section 1, et on
+   * vient la voir, pas la lire. C'est le rôle que tenait le grand chiffre du
+   * bento, rendu à l'écran qui l'a perdu avec lui.
+   */
+  --t-compte: 56px;
+
+  /* Le logotype, et lui seul (section 2). */
+  --t-marque: 14px;
+
+  /*
+   * Chasses. Trois valeurs, trois emplois, et aucune improvisée sur place.
+   *
+   * Les titres se resserrent : à 34 px, l'espacement par défaut d'Arial creuse
+   * les mots et fait perdre au titre sa tenue de bloc. Les sur-titres et le
+   * logotype s'ouvrent au contraire, parce qu'ils sont courts, petits et en
+   * capitales — trois raisons de laisser respirer.
+   */
+  --chasse-titre: -0.035em;
+  --chasse-surtitre: 0.14em;
+  --chasse-marque: 0.24em;
 
   /* Espacement */
   --e-1: 4px;
@@ -53,11 +107,38 @@
   /* Formes */
   --r-carte: 12px;
   --r-pilule: 999px;
+  /*
+   * Le rayon d'un bloc de gabarit. Un troisième rayon, et il se justifie : à
+   * 12 px, un bloc de la hauteur d'une ligne de texte devient une gélule et
+   * cesse de ressembler à du texte à venir. C'est le seul emploi.
+   */
+  --r-gabarit: 6px;
   --bordure: 1px solid var(--trait);
+  /*
+   * L'épaisseur d'un encadré qui alerte — erreur de lecture, import refusé,
+   * champ fautif. Un pixel et demi, pas un : à un pixel, le trait `--retard`
+   * ne se distingue du trait ordinaire que par sa couleur, et la couleur ne
+   * porte jamais l'information seule (section 1).
+   */
+  --trait-alerte: 1.5px;
 
-  /* Mouvement */
+  /*
+   * Mouvement (section 6). Trois durées, trois animations.
+   *
+   * `--duree-regle` est plus lente que tout le reste, et c'est voulu : elle
+   * porte la seule animation de l'application qui explique quelque chose au
+   * lieu d'accompagner un geste. La graduation du jour se dresse une fois, à
+   * l'ouverture de l'écran, et rien ne la rejoue.
+   */
   --duree-court: 120ms;
   --duree-moyen: 200ms;
+  --duree-regle: 320ms;
+  /*
+   * Le tracé de la frise sur l'écran de présentation. Plus long que tout le
+   * reste, et c'est son sujet : ce qu'on regarde, ce n'est pas un trait qui
+   * arrive, c'est un écart qui s'allonge. Trop vite, il n'y a rien à voir.
+   */
+  --duree-trace: 1400ms;
   --courbe: cubic-bezier(0.2, 0, 0, 1);
 
   /*
@@ -69,14 +150,61 @@
    */
   --cible: 44px;
   --bas-securise: env(safe-area-inset-bottom, 0px);
+
+  /*
+   * Hauteur d'une rangée de choix. Au-dessus de la cible minimale : c'est une
+   * liste qu'on parcourt du pouce, et des cibles de 44 px collées les unes aux
+   * autres se visent mal — la marge d'erreur du doigt est plus large que
+   * l'écart entre deux rangées.
+   */
+  --h-rangee: 52px;
+  /*
+   * Une rangée de navigation est plus haute qu'une rangée de choix : elle mène
+   * ailleurs, et un tap manqué coûte un aller-retour plutôt qu'un second tap.
+   */
+  --h-rangee-nav: 56px;
+  /* Une catégorie porte deux liens : elle a besoin d'un peu plus de hauteur. */
+  --h-categorie: 60px;
+
+  /*
+   * Hauteur de l'action qui conclut une page. Elle dépasse la cible parce
+   * qu'elle est seule de son espèce sur l'écran, en bas, à portée de pouce :
+   * sa hauteur dit qu'elle termine quelque chose.
+   */
+  --h-action: 52px;
+
+  /* Épaisseur d'un segment d'avancement (section 8.22). */
+  --segment-etape: 2px;
+  /*
+   * Largeur d'une graduation d'écran, sur la présentation. Elles ne s'étirent
+   * pas sur la largeur comme les segments de la création : trois traits courts
+   * en haut à gauche comptent des écrans, ils ne mesurent pas un avancement.
+   */
+  --graduation-etape: 22px;
   --h-fab: 56px;
   /* Hauteur utile de la barre du bas : icône, libellé, et l'air autour. */
   --h-nav: 58px;
+  /*
+   * Largeur du rail de navigation, au bureau. Assez pour le plus long des
+   * trois mots — « Aujourd'hui » — suivi de son signe, sans que le rail ne
+   * devienne une colonne de contenu.
+   */
+  --l-rail: 216px;
   /* Ce qu'elle occupe réellement, marge système comprise. */
   --pile-nav: calc(var(--h-nav) + var(--bas-securise));
   --bas-fab: calc(var(--pile-nav) + var(--e-3));
   --bas-toast: calc(var(--bas-fab) + var(--h-fab) + var(--e-3));
   --purge-liste: calc(var(--bas-fab) + var(--h-fab) + var(--e-5));
+
+  /*
+   * Ce qu'une page à barre d'action fixe doit réserver sous son contenu. La
+   * barre du bas ne s'y affiche pas : la purge se calcule sur la barre
+   * d'action seule, et non sur les deux, sans quoi la page finirait sur un
+   * grand vide.
+   */
+  --purge-action: calc(
+    var(--h-action) + var(--e-3) + var(--e-3) + var(--bas-securise) + var(--e-5)
+  );
 
   color-scheme: light;
 }
@@ -129,9 +257,64 @@
   --l-xs: 1.4;
   --l-champ: 1.4;
 
+  /*
+   * Les trois crans de titre. Ils descendent sous l'interligne du corps de
+   * texte parce qu'un titre de deux lignes à 34 px est un bloc, pas un
+   * paragraphe : au-delà de 1,1, les deux lignes cessent de se lire ensemble.
+   *
+   * `--l-section` reste au-dessus des autres, et pas par symétrie : à 22 px,
+   * un interligne de 1 rognerait les jambages et les accents d'un mois écrit
+   * en français — « août » y perd son accent circonflexe avant tout le reste.
+   */
+  --l-ecran: 1.08;
+  --l-page: 1.1;
+  --l-section: 1.2;
+  /* Un chiffre n'a ni jambage ni accent : son interligne est sa hauteur. */
+  --l-compte: 1;
+
+  /*
+   * Hauteur réservée par l'en-tête d'« Aujourd'hui ».
+   *
+   * Sans elle, l'écran saute au moment précis où l'on coche : « Tout est
+   * terminé pour aujourd'hui. » tient sur deux lignes là où « révisions
+   * aujourd'hui » n'en tient qu'une, et la ligne « Prochaine révision : … »
+   * apparaît en même temps. Trois objets se déplaçaient sous le doigt qui
+   * venait de valider — et c'est justement le geste central de l'application.
+   *
+   * La hauteur couvre le cas le plus haut, mesuré à 320 px — la largeur qui
+   * décide de tout : le sur-titre, le compte, une ligne de libellé, deux
+   * lignes de suite. Le sur-titre en fait partie parce qu'il vit dans le même
+   * bloc — l'oublier laissait deux pixels de jeu, et deux pixels se voient
+   * quand c'est toute la page qui les prend.
+   * C'est aussi pourquoi les libellés sont courts : ils tiennent tous sur une
+   * ligne à cette largeur, et la réserve n'a pas à prévoir un repli qui
+   * n'arrive jamais. Elle est dérivée de ses parts, jamais mesurée en dur.
+   */
+  --h-reponse: calc(
+    var(--t-xs) * var(--l-xs) + var(--e-2) + var(--t-compte) * var(--l-compte) +
+      var(--e-2) + var(--t-lg) * var(--l-lg) + var(--e-2) + 2 *
+      (var(--t-base) * var(--l-base))
+  );
+
   /* Marge de page et largeur de lecture (section 5). */
   --marge-page: var(--e-4);
-  --largeur-page: 960px;
+  /*
+   * Largeur de lecture, et non largeur d'écran.
+   *
+   * Elle valait 960 px, héritée du bento : quatre cellules côte à côte avaient
+   * besoin de cette place. Il n'y a plus de grille, et ce qui reste est fait de
+   * lignes — une règle graduée, des rangées, des paragraphes. Étalées sur
+   * 960 px, elles envoyaient le « J+7 » d'une ligne à neuf cents pixels de son
+   * titre, et la règle des quinze jours perdait la densité qui la rend lisible.
+   *
+   * 720 px tient une ligne de texte autour de soixante-dix caractères, garde
+   * les deux bouts d'une rangée dans le même regard, et laisse à la règle des
+   * cellules de la largeur d'un doigt.
+   *
+   * Le tableau de suivi n'en souffre pas : il défile dans son cadre par
+   * construction (section 8.13), à toutes les largeurs.
+   */
+  --largeur-page: 720px;
 
   /*
    * Pendant haut de --bas-securise. La section 10 exige `env(safe-area-inset-*)`
@@ -140,21 +323,75 @@
   --haut-securise: env(safe-area-inset-top, 0px);
 
   /*
-   * Barres de charge (section 8.8). Ces trois valeurs sont hors de la base 4
-   * parce que la section les fixe telles quelles ; elles sont nommées ici pour
-   * qu'aucune ne soit écrite en dur dans une feuille.
+   * La règle des quatorze jours (section 8.8). Ces valeurs sont hors de la
+   * base 4 parce que la section les fixe telles quelles : ce sont les hauteurs
+   * d'une graduation, pas des espacements.
+   *
+   * Les quatre paliers montent par pas décroissants — 6, 12, 18, 22 — puis le
+   * jour courant les dépasse de deux pixels. L'écart se resserre en haut parce
+   * qu'une journée chargée n'a pas à écraser le reste de la règle : ce qui doit
+   * se voir, c'est qu'elle dépasse, pas de combien.
    */
-  --charge-gap: 3px;
-  --charge-rayon: 2px;
-  --charge-plancher: 3px;
+  --regle-vide: 6px;
+  --regle-faible: 12px;
+  --regle-moyen: 18px;
+  --regle-fort: 22px;
+  --regle-jour: 24px;
 
   /*
-   * Points de densité du calendrier plein écran (section 8.11). Le mini-mois
-   * du bento garde les 3px des barres de charge : il ne se touche pas. Ici,
-   * la case se vise au pouce, et un point de 3px se perd sous le doigt.
+   * Diamètre d'une pastille de catégorie. Hors base 4, comme les hauteurs de
+   * la règle : une pastille n'est pas un espacement, c'est un point posé à
+   * côté d'un mot, et sa taille se règle sur la hauteur d'x du texte qu'elle
+   * accompagne — pas sur la grille.
+   */
+  --pastille: 6px;
+
+  /*
+   * Le cercle de la case à cocher sur la liste du jour. Il grandit de 24 à
+   * 26 px : c'est le geste central de l'application, et sa cible de 44 px ne
+   * se voit pas — seul le cercle dit où viser.
+   */
+  --cercle-passage: 26px;
+
+  /* Épaisseur d'une graduation, et celle du jour courant. */
+  --regle-trait: 1px;
+  --regle-trait-jour: 1.5px;
+
+  /* L'écart entre un nombre et la graduation qu'il surmonte. */
+  --regle-gap: 3px;
+
+  /*
+   * La règle se construit du bas vers le haut, comme la pile du bas : la bande
+   * des repères de date, puis l'axe posé dessus, puis la colonne où montent les
+   * graduations. La hauteur totale en découle et n'est jamais mesurée à part.
+   */
+  --regle-base: 20px;
+  --regle-colonne: 46px;
+  --regle-hauteur: calc(var(--regle-colonne) + var(--regle-base));
+
+  /*
+   * Points de densité du calendrier plein écran (section 8.11). La case se
+   * vise au pouce, et un point de 3px s'y perdrait sous le doigt.
    */
   --point-jour: var(--e-1);
   --point-jour-gap: 2px;
+
+  /*
+   * Les traits d'une case du calendrier : un par révision (section 8.11).
+   * Deux pixels de large, comme une graduation de la règle ; neuf de haut, et
+   * treize pour un retard — l'écart doit se voir en balayant le mois, sans
+   * lire les nombres.
+   */
+  --trait-jour-large: 2px;
+  --trait-jour: 9px;
+  --trait-jour-retard: 13px;
+
+  /*
+   * Hauteur d'une case du calendrier. Bien au-dessus de la cible : il y a un
+   * numéro, ses traits, et six rangées à faire tenir sans que la grille ne
+   * remplisse l'écran seule.
+   */
+  --h-case-jour: 64px;
 
   /*
    * Hauteur de l'en-tête de l'application, qui est collant (`base.css`).
@@ -252,6 +489,27 @@
   --cat-ocre: #A18F56;
 }
 
+/*
+ * Le bureau — section 7.5.
+ *
+ * Le rail remplace la barre du bas au-delà de 1024 px : une barre collée au
+ * bas d'un écran de trente pouces est un geste de pouce demandé à une souris,
+ * et elle occupe toute la largeur pour trois liens. Le rail les met là où
+ * l'œil commence, garde leurs libellés, et rend au contenu la hauteur qu'elle
+ * prenait.
+ *
+ * 1024 px et non 768 : une tablette en portrait se tient encore à deux mains,
+ * et son pouce arrive en bas. Le seuil est celui de la souris, pas celui de
+ * la place disponible.
+ */
 @media (min-width: 1024px) {
-  :root { --marge-page: var(--e-6); }
+  :root {
+    --marge-page: var(--e-6);
+    /*
+     * La colonne s'élargit pour porter deux colonnes sur « Aujourd'hui ». Elle
+     * ne dépasse pas : chacune y garde la largeur de lecture de 720 px moins
+     * ce que la gouttière prend.
+     */
+    --largeur-page: 1040px;
+  }
 }

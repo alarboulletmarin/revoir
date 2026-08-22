@@ -27,10 +27,15 @@ export const fr = {
     long: 'd MMMM yyyy',
     /** « sam. 14 mars » */
     court: 'EEE d MMM',
+    /** « vendredi 21 août » */
+    jourLong: 'EEEE d MMMM',
     /** « 14/03 » */
     compact: 'dd/MM',
     /** « mars 2026 » */
     mois: 'MMMM yyyy',
+    /** « mars » — l'en-tête du calendrier compose le mois et l'année. */
+    moisSeul: 'MMMM',
+    annee: 'yyyy',
     /** « 8 août » — l'échéance dans l'année en cours. */
     echeance: 'd MMMM',
     /** La même, quand elle change d'année. */
@@ -49,6 +54,7 @@ export const fr = {
   commun: {
     chargement: 'Chargement…',
     annuler: 'Annuler',
+    reessayer: 'Réessayer',
     fermer: 'Fermer',
     supprimer: 'Supprimer',
     modifier: 'Modifier',
@@ -138,14 +144,28 @@ export const fr = {
 
   dashboard: {
     titre: "Aujourd'hui",
-    aFaire: (restantes: number) =>
-      `${restantes} révision${s(restantes)} aujourd’hui`,
-    tempsTermine: 'Tout est terminé pour aujourd’hui',
-    rienDePrevu: 'Aucune révision prévue aujourd’hui',
-    plusRien: 'Plus rien à revoir : le programme reprendra à la prochaine échéance.',
-    aVenirIci: 'Les prochaines révisions apparaîtront ici.',
+    /**
+     * Ce qui accompagne le compte. Le nombre n'y figure plus : il est écrit à
+     * côté, en grand, et le répéter en lettres le ferait lire deux fois.
+     */
+    aFaire: (restantes: number) => `révision${s(restantes)} aujourd’hui`,
+    /*
+     * Court, et pour deux raisons : le sur-titre date déjà l'écran, et le
+     * compte à zéro est juste au-dessus. « pour aujourd'hui » redisait une
+     * troisième fois la même chose — et faisait passer le libellé à trois
+     * lignes à 320 px, ce qui déplaçait tout l'écran sous le doigt qui venait
+     * de cocher.
+     */
+    tempsTermine: 'Tout est terminé.',
+    rienDePrevu: 'Aucune révision prévue.',
+    /** Le sur-titre des prochaines échéances, sous la règle. */
+    ensuite: 'ensuite',
+    /** Le sur-titre de ce qui a été coché dans la journée. */
+    revuAujourdhui: 'revu aujourd’hui',
+    plusRien: 'Le programme reprendra à la prochaine échéance.',
+    aVenirIci: 'Les révisions à venir apparaîtront ici.',
     prochaine: (date: string, sujets: number) =>
-      `Prochaine révision : ${date}, ${sujets} sujet${s(sujets)}.`,
+      `Prochaine : ${date}, ${sujets} sujet${s(sujets)}.`,
     enRetard: 'en retard',
     restantes: (nombre: number) => `révision${s(nombre)} restante${s(nombre)}`,
     charge: (jours: number) => `Charge sur ${jours} jours`,
@@ -155,12 +175,73 @@ export const fr = {
     prochainesEcheances: 'Prochaines échéances',
   },
 
+  regle: {
+    /** Le sur-titre de la règle. « Quinze jours » se dit d'une quinzaine. */
+    titre: 'les quinze jours',
+    intitule: (jours: number) => `Charge des ${jours} prochains jours`,
+    retard: (nombre: number) =>
+      `${nombre} révision${s(nombre)} en retard`,
+    rattraper: 'la rattraper',
+    rattraperPlusieurs: 'les rattraper',
+  },
+
   charge: {
     aucune: (jours: number) => `Aucune révision dans les ${jours} prochains jours.`,
     intitule: (jours: number) => `Charge sur les ${jours} prochains jours`,
     aujourdhuiCourt: 'Auj.',
     jour: (quand: string, nombre: number) =>
       `${quand}, ${nombre === 0 ? 'aucune révision' : `${nombre} révision${s(nombre)}`}`,
+  },
+
+  exemple: {
+    /** Quatre sujets, quatre domaines : l'application n'est pas scolaire. */
+    sujets: {
+      derivees: 'Les dérivées',
+      accords: 'Les accords majeurs',
+      vocabulaire: 'Le vocabulaire du voyage',
+      priorite: 'Les règles de priorité',
+    },
+    charger: 'Explorer un jeu d’exemple',
+    effacer: 'Effacer le jeu d’exemple',
+    chargeTitre: 'Un jeu d’exemple est chargé',
+    chargeDetail:
+      'Quatre sujets d’exemple, avec un retard et des révisions déjà faites. Ce sont des sujets ordinaires : cochez-les, modifiez-les, ou effacez-les tous d’un geste.',
+    efface: 'Jeu d’exemple effacé',
+  },
+
+  bienvenue: {
+    titrePage: 'Bienvenue',
+    passer: 'Passer',
+    continuer: 'Continuer',
+    compte: (rang: number, total: number) => `${rang} / ${total}`,
+    intitule: (rang: number, total: number) =>
+      `Présentation, écran ${rang} sur ${total}`,
+    pied: 'Trois écrans, dix secondes. Vous pourrez les relire depuis l’aide.',
+    ecrans: [
+      {
+        surtitre: 'la question',
+        titre: 'Qu’est-ce que je dois revoir aujourd’hui ?',
+        detail:
+          'Revoir répond à cette seule question. Il garde ce que vous voulez revoir et quand — jamais ce que vous apprenez.',
+      },
+      {
+        surtitre: 'le principe',
+        titre: 'Les écarts grandissent.',
+        detail:
+          'Un jour, trois jours, une semaine, deux, un mois. On revoit juste avant d’oublier — c’est tout ce que fait la répétition espacée, et c’est ce que cette règle mesure.',
+        legende:
+          'L’écart entre deux graduations vaut l’écart réel entre deux dates. Vous ne lisez pas des nombres : vous voyez le temps s’étirer.',
+      },
+      {
+        surtitre: 'le geste',
+        titre: 'Vous cochez, l’application suit.',
+        detail:
+          'En un tap, sans confirmation, annulable pendant cinq secondes. Une révision validée en retard recale les suivantes en gardant leurs écarts, plutôt que de les faire tomber le même jour.',
+      },
+    ],
+    finTitre: 'Par où commencer ?',
+    creer: 'Créer mon premier sujet',
+    revoirPresentation: 'Revoir la présentation en trois écrans',
   },
 
   accueil: {
@@ -197,7 +278,24 @@ export const fr = {
       `Six catégories sont déjà là — ${noms}. Renommez-les, recolorez-les ou supprimez-les depuis les réglages.`,
   },
 
+  jour: {
+    /** « 2 révisions · 0 faite » — l'état de la journée, d'un coup d'œil. */
+    compte: (total: number, faites: number) =>
+      `${total} révision${s(total)} · ${faites} faite${s(faites)}`,
+    precedent: 'Jour précédent',
+    suivant: 'Jour suivant',
+    toutMarquer: 'Tout marquer comme revu',
+    toutReporter: 'Reporter à demain',
+    /** Le message d'un geste groupé : il dit combien, sinon on ne sait pas. */
+    marquees: (nombre: number) =>
+      `${nombre} révision${s(nombre)} enregistrée${s(nombre)}`,
+    reportees: (nombre: number) =>
+      `${nombre} révision${s(nombre)} reportée${s(nombre)}`,
+  },
+
   calendrier: {
+    legendeTraits:
+      'Un trait par révision, à la hauteur de son état : plein pour ce qui reste, court pour ce qui est fait, long pour le retard.',
     titre: 'Calendrier',
     moisPrecedent: 'Mois précédent',
     moisSuivant: 'Mois suivant',
@@ -227,8 +325,15 @@ export const fr = {
     categorie: 'Catégorie',
     toutesCategories: 'Toutes les catégories',
     colonnes: 'Colonnes',
-    compact: 'Compact',
-    intervalles: 'Intervalles',
+    /*
+     * La bascule montre ce qu'elle donne, pas un adjectif : « R1–R5 » et
+     * « J+n » sont les en-têtes qu'on obtiendra. « Compact » et « Intervalles »
+     * demandaient d'essayer pour savoir.
+     */
+    compact: 'R1–R5',
+    intervalles: 'J+n',
+    compteVue: (sujets: number, categories: number) =>
+      `${sujets} sujet${s(sujets)} · ${categories} catégorie${s(categories)}`,
     legendeTitre: 'Que veulent dire les formes ?',
     videTitre: 'Rien à suivre pour l’instant.',
     videDetail:
@@ -296,6 +401,9 @@ export const fr = {
     valider: (titre: string, decalage: string) =>
       `Marquer comme revu : ${titre}, révision ${decalage}`,
     progression: (rang: number, total: number) => `Révision ${rang} sur ${total}`,
+    /** « 3ᵉ passage sur 5 » — la même chose, en plus court, sous un titre. */
+    passage: (rang: number, total: number) =>
+      `${rang}${rang === 1 ? 'ᵉʳ' : 'ᵉ'} passage sur ${total}`,
     prochaine: 'Prochaine : ',
   },
 
@@ -306,6 +414,11 @@ export const fr = {
     archive: 'Archivé',
     creeLe: (date: string) => `Créé le ${date}`,
     programme: 'Programme',
+    /** « programme Simple » — dans la ligne d'identité de la fiche. */
+    programmeNomme: (nom: string) => `programme ${nom}`,
+    departCourt: (date: string) => `départ ${date}`,
+    /** Le pourcentage nu, à côté du compte : « 40 % ». */
+    part: (pourcent: number) => `${pourcent} %`,
     progression: (pourcent: number) => `Progression : ${pourcent} %`,
     compte: (faites: number, restantes: number) =>
       `${faites} révision${s(faites)} effectuée${s(faites)} · ${restantes} restante${s(restantes)}`,
@@ -333,6 +446,59 @@ export const fr = {
       `« ${titre} » et ses ${revisions} révisions seront définitivement supprimés.`,
     toastArchive: 'Sujet archivé',
     toastDesarchive: 'Sujet désarchivé',
+  },
+
+  creation: {
+    /** L'étape, dans l'en-tête. « n / 3 », en chiffres : c'est un compteur. */
+    etape: (rang: number, total: number) => `étape ${rang} / ${total}`,
+    etapeIntitule: (rang: number, total: number) =>
+      `Création d’un sujet, étape ${rang} sur ${total}`,
+    /** La sortie de l'étape 1 : rien n'a été écrit, il n'y a rien à annuler. */
+    plusTard: 'Plus tard',
+    passer: 'Passer',
+    continuer: 'Continuer',
+    creer: 'Créer le sujet',
+
+    titre: {
+      question: 'Qu’est-ce que vous voulez revoir ?',
+      intro:
+        'Un sujet, pas une matière. Revoir en garde le titre — jamais le contenu.',
+      champ: 'Titre',
+      exemple: 'Les dérivées, les accords majeurs…',
+      erreur:
+        'Le titre est obligatoire — écrivez ce que vous voulez revoir pour continuer.',
+      exemplesIntitule: 'Ou partir d’un exemple',
+      exemples: [
+        'les dérivées',
+        'les accords majeurs',
+        'le vocabulaire du voyage',
+        'les règles de priorité',
+      ],
+      rassurance:
+        'Rien n’est enregistré avant la dernière étape. Vous pouvez revenir en arrière à tout moment.',
+    },
+
+    categorie: {
+      question: 'Dans quelle catégorie ?',
+      intro: (titre: string) =>
+        `« ${titre} » ira rejoindre l’une d’elles. Facultatif : un sujet sans catégorie est un état normal.`,
+      introSansTitre:
+        'Facultatif : un sujet sans catégorie est un état normal.',
+      aucune: 'Sans catégorie',
+      nouvelle: 'Nouvelle catégorie',
+      compte: (nombre: number) =>
+        nombre === 0 ? 'aucun' : `${nombre} sujet${s(nombre)}`,
+      note:
+        'La couleur appartient à la catégorie, pas au sujet : elle se règle sur l’écran des catégories, et la changer la change partout.',
+    },
+
+    rythme: {
+      question: 'À quel rythme ?',
+      depart: (date: string) => `Départ aujourd’hui, ${date}.`,
+      composer: 'Composer un rythme',
+      composerAide: 'graduation par graduation',
+      apercu: 'Dates générées · charge déjà prévue',
+    },
   },
 
   sujetForm: {
@@ -446,6 +612,8 @@ export const fr = {
     },
     sauvegarde: {
       titre: 'Sauvegarde',
+      /** Ce que la rangée des réglages annonce. */
+      formats: 'JSON · ICS',
       intro:
         'Vos données restent sur cet appareil. L’export produit un fichier JSON que vous pouvez conserver puis réimporter, ici ou sur un autre appareil. Les sujets archivés y figurent.',
       exporter: 'Exporter les données',
@@ -457,6 +625,9 @@ export const fr = {
       confirmerMessage: (entrants: number, actuels: number) =>
         `L’import de ${entrants} sujet${s(entrants)} remplacera vos ${actuels} sujet${s(actuels)} actuel${s(actuels)}.`,
       confirmerAction: 'Importer',
+      rienEcrit:
+        'Le fichier est validé champ par champ : rien n’a été écrit, vos données actuelles sont intactes.',
+      autreFichier: 'Choisir un autre fichier',
     },
     calendrier: {
       titre: 'Calendrier',
@@ -481,12 +652,17 @@ export const fr = {
       modifier: 'Modifier',
       creer: 'Créer un programme',
       supprime: 'Programme supprimé',
+      aucun:
+        'Aucun rythme composé pour l’instant. Les trois programmes livrés restent disponibles au moment de choisir.',
+      /** « 3 » ou « 3 + 2 » : les trois livrés, et les vôtres. */
+      compteRangee: (nombre: number) => (nombre === 0 ? '3' : `3 + ${nombre}`),
       usages: (usages: number) =>
         usages > 1
           ? `Suivi par ${usages} sujets : leurs révisions sont déjà planifiées, le rythme ne peut plus changer.`
           : 'Suivi par un sujet : ses révisions sont déjà planifiées, le rythme ne peut plus changer.',
     },
     archives: {
+      aucunCourt: 'aucun',
       titre: 'Sujets archivés',
       aucun: 'Aucun sujet archivé.',
       desarchiver: 'Désarchiver',
@@ -505,6 +681,9 @@ export const fr = {
   },
 
   aide: {
+    regleTitre: 'la règle, en trois secondes',
+    regleDetail:
+      'Le trait vertical, c’est aujourd’hui. Ce qui est à gauche est fait, ce qui est à droite vient. L’écart entre deux graduations vaut l’écart réel entre deux dates.',
     titre: 'Comment ça marche',
     intro:
       'Revoir répond à une seule question : qu’est-ce que je dois revoir aujourd’hui ?',

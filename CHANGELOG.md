@@ -4,6 +4,80 @@
 
 ## Non publié
 
+### Ajouté — une mise en page pour les grands écrans
+
+- **Sur un ordinateur, la navigation passe à gauche.** Une barre collée au bas d'un grand écran demandait à la souris le geste du pouce, et prenait toute la largeur pour trois liens. Ils sont désormais dans un rail, là où la lecture commence, avec le logotype en tête. Une tablette en portrait garde la barre du bas : elle se tient encore à deux mains.
+- **« Aujourd'hui » se lit en deux colonnes.** À gauche ce qui répond — le compte du jour et la règle des quinze jours, qui reste visible pendant qu'on fait défiler ; à droite ce qu'on fait — la liste à cocher et ce qui vient ensuite. En une seule colonne, la liste tombait sous la ligne de flottaison alors qu'il restait la moitié de l'écran à côté.
+
+### Changé — les grands écrans, et le suivi
+
+- **L'application cesse de s'étirer sur un écran large.** La colonne de lecture passe de 960 à 720 pixels : le décalage d'une révision ne se retrouve plus à neuf cents pixels de son titre, la règle des quinze jours garde sa densité, et une ligne de texte revient autour de soixante-dix caractères. Le bouton « + » suit la colonne au lieu de flotter au bord de la fenêtre, loin de tout.
+- **Le suivi commence par ses données.** Le titre, deux réglages étiquetés et une légende occupaient 385 pixels avant la première cellule. Les réglages tiennent sur une rangée, la légende passe sous les tableaux — on la cherche quand une forme résiste, donc après l'avoir vue —, et le titre dit ce qu'il y a à suivre.
+- **La bascule des colonnes montre ce qu'elle donne** : « R1–R5 » et « J+n » plutôt que « Compact » et « Intervalles », qui demandaient d'essayer pour comprendre.
+
+### Changé — le calendrier, le suivi et la fiche d'un sujet
+
+- **Le calendrier montre des traits, plus des points.** Un trait par révision, à la hauteur de son état : plein pour ce qui reste, court pour une journée soldée, long et ambré pour un retard. Le mois se lit ligne à ligne, comme un agenda de papier, et une phrase sous la grille dit ce que les traits veulent dire — une hauteur ne se devine pas.
+- **La fiche d'un sujet dit sa progression en toutes lettres** : « 2 effectuées · 3 restantes », et le pourcentage à côté. L'anneau demandait de lire un angle pour retrouver un nombre écrit juste à côté. Les échéances deviennent des rangées où les J+n s'alignent en colonne : le rythme du programme se lit sans lire les dates.
+- **La frise de la fiche garde ses repères sur les petits écrans**, avec sa ligne d'identité — catégorie, programme, date de départ — en une phrase plutôt qu'en trois étiquettes.
+- **Le suivi perd le cadre qui entourait chaque catégorie.** Un tableau porte déjà ses lignes ; deux grilles emboîtées, c'en était une de trop.
+
+### Changé — les écrans de gestion
+
+- **Les réglages sont une liste, plus une pile de cartes.** Sept cartes qu'il fallait toutes parcourir pour en trouver une sont devenues deux bascules — apparence, langue — et quatre rangées qui mènent à ce qu'elles annoncent. Chaque rangée dit ce qu'on y trouvera : « Sujets archivés · aucun » évite une visite pour rien. La sauvegarde, l'export calendrier, les sujets archivés et les rythmes composés ont chacun leur écran.
+- **Créer une catégorie ou composer un rythme pendant la création d'un sujet ne fait plus perdre le fil.** On atterrissait sur la liste des catégories ou sur les réglages, hors du parcours, et il fallait tout reprendre. On revient maintenant à la question qu'on était en train de lire, avec ce qu'on vient de créer déjà sélectionné.
+- Un rythme créé depuis sa propre liste y retourne, au lieu de renvoyer aux réglages : les rythmes ont maintenant leur écran.
+- **« Supprimer » ne s'affiche plus que sur les catégories sans sujet.** Supprimer une catégorie portée reste possible depuis son écran — ses sujets rejoignent « Sans catégorie », aucun n'est perdu — mais ce geste en touche d'autres, et il n'avait rien à faire à côté d'un simple renommage.
+- **Le compositeur de rythme s'ouvre sur sa question** plutôt que sur son propre nom, et le champ du nom passe en dernier : on nomme un rythme qu'on vient de composer, pas l'inverse.
+- Sur les écrans de saisie, la barre des trois vues cède la place à la barre d'action, comme sur les pages de création.
+
+### Ajouté — de quoi commencer
+
+- **Une présentation en trois écrans**, à lire en dix secondes : la question à laquelle l'application répond, pourquoi les écarts grandissent — la frise s'y trace sous vos yeux —, et ce qui se passe quand vous cochez en retard. Elle se saute d'un mot écrit en clair, pas en gris pâle dans un coin, et se relit depuis l'aide.
+- **Un jeu d'exemple.** Quatre sujets avec un retard, des révisions faites et des programmes en cours : de quoi voir la règle peuplée, le recalage et le tableau de suivi sans avoir rien saisi. Ce ne sont pas des données de démonstration — ce sont des sujets ordinaires, qui se cochent et se modifient comme les autres, et qui s'effacent tous d'un geste depuis les réglages.
+- **L'aide s'ouvre sur la règle** et la seule phrase qui apprend à la lire : le trait vertical, c'est aujourd'hui.
+- **Les repères J+n de la frise s'affichent sur les petits écrans.** Ils disparaissaient sous 480 px, là où la frise est justement la signature de l'application : elle y devenait cinq traits sans légende. Un repère ne s'efface plus que s'il n'a pas la place, un par un.
+
+### Changé — ce qu'un écran montre avant d'avoir ses données
+
+- **La forme de l'écran est posée avant les données.** Un gabarit remplace le mot « Chargement… » : la page ne saute plus quand les révisions arrivent. Aucun tourniquet — la lecture est locale, elle dure quelques dizaines de millisecondes, et une roue n'aurait le temps que d'apparaître.
+- **Une erreur de lecture prend l'écran et propose de réessayer.** Elle se glissait en bandeau au-dessus d'un tableau de bord vide, qui se lisait « vous n'avez rien » plutôt que « je n'ai pas pu lire ». Le message dit d'abord ce qui s'est passé, puis que rien n'est perdu, puis quoi faire.
+- **Le suivi vide montre les cinq formes** avant qu'il y ait un tableau où les lire.
+
+### Changé — le jour
+
+- **Une journée du calendrier s'ouvre maintenant dans une page**, plus dans une feuille qui glissait du bas. Elle a une adresse : on peut la poser sur un écran d'accueil, y revenir par le retour arrière, la garder ouverte sans qu'un mouvement du pouce la referme au milieu de la liste. Deux flèches passent au jour voisin — il fallait auparavant refermer la feuille, viser une autre case et la rouvrir.
+- **Deux gestes pour toute la journée** : « Tout marquer comme revu » et « Reporter à demain ». Un seul message suit, et il dit combien de révisions ont bougé ; « Annuler » les remet toutes, y compris les échéances que les recalages avaient déplacées.
+
+### Changé — la création d'un sujet
+
+- **Créer un sujet se fait en trois pages, une question par écran.** Le formulaire demandait quatre choses à la fois — un titre, une catégorie, une date, un programme — à quelqu'un qui, la première fois, n'en connaît aucune. Les questions se posent maintenant dans l'ordre où elles se répondent, chacune tient dans un écran, et un retour est toujours possible.
+- **Rien n'est enregistré avant la dernière étape**, et la première page le dit. Ce qui a été répondu survit au rechargement de la page mais pas à la fermeture de l'onglet : c'est un brouillon, pas un sujet abandonné qui ressurgirait dans trois semaines.
+- **La catégorie se passe.** Elle est facultative, un sujet sans catégorie est un état normal, et « Passer » mène à la question suivante plutôt que hors du parcours.
+- **Le titre se prend dans un exemple.** « Sujet » est un mot large, et personne ne sait à froid s'il faut y écrire « Mathématiques » ou « les dérivées » : quatre exemples se touchent et remplissent le champ.
+- Modifier un sujet et le dupliquer gardent le formulaire d'un seul écran : dérouler trois pages pour changer un titre serait une régression, et une duplication arrive déjà remplie.
+- Sur ces trois pages, la barre des trois vues cède la place à la barre d'action. Les vues ne changent pas ; elles ne s'empilent simplement pas sous une seconde barre, ce qui prenait cent vingt pixels sous le pouce et donnait deux réponses à « comment je sors d'ici ? ».
+
+### Changé — l'écran « Aujourd'hui »
+
+- **Le nombre de révisions du jour redevient un grand chiffre.** Il était écrit en toutes lettres dans une phrase, ce qui le faisait lire au lieu de le faire voir. C'est la réponse qu'on vient chercher : elle s'affiche en grand, avec son libellé dessous.
+- **L'écran ne saute plus quand vous cochez.** Le titre passait d'une ligne à deux en changeant d'état, la ligne « Prochaine révision » apparaissait avec lui, et tout se déplaçait sous le doigt qui venait de valider — au moment précis du geste le plus fréquent de l'application. L'en-tête réserve désormais sa hauteur, quel que soit ce qu'il a à dire.
+- Les messages d'état sont plus courts — « Tout est terminé. » plutôt que « Tout est terminé pour aujourd'hui. » : la date est déjà écrite juste au-dessus, et le compte à zéro juste à côté.
+
+
+- **Une règle graduée remplace les trois cartes du tableau de bord.** La journée, le retard et la charge des quinze jours se disputaient la même question en trois blocs de même poids, et il fallait choisir lequel y répondait. Il y a maintenant un seul objet à balayer : quatorze jours, une graduation par jour, sa hauteur donne la charge, et le jour courant s'y trouve sans être cherché. Le retard se lit sous l'axe et propose de le rattraper ; ce qui reste à faire est écrit en toutes lettres au-dessus, en titre.
+- **La hauteur d'une journée ne dépend plus de ce qui l'entoure.** Les anciennes barres se remesuraient sur la journée la plus chargée : la même journée à trois révisions montait ou descendait selon la semaine. Quatre paliers fixes la laissent à la même hauteur d'un jour à l'autre, et le nombre reste écrit au-dessus pour qui veut le compte exact.
+- **La liste du jour dit où en est chaque sujet** — « Études · 3ᵉ passage sur 5 » — et porte son décalage au bout de la ligne, en colonne. Le cercle à cocher grandit : c'est le geste central de l'application, et sa cible ne se voit pas.
+- **Une journée bouclée ne se solde plus sur un écran vide.** Ce qui vient d'être coché reste sous la main jusqu'au soir, chaque ligne gardant son « Annuler » — celui du message, lui, expire au bout de cinq secondes.
+- Les listes ne sont plus des empilements de cartes mais des lignes séparées par un filet, comme une page de cahier. « Ensuite » montre les trois prochaines échéances, date en tête ; elles se lisent, elles ne se cochent pas — pour cocher en avance, « Tout voir » mène à la liste complète, comme avant.
+
+### Changé — l'écriture de l'interface
+
+- **L'application prend une voix.** Les titres, les étiquettes et les chiffres ne s'écrivent plus dans la police que le système voulait bien donner — SF Pro ici, Roboto là, Segoe ailleurs, trois dessins pour un même écran. Arial est nommée en tête, avec Liberation Sans pour repli sur Linux, dont les chasses sont les siennes. Rien n'est téléchargé pour autant : c'est un nom, pas un fichier, et l'application continue de ne faire aucun appel réseau.
+- **Les chiffres tiennent leur colonne.** Les dates, les compteurs et les décalages passent en chasse fixe, celle du système. Une échéance ne se décale plus d'un pixel par rapport à celle du dessus, et un compteur ne saute plus quand il change.
+- **Le logotype s'écrit en capitales ouvertes**, à côté de sa règle graduée. C'est une marque, pas une phrase : ce que lit un lecteur d'écran reste le mot « Revoir ».
+- Les titres gagnent une graisse et une chasse resserrée, et l'échelle typographique gagne trois crans nommés par ce qu'ils ouvrent — un écran, une page, un bloc — plutôt que par leur rang dans une suite.
+
 ### Changé — licence
 
 - **Revoir passe de la licence MIT à l'AGPL-3.0.** La MIT laissait reprendre le code dans un produit fermé et payant sans rien rendre ; l'AGPL demande que toute version modifiée reste libre, y compris quand elle n'est qu'hébergée pour d'autres. L'usage, la modification et l'hébergement restent libres, commerce compris : ce qui change, c'est qu'on ne peut plus refermer ce qui part d'ici. Les réglages affichent désormais la version et le commit exact du build à côté du lien vers le code source : c'est ce que l'article 13 demande d'une application qu'on atteint par le réseau.

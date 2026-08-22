@@ -79,9 +79,21 @@
   gap: var(--e-2);
   color: var(--encre);
   font-family: var(--police-titre);
-  font-size: var(--t-md);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: var(--t-marque);
+  font-weight: 700;
+  /*
+   * Le mot du logotype, en capitales ouvertes.
+   *
+   * La casse forcée est proscrite partout ailleurs (section 11), et pour une
+   * raison qui tient : le français accentué en capitales se lit mal. Elle ne
+   * s'applique ici qu'à un mot de six lettres sans accent, écrit une fois par
+   * écran, qui n'est pas du texte mais une marque — la même que celle posée
+   * sur l'écran d'accueil. Le DOM garde « Revoir » en casse normale : c'est le
+   * mot que lit un lecteur d'écran, pas six lettres épelées.
+   */
+  text-transform: uppercase;
+  letter-spacing: var(--chasse-marque);
+  line-height: 1;
 }
 
 /*
@@ -251,6 +263,14 @@
 }
 
 /*
+ * Une page sans pile du bas : rien à purger, et le contenu peut occuper toute
+ * la hauteur. Réservée aux écrans qui effacent la coque (section 8.25).
+ */
+.page--plein {
+  padding-bottom: calc(var(--e-5) + var(--bas-securise));
+}
+
+/*
  * Pile verticale générique. C'est le conteneur qui porte l'espacement, jamais
  * les composants (section 7.4).
  */
@@ -296,6 +316,57 @@
   line-height: var(--l-md);
 }
 
+/*
+ * Le titre d'une des trois vues (section 4). Il porte la voix de l'écran à
+ * lui seul depuis que la cellule pleine a disparu : c'est le premier objet
+ * qu'on lit, et le seul de son cran sur la page.
+ */
+.titre-ecran {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-ecran);
+  font-weight: 700;
+  line-height: var(--l-ecran);
+  letter-spacing: var(--chasse-titre);
+  text-wrap: balance;
+}
+
+/*
+ * Le titre d'une page qui a un retour. Même dessin, un cran plus bas : une
+ * page se lit après avoir choisi de l'ouvrir, elle n'a pas à s'annoncer aussi
+ * fort qu'une vue où l'on arrive.
+ */
+.titre-page {
+  min-width: 0;
+  font-family: var(--police-titre);
+  font-size: var(--t-page);
+  font-weight: 700;
+  line-height: var(--l-page);
+  letter-spacing: var(--chasse-titre);
+  text-wrap: balance;
+}
+
+/*
+ * Le sur-titre : une étiquette de section, jamais une phrase (section 4).
+ * Il date l'écran ou nomme le bloc qui suit, et ne porte jamais d'information
+ * absente de ce qu'il surmonte — sans quoi les capitales la rendraient plus
+ * difficile à lire qu'ailleurs.
+ */
+.surtitre {
+  min-width: 0;
+  color: var(--encre-2);
+  font-size: var(--t-xs);
+  font-weight: 400;
+  line-height: var(--l-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--chasse-surtitre);
+}
+
+/* Un sur-titre qui annonce plutôt qu'il ne range : celui de la présentation. */
+.surtitre--accent {
+  color: var(--accent);
+}
+
 /* ---------------------------------------------------------- utilitaires -- */
 
 .discret {
@@ -309,7 +380,14 @@
   line-height: var(--l-sm);
 }
 
+/*
+ * Le rôle « chiffres » pour ce qui n'est ni un `<time>` ni un `<output>` :
+ * un « J+7 », un « 3 / 5 », un compte au bout d'une rangée. Même paire que
+ * dans le reset, et la taille réaffirmée pour la même raison.
+ */
 .chiffres {
+  font-family: var(--police-chiffres);
+  font-size: 1em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -358,9 +436,21 @@
  * Section 8.5 : 56px, cercle, --accent. Le `--bas-securise` est indispensable,
  * sans lui le bouton passe sous la barre d'accueil iOS en mode PWA.
  */
+/*
+ * Le bouton flottant suit la colonne de lecture, pas le bord de la fenêtre.
+ *
+ * Collé au bord droit d'un écran large, il flottait à trois cents pixels du
+ * contenu, dans une zone où il n'y a rien — et il faut aller le chercher là
+ * où l'œil n'est jamais. `max()` le laisse au bord tant que la fenêtre est
+ * plus étroite que la colonne, c'est-à-dire sur tout ce qui est tenu à la
+ * main.
+ */
 .fab {
   position: fixed;
-  right: var(--marge-page);
+  right: max(
+    var(--marge-page),
+    calc(50% - var(--largeur-page) / 2 + var(--marge-page))
+  );
   bottom: var(--bas-fab);
   z-index: 3;
   display: flex;
@@ -465,4 +555,101 @@ body[data-panneau='ouvert'] .fab {
   font-size: var(--t-xs);
   font-weight: 600;
   line-height: 1;
+}
+
+/* ============================================== le bureau ============== */
+
+/*
+ * Au-delà de 1024 px, la barre du bas devient un rail à gauche — section 7.5.
+ *
+ * Rien ne bouge dans le balisage : la navigation est déjà une liste de trois
+ * liens, et c'est sa mise en page qui change. Une barre collée au bas d'un
+ * grand écran demande à la souris le geste du pouce, et prend toute la largeur
+ * pour trois liens ; le rail les met là où la lecture commence, et rend au
+ * contenu la hauteur qu'elle occupait.
+ */
+@media (min-width: 1024px) {
+  .nav {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    width: var(--l-rail);
+    border-top: 0;
+    border-right: var(--bordure);
+    padding-top: var(--e-5);
+    padding-bottom: var(--e-5);
+  }
+
+  .nav__liste {
+    max-width: none;
+    flex-direction: column;
+    gap: var(--e-1);
+    padding-inline: var(--e-3);
+  }
+
+  /*
+   * Le signe passe à gauche du mot, et la part cesse de s'étirer : trois
+   * blocs centrés sur toute la hauteur du rail donneraient trois îlots, là
+   * où une liste se lit de haut en bas, alignée sur un même bord.
+   */
+  .nav__element {
+    flex: 0 0 auto;
+  }
+
+  .nav__lien {
+    min-height: var(--cible);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--e-3);
+    border-radius: var(--r-carte);
+    padding-inline: var(--e-3);
+    font-size: var(--t-base);
+    text-align: left;
+  }
+
+  .nav__lien:hover {
+    background-color: var(--surface-survol);
+  }
+
+  /*
+   * L'état actif se lit sur la couleur, le poids **et** la surface. Sur un
+   * rail, la part active n'a plus la position pour la désigner — en bas,
+   * c'était la seule des trois à porter une couleur ; ici, elle est une ligne
+   * parmi d'autres dans une colonne.
+   */
+  .nav__lien--actif {
+    background-color: var(--accent-doux);
+  }
+
+  /*
+   * Le rail prend sa place sur la coque, et non sur chaque écran : la colonne
+   * de contenu se centre alors dans ce qui reste, au lieu d'être poussée à
+   * droite d'un espace qu'elle continuerait de compter.
+   *
+   * Le rail lui-même est `fixed` : il ne connaît pas ce décalage et se pose
+   * dans la réserve qu'il vient d'ouvrir.
+   */
+  .appli {
+    padding-left: var(--l-rail);
+  }
+
+  /* La marque en tête du rail, alignée sur les liens qui la suivent. */
+  .nav__marque {
+    min-height: var(--cible);
+    margin-bottom: var(--e-4);
+    padding-inline: var(--e-3);
+  }
+
+  /*
+   * La purge du bas n'a plus la barre à contourner — seul le bouton flottant
+   * reste, et il ne couvre que son coin.
+   */
+  .page {
+    padding-bottom: var(--e-7);
+  }
+
+  .fab {
+    bottom: var(--e-5);
+  }
 }
