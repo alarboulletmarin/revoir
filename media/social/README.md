@@ -1,18 +1,29 @@
 # Visuels de présentation
 
-Six visuels qui présentent l'application, chacun dans deux formats : **16:9**
-(1920 × 1080) pour les fils larges — LinkedIn, X, l'aperçu d'un lien — et
-**9:16** (1080 × 1920) pour les formats debout — stories, Reels, TikTok. Lus
-dans l'ordre, ils forment un carrousel ; pris isolément, chacun se suffit.
+Six visuels qui présentent l'application, chacun dans deux formats — et deux
+mises en page, pas un dessin et son recadrage.
 
-| # | Visuel | Ce qu'il dit |
-| --- | --- | --- |
-| 01 | `revoir-1-question` | La question à laquelle l'application répond |
-| 02 | `revoir-2-principe` | La répétition espacée, montrée par la frise |
-| 03 | `revoir-3-vues` | Aujourd'hui, le calendrier, le suivi |
-| 04 | `revoir-4-geste` | Cocher en un tap, annuler, recaler |
-| 05 | `revoir-5-ne-fait-pas` | Ce que Revoir ne fait pas — sur le papier de nuit |
-| 06 | `revoir-6-fin` | Le nom, l'icône, où le trouver |
+Le **16:9** (1920 × 1080) est une planche : on la lit posée, de gauche à droite,
+et elle a la place de montrer trois écrans côte à côte ou une frise étirée. Elle
+sert les fils larges — LinkedIn, X, l'aperçu d'un lien.
+
+Le **9:16** (1080 × 1920) est une **story Instagram** : tenue à bout de bras,
+lue en cinq secondes, avec le nom du compte en haut et la barre de réponse en
+bas. Elle est donc écrite autrement — un titre qui prend le tiers de la hauteur,
+une seule idée, un seul objet à regarder, et rien d'utile dans les bandes que
+l'interface recouvre. Trois différences de fond en découlent : la frise s'y
+dresse et descend l'écran au lieu de traverser un bandeau ; les trois vues
+cèdent la place à **un seul écran montré en grand**, dont la barre du bas nomme
+les deux autres ; les paragraphes deviennent des listes.
+
+| Visuel | Ce qu'il dit |
+| --- | --- |
+| `revoir-question` | La question à laquelle l'application répond |
+| `revoir-principe` | La répétition espacée, montrée par la frise |
+| `revoir-vues` | Aujourd'hui, le calendrier, le suivi |
+| `revoir-geste` | Cocher en un tap, annuler, recaler |
+| `revoir-ne-fait-pas` | Ce que Revoir ne fait pas — sur le papier de nuit |
+| `revoir-fin` | Le nom, l'icône, où le trouver |
 
 Ils ne sont pas dessinés à la main puis importés : ils sont **rendus depuis le
 design system**, comme les icônes. La palette vient de `src/styles/tokens.css`,

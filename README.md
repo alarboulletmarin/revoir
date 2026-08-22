@@ -154,7 +154,7 @@ scripts/
 ├── generate-notices.mjs   licences des composants tiers, sans dépendance
 └── generate-social.mjs    visuels de présentation, rendus par Chromium
 media/
-└── social/                les six visuels, en 16:9 et en 9:16
+└── social/                les six visuels, en planche 16:9 et en story 9:16
 ```
 
 La logique métier de `src/lib/` ne dépend ni de React ni du DOM, ce qui la rend directement testable : `npm test` couvre la génération des dates, le recalage après retard, la géométrie de la frise, le regroupement par catégorie, l'attribution des teintes dans les deux thèmes, les catégories proposées et le détachement des sujets d'une catégorie supprimée, les statistiques, le modèle du tableau de suivi, la migration des anciennes données, le formatage et la validation des sauvegardes, la sérialisation du calendrier `.ics`, et l'accord des deux dictionnaires.
