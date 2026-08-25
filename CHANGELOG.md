@@ -4,6 +4,10 @@
 
 ## Non publié
 
+### Ajouté — ce que deviennent vos données, dit dans l'application
+
+- **« À propos » nomme les trois endroits où tout reste.** La base IndexedDB « revoir » pour vos catégories, vos sujets et leurs révisions ; le stockage local pour vos préférences d'affichage ; le stockage de session pour le brouillon d'un sujet en cours de saisie, le temps de l'onglet. Aucun compte, aucun serveur, aucune mesure d'audience : rien de ce que vous saisissez ne quitte votre navigateur. Une application qui promet que rien ne sort sans dire où les choses restent demande qu'on la croie sur parole. La phrase sur l'effacement des données du site retrouve du même coup le « donc » qui la commençait sans rien devant.
+
 ### Ajouté — une mise en page pour les grands écrans
 
 - **Sur un ordinateur, la navigation passe à gauche.** Une barre collée au bas d'un grand écran demandait à la souris le geste du pouce, et prenait toute la largeur pour trois liens. Ils sont désormais dans un rail, là où la lecture commence, avec le logotype en tête. Une tablette en portrait garde la barre du bas : elle se tient encore à deux mains.

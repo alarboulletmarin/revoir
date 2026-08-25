@@ -620,7 +620,9 @@ export const en: Dictionnaire = {
     apropos: {
       titre: 'About',
       intro:
-        'Revoir schedules spaced reviews without ever storing what you are learning. No account, no server, no analytics: everything is saved in your browser’s local storage.',
+        'Revoir schedules spaced reviews without ever storing what you are learning. No account, no server, no analytics: nothing you type ever leaves your browser.',
+      stockage:
+        'It all stays there: your categories, your subjects and their reviews in the “revoir” IndexedDB database, your display preferences in local storage, the draft of a subject you are still writing in session storage, for the lifetime of the tab.',
       effacement:
         'Clearing this site’s data from your browser therefore deletes all your reviews. Remember to export from time to time.',
       licence: 'Free software under the AGPL-3.0 licence.',

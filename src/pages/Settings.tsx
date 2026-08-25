@@ -126,10 +126,17 @@ export function Settings() {
       )}
 
       {/*
-        « À propos » se réduit à un paragraphe et une ligne de licence. Il
+        « À propos » se réduit à trois paragraphes et une ligne de licence. Il
         occupait une carte entière pour dire deux choses, dont l'une —
         l'effacement des données du site — mérite d'être lue, et se perdait au
         milieu de l'autre.
+
+        Ce que deviennent les données se dit ici, et nommément. Une application
+        qui promet que rien ne sort sans dire où les choses restent demande
+        qu'on la croie sur parole ; les trois emplacements cités sont ceux que
+        le code utilise vraiment, et ce sont eux qui donnent son « donc » au
+        paragraphe suivant : effacer les données du site les emporte tous les
+        trois d'un coup.
 
         La licence dans l'application, pas seulement dans le dépôt : sous AGPL,
         l'article 13 demande que qui accède au logiciel par le réseau puisse en
@@ -139,6 +146,8 @@ export function Settings() {
       */}
       <section className="reglages__bloc">
         <h2 className="surtitre">{t.reglages.apropos.titre}</h2>
+        <p className="discret">{t.reglages.apropos.intro}</p>
+        <p className="discret">{t.reglages.apropos.stockage}</p>
         <p className="discret">{t.reglages.apropos.effacement}</p>
         <p className="discret discret--petit">
           {t.reglages.apropos.licence}{' '}

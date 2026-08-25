@@ -670,7 +670,9 @@ export const fr = {
     apropos: {
       titre: 'À propos',
       intro:
-        'Revoir planifie des révisions espacées sans jamais stocker ce que vous apprenez. Aucun compte, aucun serveur, aucune mesure d’audience : tout est enregistré dans le stockage local de votre navigateur.',
+        'Revoir planifie des révisions espacées sans jamais stocker ce que vous apprenez. Aucun compte, aucun serveur, aucune mesure d’audience : rien de ce que vous saisissez ne quitte votre navigateur.',
+      stockage:
+        'Tout y reste : vos catégories, vos sujets et leurs révisions dans la base IndexedDB « revoir », vos préférences d’affichage dans le stockage local, le brouillon d’un sujet en cours de saisie dans le stockage de session, le temps de l’onglet.',
       effacement:
         'Effacer les données du site depuis votre navigateur supprime donc toutes vos révisions. Pensez à exporter régulièrement.',
       licence: 'Logiciel libre sous licence AGPL-3.0.',
